@@ -569,6 +569,11 @@ export class ActiveProfileState {
         context.patchState(state);
     }
 
+    @Action(ActiveProfileActions.setInvalid)
+    public setInvalid(context: ActiveProfileState.Context, state: ActiveProfileActions.InvalidAction): void {
+        context.patchState(state);
+    }
+
     private _getNextModSection(
         state: AppProfile,
         root: boolean,

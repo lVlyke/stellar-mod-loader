@@ -24,11 +24,13 @@ export namespace ActiveProfileActions {
     export type BaseProfileAction = BasicAction<AppProfile, "baseProfile">;
     export type CustomGameActionsAction = BasicAction<AppProfile, "customGameActions">;
     export type ActiveGameActionAction = BasicAction<AppProfile, "activeGameAction">;
+    export type InvalidAction = BasicAction<AppProfile, "invalid">;
 
     export const setDeployed = createUpdateAction("deployed");
     export const setBaseProfile = createUpdateAction("baseProfile");
     export const manageExternalPlugins = createUpdateAction("manageExternalPlugins");
     export const setActiveGameAction = createUpdateAction("activeGameAction");
+    export const setInvalid = createUpdateAction("invalid");
 
     export class AddMod {
         public static readonly type = `[activeProfile] add mod`;

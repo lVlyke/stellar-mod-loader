@@ -22,6 +22,7 @@ export interface AppBaseProfile {
     locked?: boolean;
     rootModSections?: ModSection[];
     modSections?: ModSection[];
+    invalid?: boolean;
 }
 
 export interface AppProfile extends AppBaseProfile {
@@ -55,7 +56,7 @@ export namespace AppProfile {
 
     export type ModList = RelativeOrderedMap.List<string, ModProfileRef>;
 
-    export type Description = Pick<AppBaseProfile, "name" | "gameId" | "deployed" | "rootPathOverride"> & { baseProfile?: string };
+    export type Description = Pick<AppBaseProfile, "name" | "gameId" | "deployed" | "rootPathOverride" | "invalid"> & { baseProfile?: string };
     export type Form = Omit<AppProfile, "baseProfile"> & { baseProfile?: string; };
 
     export interface ExternalFiles {
@@ -85,6 +86,7 @@ export namespace AppProfile {
     }
 
     export interface PropertiesVerificationResult extends VerificationResultRecord<keyof AppProfile> {
+        gameId: VerificationResult;
         mods: CollectedVerificationResult;
         rootMods: CollectedVerificationResult;
         plugins: CollectedVerificationResult;
@@ -156,7 +158,8 @@ export namespace AppProfile {
             name: profile.name,
             gameId: profile.gameId,
             deployed: profile.deployed,
-            baseProfile: isFullProfile(profile) ? profile.baseProfile?.name : undefined
+            baseProfile: isFullProfile(profile) ? profile.baseProfile?.name : undefined,
+            invalid: profile.invalid
         };
     }
 }

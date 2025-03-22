@@ -584,6 +584,12 @@ export class ProfileManager {
                 if (profile) {
                     return ElectronUtils.invoke("app:verifyProfile", { profile }).pipe(
                         switchMap((verificationResults) => {
+                            // Update profile validity
+                            // Profile is invalid if it has an invalid `gameId`
+                            this.store.dispatch(new ActiveProfileActions.setInvalid(
+                                verificationResults.properties.gameId.error
+                            ));
+
                             let result$ = of(!verificationResults.error);
                             if (options.updateModErrorState) {
                                 // Update profile mod verification state

@@ -492,7 +492,11 @@ class ElectronLoader {
         ) => {
             const VERIFY_SUCCESS = { error: false, found: true };
             const VERIFY_FAIL = { error: true, found: false };
+            const gameDb = this.loadGameDatabase();
 
+            const gameIdResult = profile.gameId !== undefined && !!gameDb[profile.gameId]
+                ? VERIFY_SUCCESS
+                : VERIFY_FAIL;
             const profileExistsResult = this.verifyProfilePathExists(this.getProfileDir(profile));
             const modResult = this.verifyProfileMods(false, profile);
             const rootModResult = this.verifyProfileMods(true, profile);
@@ -557,7 +561,8 @@ class ElectronLoader {
 
             const preparedResult = {
                 name: VERIFY_SUCCESS,
-                gameId: VERIFY_SUCCESS, // TODO
+                gameId: gameIdResult,
+                invalid: VERIFY_SUCCESS,
                 gameInstallation: {
                     results: {
                         rootDir: gameRootDirResult,
@@ -1468,7 +1473,8 @@ class ElectronLoader {
                 name: profileName,
                 gameId: profile?.gameId ?? "$unknown",
                 deployed: profile?.deployed ?? false,
-                rootPathOverride: profile?.rootPathOverride
+                rootPathOverride: profile?.rootPathOverride,
+                invalid: profile ? profile.invalid : true
             };
         });
     }

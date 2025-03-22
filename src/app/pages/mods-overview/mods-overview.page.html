@@ -32,6 +32,15 @@
 
                         <ng-template #profileNameDecorated let-profileDesc>
                             {{ profileDesc.name }}
+
+                            @if (profileDesc.invalid) {
+                                <mat-icon
+                                        class="profile-icon external-icon"
+                                        color="warn"
+                                        matTooltip="Profile is invalid">
+                                    block
+                                </mat-icon>
+                            }
                             @if (profileDesc.rootPathOverride) {
                                 <mat-icon
                                         class="profile-icon external-icon"
@@ -72,7 +81,7 @@
                                 class="with-menu"
                                 color="accent"
                                 matTooltip="Add Mod..."
-                                [disabled]="activeProfile!.locked"
+                                [disabled]="activeProfile.invalid || activeProfile.locked"
                                 (click)="showAddModMenu($event)">
                             <mat-icon>add</mat-icon>
                             <mat-icon class="button-menu-icon">arrow_drop_down</mat-icon>
@@ -82,7 +91,7 @@
                                 class="with-menu"
                                 color="accent"
                                 matTooltip="Backup"
-                                [disabled]="activeProfile!.locked"
+                                [disabled]="activeProfile.invalid || activeProfile.locked"
                                 (click)="showModBackupMenu($event)">
                             <mat-icon>history</mat-icon>
                             <mat-icon class="button-menu-icon">arrow_drop_down</mat-icon>
@@ -100,43 +109,49 @@
                                 color="accent"
                                 [matTooltip]="activeProfile!.locked ? 'Unlock Profile' : 'Lock Profile'"
                                 (click)="profileManager.toggleLockActiveProfile()">
-                            <mat-icon>{{ activeProfile!.locked ? "lock" : "lock_open" }}</mat-icon>
+                            <mat-icon>{{ activeProfile.locked ? "lock" : "lock_open" }}</mat-icon>
                         </button>
 
-                        <button mat-icon-button color="accent" matTooltip="Profile Settings" (click)="profileManager.showProfileWizard(activeProfile)">
+                        <button mat-icon-button
+                                color="accent"
+                                matTooltip="Profile Settings"
+                                [disabled]="activeProfile.invalid"
+                                (click)="profileManager.showProfileWizard(activeProfile)">
                             <mat-icon>settings</mat-icon>
                         </button>
                     </span>
                 </div>
 
-                @if (activeProfile.rootMods.length > 0) {
-                    <mat-card-title class="sticky-title">Root Mods</mat-card-title>
+                @if (!activeProfile.invalid) {
+                    @if (activeProfile.rootMods.length > 0) {
+                        <mat-card-title class="sticky-title">Root Mods</mat-card-title>
 
-                    <app-profile-mod-list [profile]="activeProfile"
-                                        [root]="true"
-                                        (modChange)="registerModUpdate(true, $event.name, $event.modRef!)"
-                                        (modOrderChange)="reorderMods(true, $event)"
-                                        (sectionIndexChange)="this.profileManager.reorderModSection($event[0], true, $event[1])" />
-                
-                }
+                        <app-profile-mod-list [profile]="activeProfile"
+                                            [root]="true"
+                                            (modChange)="registerModUpdate(true, $event.name, $event.modRef!)"
+                                            (modOrderChange)="reorderMods(true, $event)"
+                                            (sectionIndexChange)="this.profileManager.reorderModSection($event[0], true, $event[1])" />
+                    
+                    }
 
-                @if (activeProfile.mods.length > 0) {
-                    <mat-card-title class="sticky-title">Mods</mat-card-title>
+                    @if (activeProfile.mods.length > 0) {
+                        <mat-card-title class="sticky-title">Mods</mat-card-title>
 
-                    <app-profile-mod-list [profile]="activeProfile"
-                                        [root]="false"
-                                        (modChange)="registerModUpdate(false, $event.name, $event.modRef!)"
-                                        (modOrderChange)="reorderMods(false, $event)"
-                                        (sectionIndexChange)="this.profileManager.reorderModSection($event[0], false, $event[1])" />
-                } @else {
-                    <i class="empty-mod-list-hint">Click the <mat-icon color="accent">add</mat-icon> icon above to add a mod.</i>
+                        <app-profile-mod-list [profile]="activeProfile"
+                                            [root]="false"
+                                            (modChange)="registerModUpdate(false, $event.name, $event.modRef!)"
+                                            (modOrderChange)="reorderMods(false, $event)"
+                                            (sectionIndexChange)="this.profileManager.reorderModSection($event[0], false, $event[1])" />
+                    } @else {
+                        <i class="empty-mod-list-hint">Click the <mat-icon color="accent">add</mat-icon> icon above to add a mod.</i>
+                    }
                 }
             </mat-card-content>
         </mat-card>
 
         <!-- Data actions -->
         <div id="right-pane-actions" [attr.data-action-type]="activeDataAction">
-            @if (activeDataAction) {
+            @if (!activeProfile.invalid && activeDataAction) {
                 <mat-card id="plugin-actions">
                     <mat-card-header class="tool-header">
                         <mat-card-title>
@@ -272,7 +287,7 @@
             }
         
             <!-- Profile Actions -->
-            @if (activeProfile | appIsFullProfile) {
+            @if (!activeProfile.invalid && (activeProfile | appIsFullProfile)) {
                 <mat-expansion-panel #profileActionsPanel
                                 
                                     id="profile-actions"

@@ -28,6 +28,7 @@ export class AppProfileVerificationResultsModal extends BaseComponent {
     private static readonly PROFILE_VERIFICATION_ERROR_DESCS: Record<keyof AppProfile | keyof GameInstallation, string> = {
         name: "Invalid profile name",
         gameId: "Invalid Game ID",
+        invalid: "Invalid",
         mods: "Invalid or missing mod files",
         rootMods: "Invalid or missing mod files",
         plugins: "Invalid plugins",
