@@ -46,7 +46,7 @@ export class AppState {
             return undefined;
         }
 
-        return state.gameDb[state.activeProfile.gameId];
+        return AppState.getGameDb(state)[state.activeProfile.gameId];
     }
 
     @Selector()
@@ -71,7 +71,12 @@ export class AppState {
 
     @Selector()
     public static getGameDb(state: AppData): GameDatabase {
-        return state.gameDb;
+        return Object.assign({}, state.gameDb, state.customGameDb ?? {});
+    }
+
+    @Selector()
+    public static getCustomGameDb(state: AppData): GameDatabase {
+        return state.customGameDb ?? {};
     }
 
     @Selector()
@@ -110,6 +115,10 @@ export class AppState {
 
         if (settings.logPanelEnabled !== undefined) {
             state.logPanelEnabled = settings.logPanelEnabled;
+        }
+
+        if (settings.customGameDb !== undefined) {
+            state.customGameDb = settings.customGameDb;
         }
 
         context.setState(state);
@@ -169,6 +178,27 @@ export class AppState {
     @Action(AppActions.updateModListColumns)
     public updateModListColumns(context: AppState.Context, state: AppActions.ModListColumnsAction): void {
         context.patchState(_.cloneDeep(state));
+    }
+
+    @Action(AppActions.UpdateCustomGame)
+    public updateCustomGame(context: AppState.Context, { gameId, gameDetails }: AppActions.UpdateCustomGame): void {
+        context.setState(patch({
+            customGameDb: patch({
+                [gameId]: gameDetails
+            })
+        }));
+    }
+
+    @Action(AppActions.DeleteCustomGame)
+    public deleteCustomGame(context: AppState.Context, { gameId }: AppActions.DeleteCustomGame): void {
+        const state = _.cloneDeep(context.getState());
+
+        if (!!state.customGameDb)
+        {
+            delete state.customGameDb[gameId];
+        }
+
+        context.setState(state);
     }
 
     @Action(AppActions.ToggleModListColumn)

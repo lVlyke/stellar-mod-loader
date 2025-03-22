@@ -2,6 +2,8 @@ import { BasicAction } from "./basic-action";
 import { AppData } from "../models/app-data";
 import { AppProfile } from "../models/app-profile";
 import { AppSettingsUserCfg } from "../models/app-settings-user-cfg";
+import { GameDetails } from "../models/game-details";
+import { GameId } from "../models/game-id";
 
 export namespace AppActions {
 
@@ -91,5 +93,22 @@ export namespace AppActions {
 
     export class ResetModListColumns {
         public static readonly type = `[app] reset mod list columns`;
+    }
+
+    export class UpdateCustomGame {
+        public static readonly type = `[app] update custom game`;
+
+        constructor(
+            public gameId: GameId,
+            public gameDetails: GameDetails
+        ) {}
+    }
+
+    export class DeleteCustomGame {
+        public static readonly type = `[app] delete custom game`;
+
+        constructor(
+            public gameId: GameId
+        ) {}
     }
 }

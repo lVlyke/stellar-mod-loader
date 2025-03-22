@@ -15,3 +15,4 @@ export * from "./game-config-files-found.pipe";
 export * from "./profile-save-files.pipe";
 export * from "./is-full-profile.pipe";
 export * from "./profle-backup-name.pipe";
+export * from "./invalid-or-touched-model.pipe";

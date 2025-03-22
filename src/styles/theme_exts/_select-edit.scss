@@ -1,0 +1,23 @@
+@use "@angular/material" as mat;
+@use "../mixins";
+
+@mixin declare($selector, $primary, $accent, $warn, $is-dark) {
+
+    #{$selector} {
+
+        mat-select-trigger {
+            mat-form-field {
+                background-color: mixins.theme-background-color(card, $is-dark) !important;
+
+                * {
+                    background-color: transparent;
+                }
+
+                input:hover:not([disabled]) {
+                    background-color: mixins.theme-background-color(focused-button, $is-dark) !important;
+                    border-radius: 0 !important;
+                }
+            }
+        }
+    }
+}

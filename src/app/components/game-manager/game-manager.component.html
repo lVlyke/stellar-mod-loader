@@ -1,0 +1,349 @@
+<div id="game-selector" class="select-with-controls">
+    <mat-form-field appearance="fill" [attr.subscript]="false">
+        <mat-label>Game</mat-label>
+        <mat-select #gameIdModel="ngModel" [(ngModel)]="_activeGameId">
+            <mat-select-trigger>
+                <div class="game-details-title">
+                    <app-game-badge [gameId]="gameIdModel.value" [gameDb]="gameDb!" />
+
+                    @if (!!customGameDb[gameIdModel.value]) {
+                        <mat-icon color="accent" matTooltip="Custom Game">create</mat-icon>
+                    }
+                </div>
+            </mat-select-trigger>
+
+            @for (gameId of gameIds; track gameId) {
+                <mat-option [value]="gameId">
+                    <div class="game-details-title">
+                        <app-game-badge [gameId]="gameId" [gameDb]="gameDb!" />
+
+                        @if (!!customGameDb[gameId]) {
+                            <mat-icon color="accent" matTooltip="Custom Game">create</mat-icon>
+                        }
+                    </div>
+                </mat-option>
+            }
+        </mat-select>
+    </mat-form-field>
+
+    <span class="controls">
+        <button mat-icon-button
+                class="with-menu"
+                color="primary"
+                (click)="showGameMgmtMenu($event)">
+            <mat-icon>settings</mat-icon>
+            <mat-icon class="button-menu-icon">arrow_drop_down</mat-icon>
+        </button>
+    </span>
+</div>
+
+<div id="active-game-editor">
+    @if (activeGameDetails !== undefined) {
+        <form #activeGameForm="ngForm" id="active-game-form">
+            <!-- Game ID -->
+            <mat-form-field appearance="fill" [attr.subscript]="true">
+                <mat-label>Game ID</mat-label>
+                <input #gameIdModel="ngModel"
+                        matInput
+                        name="gameId"
+                        type="text"
+                        [disabled]="!isCustomGameDetails"
+                        [required]="true"
+                        [ngModel]="activeGameId!"
+                        (ngModelChange)="changeGameId(activeGameId!, $event)">
+                @if ((gameIdModel.control.statusChanges | async) && gameIdModel.hasError("invalidGameId")) {
+                    <mat-hint [attr.matWarn]="true">
+                        Game ID must be unique
+                    </mat-hint>
+                }
+            </mat-form-field>
+
+            <!-- Game Title -->
+            <mat-form-field appearance="fill" [attr.subscript]="false">
+                <mat-label>Title</mat-label>
+                <input matInput
+                        name="title"
+                        type="text"
+                        [disabled]="!isCustomGameDetails"
+                        [required]="true"
+                        [(ngModel)]="activeGameDetails.title">
+            </mat-form-field>
+
+            <!-- Title Bkg Color -->
+            <mat-form-field appearance="fill" [attr.subscript]="false">
+                <mat-label>Background Color</mat-label>
+                <input matInput
+                        name="bkgColor"
+                        type="text"
+                        [disabled]="!isCustomGameDetails"
+                        [required]="true"
+                        [(ngModel)]="activeGameDetails.bkgColor">
+            </mat-form-field>
+
+            <!-- Title Fg Color -->
+             <mat-form-field appearance="fill" [attr.subscript]="false">
+                <mat-label>Foreground Color</mat-label>
+                <input matInput
+                        name="fgColor"
+                        type="text"
+                        [disabled]="!isCustomGameDetails"
+                        [required]="true"
+                        [(ngModel)]="activeGameDetails.fgColor">
+            </mat-form-field>
+
+            <mat-label>Game Installations</mat-label>
+            <mat-accordion multi>
+                @for (gameInstallation of activeGameDetails.installations; track gameInstallation.rootDir + $index) {
+                    <mat-expansion-panel [expanded]="gameInstallationSettings.form | appInvalidOrTouchedModel$ | async">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>
+                                {{ gameInstallation.rootDir }}
+                                @if (!!gameInstallation.steamId) {
+                                    &nbsp;[Steam ID: {{ gameInstallation.steamId }}]
+                                }
+                            </mat-panel-title>
+                            <mat-panel-description>
+                                @if (isCustomGameDetails) {
+                                    <button mat-icon-button
+                                            color="warn"
+                                            matTooltip="Delete Installation"
+                                            (click)="removeGameInstallation(activeGameDetails, gameInstallation); $event.preventDefault()">
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                }
+                            </mat-panel-description>
+                        </mat-expansion-panel-header>
+
+                        <app-game-install-settings #gameInstallationSettings
+                                                name="installations[{{$index}}]"
+                                                [fieldInput]="fieldInput$ | async"
+                                                [custom]="isCustomGameDetails"
+                                                [disabled]="!isCustomGameDetails"
+                                                [ngModel]="gameInstallation" />
+                    </mat-expansion-panel>
+                }
+            </mat-accordion>
+
+            @if (isCustomGameDetails) {
+                <button mat-raised-button (click)="addGameInstallation(activeGameDetails)">
+                    <mat-icon color="accent">add</mat-icon>
+                    Add Installation
+                </button>
+            }
+
+            <!-- Game Binaries -->
+            <app-select-edit name="gameBinaries"
+                             label="Game Binaries"
+                             [disabled]="!isCustomGameDetails"
+                             [resizable]="isCustomGameDetails"
+                             [valueIdentity]="stringIdentity"
+                             [(ngModel)]="activeGameDetails.gameBinary" />
+
+            <!-- Save Formats -->
+            <app-select-edit name="saveFormats"
+                             label="Save Formats"
+                             [disabled]="!isCustomGameDetails"
+                             [resizable]="isCustomGameDetails"
+                             [valueIdentity]="stringIdentity"
+                             [(ngModel)]="activeGameDetails.saveFormats" />
+
+            <!-- Plugin Formats -->
+            <app-select-edit name="pluginFormats"
+                             label="Plguin Formats"
+                             [disabled]="!isCustomGameDetails"
+                             [resizable]="isCustomGameDetails"
+                             [valueIdentity]="stringIdentity"
+                             [(ngModel)]="activeGameDetails.pluginFormats" />
+
+            @if (activeGameDetails.pluginFormats.length > 0) {
+                <!-- Require External Plugins -->
+                <mat-checkbox name="requireExternalPlugins"
+                            [disabled]="!isCustomGameDetails"
+                            [(ngModel)]="activeGameDetails.requireExternalPlugins">
+                    Require External Plugins
+                </mat-checkbox>
+            }
+
+            @if (!!activeGameDetails.pluginListType) {
+                <!-- Plugin List Type -->
+                <mat-form-field appearance="fill" [attr.subscript]="false">
+                    <mat-label>Plugin List Type</mat-label>
+                    <mat-select #pluginListTypeModel="ngModel"
+                                name="pluginListType"
+                                [disabled]="!isCustomGameDetails"
+                                [(ngModel)]="activeGameDetails.pluginListType">
+                        <mat-select-trigger>
+                            {{ pluginListTypeModel.value }}
+                        </mat-select-trigger>
+                
+                        @for (pluginListType of pluginListTypes; track $index) {
+                            <mat-option [value]="pluginListType">
+                                {{ pluginListType }}
+                            </mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            } @else if (isCustomGameDetails && activeGameDetails.pluginFormats.length > 0) {
+                <button mat-raised-button (click)="activeGameDetails.pluginListType = 'Default'">
+                    <mat-icon color="accent">add</mat-icon>
+                    Add Plugin List Type
+                </button>
+            }
+
+            @if (!!activeGameDetails.pinnedPlugins) {
+                <!-- Pinned Plugins -->
+                <app-select-edit name="pinnedPlugins"
+                                label="Pinned Plugins"
+                                valueField="plugin"
+                                [disabled]="!isCustomGameDetails"
+                                [resizable]="isCustomGameDetails"
+                                [valueIdentity]="pinnedPluginIdentity"
+                                [(ngModel)]="activeGameDetails.pinnedPlugins">
+                    <ng-container *appSelectEditControls="let editState; let index = index">
+                        @let editModel = activeGameDetails.pinnedPlugins;
+
+                        <!-- Plugin name -->
+                        <mat-form-field appearance="fill" [attr.subscript]="false">
+                            <mat-label>Name</mat-label>
+                            <input matInput
+                                type="text"
+                                [required]="true"
+                                [disabled]="editState.disabled"
+                                [ngModelOptions]="{ standalone: true }"
+                                [ngModel]="editModel[index].plugin"
+                                (ngModelChange)="editModel[index].plugin = $event; editState.valueChange$.emit(editModel)"
+                                (click)="$event.stopPropagation()">
+                        </mat-form-field>
+
+                        <!-- Plugin required -->
+                        <mat-checkbox [disabled]="editState.disabled"
+                                      [ngModelOptions]="{ standalone: true }"
+                                      [ngModel]="editModel[index].required"
+                                      (ngModelChange)="editModel[index].required = $event; editState.valueChange$.emit(editModel)"
+                                      (click)="$event.stopPropagation()">
+                            Required
+                        </mat-checkbox>
+                    </ng-container>
+                </app-select-edit>
+            } @else if (isCustomGameDetails && activeGameDetails.pluginFormats.length > 0) {
+                <button mat-raised-button (click)="activeGameDetails.pinnedPlugins = []">
+                    <mat-icon color="accent">add</mat-icon>
+                    Add Pinned Plugins
+                </button>
+            }
+            
+            @if (!!activeGameDetails.gameConfigFiles) {
+                <!-- Config Files -->
+                <app-select-edit name="gameConfigFiles"
+                                label="Game Config Files"
+                                [disabled]="!isCustomGameDetails"
+                                [resizable]="isCustomGameDetails"
+                                [valueIdentity]="stringIdentity"
+                                [(ngModel)]="activeGameDetails.gameConfigFiles" />
+            } @else if (isCustomGameDetails) {
+                <button mat-raised-button (click)="activeGameDetails.gameConfigFiles = []">
+                    <mat-icon color="accent">add</mat-icon>
+                    Add Game Config Files
+                </button>
+            }
+
+            @if (!!activeGameDetails.scriptExtenders) {
+                <!-- Script Extenders -->
+                <app-select-edit name="scriptExtenders"
+                                label="Script Extenders"
+                                valueField="name"
+                                [disabled]="!isCustomGameDetails"
+                                [resizable]="isCustomGameDetails"
+                                [valueIdentity]="scriptExtenderIdentity"
+                                [(ngModel)]="activeGameDetails.scriptExtenders">
+                    <ng-container *appSelectEditControls="let editState; let index = index">
+                        @let editModel = activeGameDetails.scriptExtenders;
+
+                        <!-- Extender name -->
+                        <mat-form-field appearance="fill" [attr.subscript]="false">
+                            <mat-label>Name</mat-label>
+                            <input matInput
+                                type="text"
+                                [required]="true"
+                                [disabled]="editState.disabled"
+                                [ngModelOptions]="{ standalone: true }"
+                                [ngModel]="editModel[index].name"
+                                (ngModelChange)="editModel[index].name = $event; editState.valueChange$.emit(editModel)"
+                                (click)="$event.stopPropagation()">
+                        </mat-form-field>
+
+                        <!-- Extender binaries -->
+                        <app-select-edit label="Binaries"
+                                [disabled]="editState.disabled"
+                                [resizable]="editState.resizable"
+                                [required]="true"
+                                [valueIdentity]="stringIdentity"
+                                [ngModelOptions]="{ standalone: true }"
+                                [(ngModel)]="editModel[index].binaries"
+                                (ngModelChange)="editState.valueChange$.emit(editModel)"
+                                (click)="$event.stopPropagation()" />
+
+                        <!-- Extender mod paths -->
+                        <app-select-edit label="Mod Paths"
+                                [disabled]="editState.disabled"
+                                [resizable]="editState.resizable"
+                                [required]="true"
+                                [valueIdentity]="stringIdentity"
+                                [ngModelOptions]="{ standalone: true }"
+                                [(ngModel)]="editModel[index].modPaths"
+                                (ngModelChange)="editState.valueChange$.emit(editModel)"
+                                (click)="$event.stopPropagation()" />
+                    </ng-container>
+                </app-select-edit>
+            } @else if (isCustomGameDetails) {
+                <button mat-raised-button (click)="activeGameDetails.scriptExtenders = []">
+                    <mat-icon color="accent">add</mat-icon>
+                    Add Script Extender
+                </button>
+            }
+
+            @if (!!activeGameDetails.resources) {
+                <!-- Resources -->
+                <!-- TODO -->
+            }
+
+            @if (!!activeGameDetails.archiveInvalidation) {
+                <!-- Archive Invalidation -->
+                <!-- TODO -->
+            }
+        </form>
+    }
+</div>
+
+<!-- Game mgmt menu popup -->
+<ng-template #gameMgmtMenu cdkPortal>
+    <mat-card class="mat-elevation-z3">
+        <mat-card-content>
+            <mat-action-list>
+                <button mat-list-item (click)="addCustomGame(); showGameMgmtMenuRef?.close()">
+                    <mat-icon matListIcon color="accent">add</mat-icon>
+                    <span matLine>Add New Game</span>
+                </button>
+
+                <button mat-list-item (click)="importGame(); showGameMgmtMenuRef?.close()">
+                    <mat-icon matListIcon color="accent">save_alt</mat-icon>
+                    <span matLine>Import Game</span>
+                </button>
+
+                <button mat-list-item
+                        [disabled]="!gameIdModel.value"
+                        (click)="exportGame(gameIdModel.value); showGameMgmtMenuRef?.close()">
+                    <mat-icon matListIcon color="accent">ios_share</mat-icon>
+                    <span matLine>Export Game</span>
+                </button>
+
+                <button mat-list-item
+                        [disabled]="!gameIdModel.value || !isCustomGame(gameIdModel.value)"
+                        (click)="deleteCustomGame(gameIdModel.value); showGameMgmtMenuRef?.close()">
+                    <mat-icon matListIcon color="warn">delete</mat-icon>
+                    <span matLine>Delete Game</span>
+                </button>
+            </mat-action-list>
+        </mat-card-content>
+    </mat-card>
+</ng-template>

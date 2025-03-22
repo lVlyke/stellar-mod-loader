@@ -93,6 +93,14 @@
         }
     }
 
+    mat-option {
+
+        .mdc-list-item__primary-text {
+            display: block;
+            width: 100%;
+        }
+    }
+
     button.with-menu {
 
         .button-menu-icon {

@@ -7,7 +7,7 @@
                                 (ngModelChange)="valueChange$.emit(value)" />
     }
 
-    @if (!!value.steamId?.length || custom) {
+    @if (fieldInput?.profileModel) {
         <mat-form-field>
             <mat-label>Steam ID</mat-label>
             <input matInput
@@ -16,5 +16,11 @@
                     [ngModelOptions]="{ standalone: true }"
                     (ngModelChange)="value.steamId = [$event]; valueChange$.emit(value)">
         </mat-form-field>
+    } @else {
+        <app-select-edit label="Steam IDs"
+                        [disabled]="disabled || !custom"
+                        [resizable]="!disabled && custom"
+                        [value]="value.steamId ?? []" 
+                        (valueChange)="value.steamId = $event; valueChange$.emit(value)"/>
     }
 </form>

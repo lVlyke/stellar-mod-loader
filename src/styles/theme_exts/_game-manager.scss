@@ -1,0 +1,15 @@
+@use "@angular/material" as mat;
+@use "../mixins";
+
+@mixin declare($selector, $primary, $accent, $warn, $is-dark) {
+
+    #{$selector} {
+
+        .select-with-controls > .controls {
+            background: var(--mdc-filled-text-field-container-color);
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+            border-color: var(--mdc-filled-text-field-active-indicator-color);
+        }
+    }
+}

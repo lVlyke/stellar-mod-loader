@@ -1,0 +1,25 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>Manage Games</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+        <mat-divider />
+        <app-game-manager />
+    </mat-card-content>
+
+    @if (!!appGameManagerComponent) {
+        <mat-card-actions>
+            <button mat-raised-button
+                    color="primary"
+                    [disabled]="!(appGameManagerComponent.activeGameValid$ | async)"
+                    (click)="saveActiveChanges()">
+                    Save
+            </button>
+
+            <button mat-raised-button (click)="verifyDone()">
+                Done
+            </button>
+        </mat-card-actions>
+    }
+</mat-card>

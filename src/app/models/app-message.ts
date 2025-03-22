@@ -13,6 +13,7 @@ import { ModProfileRef } from "./mod-profile-ref";
 import { LogEntry } from "../util/logger";
 import { GameInstallation } from "./game-installation";
 import { AppWarnings } from "./app-warnings";
+import { GameDetails } from "./game-details";
 
 export type AppMessage
     = AppMessage.AppMessage
@@ -103,6 +104,18 @@ export namespace AppMessage {
         };
     }
 
+    export interface ExportGame extends Base {
+        id: `${Prefix}:exportGame`;
+        data: {
+            gameDetails: GameDetails;
+        };
+    }
+
+    export interface ReadGame extends Base {
+        id: `${Prefix}:readGame`;
+        result?: [GameId, GameDetails];
+    }
+
     export interface NewProfile extends Base {
         id: `${Prefix}:newProfile`;
     }
@@ -171,6 +184,10 @@ export namespace AppMessage {
 
     export interface ShowPreferences extends Base {
         id: `${Prefix}:showPreferences`;
+    }
+
+    export interface ShowManageGames extends Base {
+        id: `${Prefix}:showManageGames`;
     }
 
     export interface LoadGameDatabase extends Base {
@@ -250,6 +267,8 @@ export namespace AppMessage {
                            | LoadProfileList
                            | LoadSettings
                            | SaveSettings
+                           | ExportGame
+                           | ReadGame
                            | NewProfile
                            | ImportProfile
                            | ExportProfile
@@ -260,6 +279,7 @@ export namespace AppMessage {
                            | VerifyProfile
                            | CopyProfileData
                            | ShowPreferences
+                           | ShowManageGames
                            | LoadGameDatabase
                            | FindGameInstallations
                            | FindGameInstallationsByRootDir
@@ -740,6 +760,8 @@ export namespace AppMessage {
         "app:loadProfileList",
         "app:loadSettings",
         "app:saveSettings",
+        "app:exportGame",
+        "app:readGame",
         "app:newProfile",
         "app:importProfile",
         "app:exportProfile",
@@ -750,6 +772,7 @@ export namespace AppMessage {
         "app:copyProfile",
         "app:verifyProfile",
         "app:showPreferences",
+        "app:showManageGames",
         "app:loadGameDatabase",
         "app:findGameInstallations",
         "app:findGameInstallationsByRootDir",

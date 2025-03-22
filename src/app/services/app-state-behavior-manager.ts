@@ -21,6 +21,9 @@ import { AppPreferencesModal } from "../modals/app-preferences";
 import { log } from "../util/logger";
 import { AppDialogs } from "./app-dialogs";
 import { AppWarnings } from "../models/app-warnings";
+import { AppGameManagerModal } from "../modals/game-manager";
+import { GameDetails } from "../models/game-details";
+import { GameId } from "../models/game-id";
 
 @Injectable({ providedIn: "root" })
 export class AppStateBehaviorManager {
@@ -58,6 +61,13 @@ export class AppStateBehaviorManager {
             filter(message => message.id === "app:showPreferences"),
             switchMap(() => this.showAppPreferences().pipe(
                 catchError((err) => (log.error("Failed to show app settings menu: ", err), EMPTY))
+            ))
+        ).subscribe();
+
+        messageHandler.messages$.pipe(
+            filter(message => message.id === "app:showManageGames"),
+            switchMap(() => this.showManageGames().pipe(
+                catchError((err) => (log.error("Failed to show manage games menu: ", err), EMPTY))
             ))
         ).subscribe();
 
@@ -194,6 +204,26 @@ export class AppStateBehaviorManager {
         ));
     }
 
+    public addCustomGame(gameId: GameId, gameDetails: GameDetails): Observable<unknown> {
+        return this.updateCustomGame(gameId, gameDetails);
+    }
+
+    public updateCustomGame(gameId: GameId, gameDetails: GameDetails): Observable<unknown> {
+        return this.store.dispatch(new AppActions.UpdateCustomGame(gameId, gameDetails));
+    }
+
+    public deleteCustomGame(gameId: GameId): Observable<unknown> {
+        return this.store.dispatch(new AppActions.DeleteCustomGame(gameId));
+    }
+
+    public exportGame(gameDetails: GameDetails): Observable<unknown> {
+        return runOnce(ElectronUtils.invoke("app:exportGame", { gameDetails }));
+    }
+
+    public readGame(): Observable<[GameId, GameDetails] | undefined> {
+        return ElectronUtils.invoke("app:readGame", {});
+    }
+
     public showAppWarnings(): Observable<unknown> {
         return runOnce(ElectronUtils.invoke("app:queryWarnings", {}).pipe(
             switchMap((appWarnings) => {
@@ -247,6 +277,20 @@ export class AppStateBehaviorManager {
         ));
     }
 
+    public showManageGames(): Observable<OverlayHelpersComponentRef<AppGameManagerModal>> {
+        const modContextMenuRef = this.overlayHelpers.createFullScreen(AppGameManagerModal, {
+            center: true,
+            hasBackdrop: true,
+            disposeOnBackdropClick: false,
+            minWidth: "40rem",
+            width: "80%",
+            height: "auto",
+            maxHeight: "85%",
+            panelClass: "mat-app-background"
+        });
+        return of(modContextMenuRef);
+    }
+
     public showAppAboutInfo(aboutData: AppMessageData<"app:showAboutInfo">): void {
         this.overlayHelpers.createFullScreen(AppAboutInfoModal, {
             width: "50vw",
@@ -282,7 +326,8 @@ export class AppStateBehaviorManager {
             modListColumns: appData.modListColumns,
             verifyProfileOnStart: appData.verifyProfileOnStart,
             steamCompatDataRoot: appData.steamCompatDataRoot,
-            logPanelEnabled: appData.logPanelEnabled
+            logPanelEnabled: appData.logPanelEnabled,
+            customGameDb: appData.customGameDb
         };
     }
 }

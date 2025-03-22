@@ -14,6 +14,7 @@ export interface AppData {
     deployInProgress?: boolean;
     steamCompatDataRoot?: string;
     logPanelEnabled?: boolean;
+    customGameDb?: GameDatabase;
 }
 
 export namespace AppData {

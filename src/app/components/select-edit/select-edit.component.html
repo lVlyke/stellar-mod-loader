@@ -1,0 +1,47 @@
+<mat-form-field appearance="fill" subscript="false">
+    <mat-label>{{ label }}</mat-label>
+    <mat-select #valueSelect [(value)]="selectedValueIndex">
+        <mat-select-trigger>
+            @if (valueSelect.value < value.length) {
+                @if (editControls) {
+                    <ng-container *ngTemplateOutlet="editControls.templateRef; context: { $implicit: this, index: valueSelect.value }" />
+                } @else {
+                    <mat-form-field appearance="fill" subscript="false">
+                        <input matInput
+                                type="text"
+                                [required]="true"
+                                [disabled]="!!disabled"
+                                [ngModel]="value[valueSelect.value]"
+                                (ngModelChange)="value[valueSelect.value] = $event; entryChange$.emit([valueSelect.value, $event]); valueChange$.emit(value)"
+                                (click)="$event.stopPropagation()">
+                    </mat-form-field>
+                }
+
+                @if (resizable) {
+                    <div class="entry-actions">
+                        <button type="button"
+                                mat-icon-button
+                                color="warn"
+                                matTooltip="Delete Entry"
+                                (click)="deleteEntry(valueSelect.value)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+                }
+            }
+        </mat-select-trigger>
+
+        @for (entry of value; track $index) {
+            <mat-option [value]="$index">
+                {{ valueField ? entry[valueField] : entry }}
+            </mat-option>
+        }
+
+        @if (resizable) {
+            <mat-option (click)="addEntry()">
+                <mat-icon color="accent">add</mat-icon>
+                Add Entry
+            </mat-option>
+        }
+    </mat-select>
+</mat-form-field>

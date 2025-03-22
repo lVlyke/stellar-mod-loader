@@ -1,0 +1,55 @@
+:host {
+
+    > mat-form-field {
+        width: 100%;
+    }
+
+    mat-select-trigger {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        margin-right: 1rem;
+
+        ::ng-deep {
+            mat-form-field {
+                &, & > * {
+                    border-radius: 1rem;
+                }
+            }
+
+            > mat-form-field, > app-select-edit {
+                flex-grow: 1;
+            }
+    
+            > .entry-actions {
+                display: flex;
+                flex-direction: row-reverse;
+                flex-shrink: 0;
+            }
+
+            mat-form-field.mat-mdc-form-field-type-mat-select .mdc-line-ripple {
+                display: none;
+            }
+
+            > app-select-edit mat-select-trigger > mat-form-field:not(.mat-mdc-form-field-type-mat-select) .mdc-line-ripple {
+                display: unset;
+            }
+
+            mat-form-field:not(.mat-mdc-form-field-type-mat-select) {
+                padding: 1rem 0;
+            }
+
+            > app-select-edit mat-select-trigger {
+                margin: 0;
+                flex-wrap: nowrap;
+                
+                > mat-form-field:not(.mat-mdc-form-field-type-mat-select) {
+                    padding: 0;
+                }
+            } 
+        }
+    }
+}

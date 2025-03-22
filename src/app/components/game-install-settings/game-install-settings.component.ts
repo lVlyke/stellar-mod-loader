@@ -27,6 +27,7 @@ import { GameInstallation } from "../../models/game-installation";
 import { AppGameInstallFieldsPipe } from "./game-install-fields.pipe";
 import { AppProfileFormFieldComponent } from "../profile-form-field";
 import { AppProfileFormFieldInput } from "../../models/app-profile-form-field";
+import { AppSelectEditComponent } from "../select-edit";
 
 @Component({
     selector: "app-game-install-settings",
@@ -41,6 +42,7 @@ import { AppProfileFormFieldInput } from "../../models/app-profile-form-field";
         MatLabel,
         
         AppProfileFormFieldComponent,
+        AppSelectEditComponent,
         AppGameInstallFieldsPipe,
     ],
     providers: [

@@ -305,6 +305,45 @@ class ElectronLoader {
            return this.saveSettings(settings);
         });
 
+        ipcMain.handle("app:exportGame", async (
+            _event,
+            /** @type {import("./app/models/app-message").AppMessageData<"app:exportGame">} */ { gameDetails }
+        ) => {
+            const pickedFile = await dialog.showSaveDialog({
+                filters: [
+                    { 
+                        name: "Game Details", extensions: ["json"]
+                    }
+                ]
+            });
+            
+            const gamePath = pickedFile?.filePath;
+            if (gamePath) {
+                return this.exportGameDetails(gameDetails, gamePath);
+            }
+        });
+
+        ipcMain.handle("app:readGame", async (
+            _event,
+            /** @type {import("./app/models/app-message").AppMessageData<"app:readGame">} */ _data
+        ) => {
+            const pickedFile = await dialog.showOpenDialog({
+                filters: [
+                    { 
+                        name: "Game Details", extensions: ["json"]
+                    }
+                ]
+            });
+            
+            const gamePath = pickedFile?.filePaths[0];
+            if (gamePath) {
+                return [
+                    path.parse(gamePath).name,
+                    fs.readJSONSync(gamePath)
+                ];
+            }
+        });
+
         ipcMain.handle("app:loadGameDatabase", async (
             _event,
             /** @type {import("./app/models/app-message").AppMessageData<"app:loadGameDatabase">} */ _data
@@ -1231,6 +1270,10 @@ class ElectronLoader {
                         click: () => this.mainWindow.webContents.send("app:showPreferences")
                     },
                     {
+                        label: "Manage Games",
+                        click: () => this.mainWindow.webContents.send("app:showManageGames")
+                    },
+                    {
                         type: "separator"
                     },
                     {
@@ -1448,7 +1491,7 @@ class ElectronLoader {
     }
 
     /** @returns {GameDatabase | {}} */
-    loadGameDatabase() {
+    loadGameDatabase(includeCustomGames = true) {
         if (!fs.existsSync(ElectronLoader.GAME_DB_FILE)) {
             return {};
         }
@@ -1456,7 +1499,23 @@ class ElectronLoader {
         const dbSrc = fs.readFileSync(ElectronLoader.GAME_DB_FILE);
         const result = JSON.parse(dbSrc.toString("utf8"));
         delete result.$schema;
+
+        if (includeCustomGames) {
+            const appSettings = this.loadSettings();
+            if (appSettings?.customGameDb) {
+                Object.assign(result, appSettings.customGameDb);
+            }
+        }
+
         return result;
+    }
+
+    /** @returns {void} */
+    exportGameDetails(
+        /** @type {GameDetails} */ gameDetails,
+        /** @type {string} */ gamePath
+    ) {
+        fs.writeJSONSync(gamePath, gameDetails, { spaces: 4 });
     }
 
     /** @returns {string} */

@@ -1,0 +1,38 @@
+@use "@angular/material" as mat;
+
+:host {
+
+    &, > * {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    > mat-card {
+        @include mat.elevation(8);
+        display: flex;
+        flex-direction: column;
+
+        > mat-card-header {
+            margin-bottom: 1rem;
+        }
+
+        > mat-card-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 1rem;
+        }
+
+        > mat-card-actions {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+
+            > button {
+                margin-right: 1rem;
+                width: 6rem;
+            }
+        }
+    }
+}

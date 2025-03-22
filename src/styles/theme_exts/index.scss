@@ -5,6 +5,8 @@
 @use "./mod-import-options";
 @use "./mods-overview-page";
 @use "./profile-external-files-list-modal";
+@use "./select-edit";
+@use "./game-manager";
 
 @mixin declare($primary, $accent, $warn, $is-dark) {
 
@@ -18,6 +20,8 @@
     // Component styles:
     @include profile-mod-list.declare("app-profile-mod-list", $primary, $accent, $warn, $is-dark);
     @include mod-import-options.declare("app-mod-import-options", $primary, $accent, $warn, $is-dark);
+    @include select-edit.declare("app-select-edit", $primary, $accent, $warn, $is-dark);
+    @include game-manager.declare("app-game-manager", $primary, $accent, $warn, $is-dark);
 
     // Page styles:
     @include mods-overview-page.declare("app-mods-overview-page", $primary, $accent, $warn, $is-dark);
