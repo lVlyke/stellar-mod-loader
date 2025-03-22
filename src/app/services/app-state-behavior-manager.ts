@@ -189,7 +189,7 @@ export class AppStateBehaviorManager {
     }
 
     public updateGameDatabase(): Observable<GameDatabase> {
-        return runOnce(ElectronUtils.invoke("app:loadGameDatabase", {}).pipe(
+        return runOnce(ElectronUtils.invoke("app:loadGameDatabase", { includeCustomGames: false }).pipe(
             switchMap((gameDb) => {
                 if (!!gameDb) {
                     return this.store.dispatch(new AppActions.updateGameDb(gameDb)).pipe(

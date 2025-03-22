@@ -346,10 +346,10 @@ class ElectronLoader {
 
         ipcMain.handle("app:loadGameDatabase", async (
             _event,
-            /** @type {import("./app/models/app-message").AppMessageData<"app:loadGameDatabase">} */ _data
+            /** @type {import("./app/models/app-message").AppMessageData<"app:loadGameDatabase">} */ { includeCustomGames }
         ) => {
             try {
-                return this.loadGameDatabase();
+                return this.loadGameDatabase(includeCustomGames);
             } catch (e) {
                 log.error(e);
                 return null;

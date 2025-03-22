@@ -192,6 +192,9 @@ export namespace AppMessage {
 
     export interface LoadGameDatabase extends Base {
         id: `${Prefix}:loadGameDatabase`;
+        data: {
+            includeCustomGames: boolean;
+        };
         result: GameDatabase;
     }
 
