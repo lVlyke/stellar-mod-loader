@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -6,8 +7,7 @@ import {
     EventEmitter,
     forwardRef,
     Input,
-    Output,
-    ViewChild
+    Output
 } from "@angular/core";
 import { NgTemplateOutlet } from "@angular/common";
 import {
@@ -22,7 +22,7 @@ import {
 import { MatInput } from "@angular/material/input";
 import { MatOption, MatSelect, MatSelectTrigger } from "@angular/material/select";
 import { MatTooltip } from "@angular/material/tooltip";
-import { MatIconButton } from "@angular/material/button";
+import { MatButton, MatIconButton } from "@angular/material/button";
 import { MatIcon } from "@angular/material/icon";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { ComponentState, ComponentStateRef, DeclareState } from "@lithiumjs/angular";
@@ -46,7 +46,8 @@ import { AppSelectEditControls } from "./select-edit-controls.directive";
         MatOption,
         MatIconButton,
         MatIcon,
-        MatTooltip
+        MatTooltip,
+        MatButton
     ],
     providers: [
         ComponentState.create(AppSelectEditComponent),
@@ -65,7 +66,7 @@ import { AppSelectEditControls } from "./select-edit-controls.directive";
 export class AppSelectEditComponent<T> extends BaseComponent implements ControlValueAccessor, Validator {
 
     @Output("valueChange")
-    public readonly valueChange$: EventEmitter<T[]>;
+    public readonly valueChange$: EventEmitter<T[] | undefined>;
 
     @Output("entryChange")
     public readonly entryChange$ = new EventEmitter<[number, T]>();
@@ -77,7 +78,8 @@ export class AppSelectEditComponent<T> extends BaseComponent implements ControlV
     public readonly unchecked$ = new EventEmitter<void>();
 
     @Input()
-    public value: T[] = [];
+    @DeclareState()
+    public value?: T[];
 
     @Input()
     public selectedValueIndex = 0;
@@ -106,35 +108,43 @@ export class AppSelectEditComponent<T> extends BaseComponent implements ControlV
     @DeclareState()
     public editControls?: AppSelectEditControls<T>;
 
-    @ViewChild("valueSelect", { static: true })
-    protected valueSelect!: MatSelect;
-
     constructor(
         cdRef: ChangeDetectorRef,
-        private readonly stateRef: ComponentStateRef<AppSelectEditComponent<T>>
+        stateRef: ComponentStateRef<AppSelectEditComponent<T>>
     ) {
         super({ cdRef });
 
         this.valueChange$ = stateRef.emitter("value");
     }
 
-    public addEntry(value?: T): void {
-        this.value.push(value ?? this.valueIdentity!);
+    public addEntry(value?: T, valueSelect?: MatSelect): void {
+        value ??= _.cloneDeep(this.valueIdentity!);
+
+        if (this.value) {
+            this.value.push(value);
+        } else {
+            this.value = [value];
+        }
+        
         this.valueChange$.emit(this.value);
 
-        // Update the select to focus the new value
-        this.selectedValueIndex = this.value.length - 1;
-        this.valueSelect.value = undefined;
-        this.valueSelect.value = this.selectedValueIndex;
+        if (valueSelect) {
+            // Update the select to focus the new value
+            valueSelect.value = this.value.length - 1;
+        }
     }
 
     public deleteEntry(entryIndex: number): void {
+        if (!this.value) {
+            return;
+        }
+
         this.value.splice(entryIndex, 1);
         this.valueChange$.emit(this.value);
     }
 
-    public writeValue(value: T[] | null): void {
-        this.value = value ?? [];
+    public writeValue(value: T[] | null | undefined): void {
+        this.value = value ? value : undefined;
     }
 
     public registerOnChange(fn: (value: T[]) => void): void {
@@ -145,15 +155,17 @@ export class AppSelectEditComponent<T> extends BaseComponent implements ControlV
     }
 
     public validate(_control: FormControl): ValidationErrors | null {
-        const invalid = this.value ? this.value.some(value => this.validateValue(value)) : this.required;
+        const invalid = this.value ? !this.validateValue(this.value) : this.required;
         return invalid ? { invalid: true } : null;
     }
 
     private validateValue(value: any): boolean {
-        if (typeof value === "object") {
-            return Object.values(value!).some(subVal => this.validateValue(subVal))
+        if (Array.isArray(value)) {
+            return value.every(subVal => this.validateValue(subVal))
+        } else if (typeof value === "object") {
+            return Object.values(value!).every(subVal => this.validateValue(subVal))
         } else {
-            return value === "" || value === null || value === undefined;
+            return !(value === "" || value === null || value === undefined);
         }
     }
 }

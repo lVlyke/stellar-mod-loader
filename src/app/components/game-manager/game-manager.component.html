@@ -149,7 +149,7 @@
 
             <!-- Plugin Formats -->
             <app-select-edit name="pluginFormats"
-                             label="Plguin Formats"
+                             label="Plugin Formats"
                              [disabled]="!isCustomGameDetails"
                              [resizable]="isCustomGameDetails"
                              [valueIdentity]="stringIdentity"
@@ -190,117 +190,98 @@
                 </button>
             }
 
-            @if (!!activeGameDetails.pinnedPlugins) {
-                <!-- Pinned Plugins -->
-                <app-select-edit name="pinnedPlugins"
-                                label="Pinned Plugins"
-                                valueField="plugin"
-                                [disabled]="!isCustomGameDetails"
-                                [resizable]="isCustomGameDetails"
-                                [valueIdentity]="pinnedPluginIdentity"
-                                [(ngModel)]="activeGameDetails.pinnedPlugins">
-                    <ng-container *appSelectEditControls="let editState; let index = index">
-                        @let editModel = activeGameDetails.pinnedPlugins;
+            <!-- Pinned Plugins -->
+            <app-select-edit name="pinnedPlugins"
+                            label="Pinned Plugins"
+                            valueField="plugin"
+                            [disabled]="!isCustomGameDetails"
+                            [resizable]="isCustomGameDetails && activeGameDetails.pluginFormats.length > 0"
+                            [valueIdentity]="pinnedPluginIdentity"
+                            [(ngModel)]="activeGameDetails.pinnedPlugins">
+                <ng-container *appSelectEditControls="let editState; let index = index">
+                    @let editModel = editState.value;
 
-                        <!-- Plugin name -->
-                        <mat-form-field appearance="fill" [attr.subscript]="false">
-                            <mat-label>Name</mat-label>
-                            <input matInput
-                                type="text"
-                                [required]="true"
-                                [disabled]="editState.disabled"
-                                [ngModelOptions]="{ standalone: true }"
-                                [ngModel]="editModel[index].plugin"
-                                (ngModelChange)="editModel[index].plugin = $event; editState.valueChange$.emit(editModel)"
-                                (click)="$event.stopPropagation()">
-                        </mat-form-field>
+                    <!-- Plugin name -->
+                    <mat-form-field appearance="fill" [attr.subscript]="false">
+                        <mat-label>Name</mat-label>
+                        <input matInput
+                            type="text"
+                            [required]="true"
+                            [disabled]="editState.disabled"
+                            [ngModelOptions]="{ standalone: true }"
+                            [ngModel]="editModel[index].plugin"
+                            (ngModelChange)="editModel[index].plugin = $event; editState.valueChange$.emit(editModel)"
+                            (click)="$event.stopPropagation()"
+                            (keydown)="$event.stopPropagation()">
+                    </mat-form-field>
 
-                        <!-- Plugin required -->
-                        <mat-checkbox [disabled]="editState.disabled"
-                                      [ngModelOptions]="{ standalone: true }"
-                                      [ngModel]="editModel[index].required"
-                                      (ngModelChange)="editModel[index].required = $event; editState.valueChange$.emit(editModel)"
-                                      (click)="$event.stopPropagation()">
-                            Required
-                        </mat-checkbox>
-                    </ng-container>
-                </app-select-edit>
-            } @else if (isCustomGameDetails && activeGameDetails.pluginFormats.length > 0) {
-                <button mat-raised-button (click)="activeGameDetails.pinnedPlugins = []">
-                    <mat-icon color="accent">add</mat-icon>
-                    Add Pinned Plugins
-                </button>
-            }
+                    <!-- Plugin required -->
+                    <mat-checkbox [disabled]="editState.disabled"
+                                    [ngModelOptions]="{ standalone: true }"
+                                    [ngModel]="editModel[index].required"
+                                    (ngModelChange)="editModel[index].required = $event; editState.valueChange$.emit(editModel)"
+                                    (click)="$event.stopPropagation()">
+                        Required
+                    </mat-checkbox>
+                </ng-container>
+            </app-select-edit>
             
-            @if (!!activeGameDetails.gameConfigFiles) {
-                <!-- Config Files -->
-                <app-select-edit name="gameConfigFiles"
-                                label="Game Config Files"
-                                [disabled]="!isCustomGameDetails"
-                                [resizable]="isCustomGameDetails"
-                                [valueIdentity]="stringIdentity"
-                                [(ngModel)]="activeGameDetails.gameConfigFiles" />
-            } @else if (isCustomGameDetails) {
-                <button mat-raised-button (click)="activeGameDetails.gameConfigFiles = []">
-                    <mat-icon color="accent">add</mat-icon>
-                    Add Game Config Files
-                </button>
-            }
+            <!-- Config Files -->
+            <app-select-edit name="gameConfigFiles"
+                            label="Game Config Files"
+                            [disabled]="!isCustomGameDetails"
+                            [resizable]="isCustomGameDetails"
+                            [valueIdentity]="stringIdentity"
+                            [(ngModel)]="activeGameDetails.gameConfigFiles" />
 
-            @if (!!activeGameDetails.scriptExtenders) {
-                <!-- Script Extenders -->
-                <app-select-edit name="scriptExtenders"
-                                label="Script Extenders"
-                                valueField="name"
-                                [disabled]="!isCustomGameDetails"
-                                [resizable]="isCustomGameDetails"
-                                [valueIdentity]="scriptExtenderIdentity"
-                                [(ngModel)]="activeGameDetails.scriptExtenders">
-                    <ng-container *appSelectEditControls="let editState; let index = index">
-                        @let editModel = activeGameDetails.scriptExtenders;
+            <!-- Script Extenders -->
+            <app-select-edit name="scriptExtenders"
+                            label="Script Extenders"
+                            valueField="name"
+                            [disabled]="!isCustomGameDetails"
+                            [resizable]="isCustomGameDetails"
+                            [valueIdentity]="scriptExtenderIdentity"
+                            [(ngModel)]="activeGameDetails.scriptExtenders">
+                <ng-container *appSelectEditControls="let editState; let index = index">
+                    @let editModel = editState.value;
 
-                        <!-- Extender name -->
-                        <mat-form-field appearance="fill" [attr.subscript]="false">
-                            <mat-label>Name</mat-label>
-                            <input matInput
-                                type="text"
-                                [required]="true"
-                                [disabled]="editState.disabled"
-                                [ngModelOptions]="{ standalone: true }"
-                                [ngModel]="editModel[index].name"
-                                (ngModelChange)="editModel[index].name = $event; editState.valueChange$.emit(editModel)"
-                                (click)="$event.stopPropagation()">
-                        </mat-form-field>
+                    <!-- Extender name -->
+                    <mat-form-field appearance="fill" [attr.subscript]="false">
+                        <mat-label>Name</mat-label>
+                        <input matInput
+                            type="text"
+                            [required]="true"
+                            [disabled]="editState.disabled"
+                            [ngModelOptions]="{ standalone: true }"
+                            [ngModel]="editModel[index].name"
+                            (ngModelChange)="editModel[index].name = $event; editState.valueChange$.emit(editModel)"
+                            (click)="$event.stopPropagation()"
+                            (keydown)="$event.stopPropagation()">
+                    </mat-form-field>
 
-                        <!-- Extender binaries -->
-                        <app-select-edit label="Binaries"
-                                [disabled]="editState.disabled"
-                                [resizable]="editState.resizable"
-                                [required]="true"
-                                [valueIdentity]="stringIdentity"
-                                [ngModelOptions]="{ standalone: true }"
-                                [(ngModel)]="editModel[index].binaries"
-                                (ngModelChange)="editState.valueChange$.emit(editModel)"
-                                (click)="$event.stopPropagation()" />
+                    <!-- Extender binaries -->
+                    <app-select-edit label="Binaries"
+                            [disabled]="editState.disabled"
+                            [resizable]="editState.resizable"
+                            [required]="true"
+                            [valueIdentity]="stringIdentity"
+                            [ngModelOptions]="{ standalone: true }"
+                            [(ngModel)]="editModel[index].binaries"
+                            (ngModelChange)="editState.valueChange$.emit(editModel)"
+                            (click)="$event.stopPropagation()" />
 
-                        <!-- Extender mod paths -->
-                        <app-select-edit label="Mod Paths"
-                                [disabled]="editState.disabled"
-                                [resizable]="editState.resizable"
-                                [required]="true"
-                                [valueIdentity]="stringIdentity"
-                                [ngModelOptions]="{ standalone: true }"
-                                [(ngModel)]="editModel[index].modPaths"
-                                (ngModelChange)="editState.valueChange$.emit(editModel)"
-                                (click)="$event.stopPropagation()" />
-                    </ng-container>
-                </app-select-edit>
-            } @else if (isCustomGameDetails) {
-                <button mat-raised-button (click)="activeGameDetails.scriptExtenders = []">
-                    <mat-icon color="accent">add</mat-icon>
-                    Add Script Extender
-                </button>
-            }
+                    <!-- Extender mod paths -->
+                    <app-select-edit label="Mod Paths"
+                            [disabled]="editState.disabled"
+                            [resizable]="editState.resizable"
+                            [required]="true"
+                            [valueIdentity]="stringIdentity"
+                            [ngModelOptions]="{ standalone: true }"
+                            [(ngModel)]="editModel[index].modPaths"
+                            (ngModelChange)="editState.valueChange$.emit(editModel)"
+                            (click)="$event.stopPropagation()" />
+                </ng-container>
+            </app-select-edit>
 
             @if (!!activeGameDetails.resources) {
                 <!-- Resources -->
