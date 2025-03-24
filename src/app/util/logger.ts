@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { remove } from "es-toolkit";
 import { environment } from "../../environments/environment";
 
 export type LogLevel = "info" | "debug" | "error" | "warn";
@@ -45,7 +45,7 @@ class Log {
     }
 
     public removeHook(hook: LogHook): void {
-        _.remove<LogHook>(this.hooks, hook);
+        remove<LogHook>(this.hooks, curHook => curHook === hook);
     }
 
     private _logFn(level: LogLevel): LogFunction {

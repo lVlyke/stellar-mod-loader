@@ -1,4 +1,5 @@
-import _ from "lodash";
+import { clone, pick, isNil, omit, last } from "es-toolkit";
+import { find, size } from "es-toolkit/compat";
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Store } from "@ngxs/store";
@@ -177,7 +178,7 @@ export class ProfileManager {
                 return of(settings?.activeProfile).pipe(
                     // First try loading profile from settings
                     switchMap((profileDesc) => {
-                        if (profileDesc && _.size(profileDesc) > 0) {
+                        if (profileDesc && size(profileDesc) > 0) {
                             return this.loadProfile(
                                 // BC:<=0.6.0: Assume gameId is Starfield if not defined
                                 typeof profileDesc === "string"
@@ -243,7 +244,7 @@ export class ProfileManager {
         // Monitor mod changes for new/removed plugins and update the plugins list
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => _.pick<AppProfile, keyof AppProfile>(profile, "mods", "manageExternalPlugins", "externalFilesCache")),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["mods", "manageExternalPlugins", "externalFilesCache"])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             switchMap(() => this.reconcileActivePluginList())
         ).subscribe();
@@ -251,7 +252,7 @@ export class ProfileManager {
         // Monitor root mod changes for new/removed mods and update the default actions list
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => _.pick<AppProfile, keyof AppProfile>(profile, "rootMods", "externalFilesCache")),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["rootMods", "externalFilesCache"])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             switchMap(() => this.getAvailableDefaultGameActions()),
             switchMap(defaultActions => this.store.dispatch(new ActiveProfileActions.UpdateDefaultGameActions(defaultActions)))
@@ -260,7 +261,7 @@ export class ProfileManager {
         // Monitor game action updates and set activeGameAction to the first default action if not set to a custom action
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => _.pick<AppProfile, keyof AppProfile>(profile, "customGameActions", "defaultGameActions")),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["customGameActions", "defaultGameActions"])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             withLatestFrom(this.activeGameAction$),
             filter(([profile, activeGameAction]) => !activeGameAction || !profile.customGameActions?.find(action => {
@@ -272,13 +273,13 @@ export class ProfileManager {
         // Handle automatic mod redeployment when the active profile is deployed
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => _.pick<AppProfile, keyof AppProfile>(profile, "name", "deployed")),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["name", "deployed"])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             switchMap(() => combineLatest([this.activeProfile$, this.appState$]).pipe(
                 filter(([profile]) => !!profile?.deployed),
                 map(([profile, appState]) => ([
                     // Monitor these profile properties:
-                    _.pick<AppProfile, keyof AppProfile>(profile!,
+                    pick<AppProfile, keyof AppProfile>(profile!, [
                         "gameId",
                         "name",
                         "gameInstallation",
@@ -297,14 +298,14 @@ export class ProfileManager {
                         "modLinkMode",
                         "configLinkMode",
                         "steamCustomGameId"
-                    ),
+                    ]),
     
                     // Monitor these app settings:
-                    _.pick<AppData, keyof AppData>(appState,
+                    pick<AppData, keyof AppData>(appState, [
                         "pluginsEnabled",
                         "normalizePathCasing",
                         "steamCompatDataRoot"
-                    )
+                    ])
                 ])),
                 distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
                 skip(1)
@@ -404,7 +405,7 @@ export class ProfileManager {
         profile = (Object.keys(profile) as Array<keyof AppProfile.Form>).reduce((filteredProfile, profileProp) => {
             const profilePropVal = profile[profileProp];
 
-            if (_.isNil(profilePropVal) || profilePropVal === "") {
+            if (isNil(profilePropVal) || profilePropVal === "") {
                 return filteredProfile;
             }
 
@@ -424,7 +425,7 @@ export class ProfileManager {
                 map((baseProfile) => ({ ...profile, baseProfile }))
             );
         } else {
-            return of(_.omit(profile, "baseProfile"));
+            return of(omit(profile, ["baseProfile"]));
         }
     }
 
@@ -704,7 +705,7 @@ export class ProfileManager {
         return runOnce(ElectronUtils.invoke("app:loadExternalProfile", {}).pipe(
             switchMap((profile) => {
                 if (profile) {
-                    const profileName = _.last(profile.name.split(/[\\/]/)) ?? "Imported Profile";
+                    const profileName = last(profile.name.split(/[\\/]/)) ?? "Imported Profile";
 
                     if (directImport) {
                         // Add the profile directly from its current location
@@ -1191,7 +1192,7 @@ export class ProfileManager {
             take(1),
             switchMap((activeProfile) => {
                 if (activeProfile) {
-                    const pluginOrder = _.clone(activeProfile.plugins);
+                    const pluginOrder = clone(activeProfile.plugins);
                     moveItemInArray(
                         pluginOrder,
                         pluginOrder.findIndex(curPlugin => plugin.plugin === curPlugin.plugin),
@@ -1554,7 +1555,7 @@ export class ProfileManager {
 
     private findModSection(profile: AppBaseProfile, root: boolean, sectionName: string): ModSection | undefined {
         const sectionList = root ? profile.rootModSections : profile.modSections;
-        return _.find(sectionList, { name: sectionName });
+        return find(sectionList, { name: sectionName });
     }
 
     private modHasError(mod: ModProfileRef): boolean {

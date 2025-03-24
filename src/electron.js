@@ -34,13 +34,14 @@
  */
 
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell, nativeImage } = require("electron");
+const { cloneDeep, isNotNil, omit, orderBy, last, remove, uniq } = require("es-toolkit");
+const { template } = require("es-toolkit/compat");
 const log = require("electron-log/main");
 const url = require("url");
 const path = require("path");
 const os = require("os");
 const { exec } = require("child_process");
 const fs = require("fs-extra");
-const _ = require("lodash");
 const Seven = require("node-7z");
 const sevenBin = require("7zip-bin");
 const which = require("which");
@@ -1466,7 +1467,7 @@ class ElectronLoader {
             return [];
         }
 
-        const profileNames = _.sortBy(fs.readdirSync(ElectronLoader.APP_PROFILES_DIR));
+        const profileNames = fs.readdirSync(ElectronLoader.APP_PROFILES_DIR).sort();
         return profileNames.map((profileName) => {
             const profile = this.loadProfile(profileName);
             return {
@@ -1538,21 +1539,21 @@ class ElectronLoader {
 
     /** @returns {string} */
     getProfileConfigDir(/** @type {AppProfile | AppBaseProfile} */ profile) {
-        return !_.isNil(profile.configPathOverride)
+        return isNotNil(profile.configPathOverride)
             ? this.#resolveFullProfileDir(profile, profile.configPathOverride)
             : path.join(this.getProfileDir(profile), ElectronLoader.PROFILE_CONFIG_DIR);
     }
 
     /** @returns {string} */
     getProfileSaveDir(/** @type {AppProfile | AppBaseProfile} */ profile) {
-        return !_.isNil(profile.savesPathOverride)
+        return isNotNil(profile.savesPathOverride)
             ? this.#resolveFullProfileDir(profile, profile.savesPathOverride)
             : path.join(this.getProfileDir(profile), ElectronLoader.PROFILE_SAVE_DIR);
     }
 
     /** @returns {string} */
     getProfileModsDir(/** @type {AppProfile | AppBaseProfile} */ profile) {
-        return !_.isNil(profile.modsPathOverride)
+        return isNotNil(profile.modsPathOverride)
             ? this.#resolveFullProfileDir(profile, profile.modsPathOverride)
             : path.join(this.getProfileDir(profile), ElectronLoader.PROFILE_MODS_DIR);
     }
@@ -1793,7 +1794,7 @@ class ElectronLoader {
 
         return fs.writeFileSync(
             path.join(profileDir, profileSettingsName),
-            JSON.stringify(_.omit(profileToWrite, ...PROFILE_RUNTIME_PROPERTIES)),
+            JSON.stringify(omit(profileToWrite, PROFILE_RUNTIME_PROPERTIES)),
             options
         );
     }
@@ -1858,7 +1859,7 @@ class ElectronLoader {
                 date: fs.statSync(path.join(profileSaveDir, saveFileName)).mtime
             }));
         
-        return _.orderBy(saveFiles, "date", "desc");
+        return orderBy(saveFiles, ["date"], ["desc"]);
     }
 
     /** @returns {void} */
@@ -2168,12 +2169,12 @@ class ElectronLoader {
             return [];
         }
 
-        return _.orderBy(fs.readdirSync(backupsDir)
+        return orderBy(fs.readdirSync(backupsDir)
             .filter(filePath => filePath.endsWith(".json"))
             .map((filePath) => ({
                 filePath,
                 backupDate: fs.lstatSync(path.join(backupsDir, filePath)).mtime
-            })), "backupDate", "desc");
+            })), ["backupDate"], ["desc"]);
     }
 
     /** @returns {AppProfileBackupEntry[]} */
@@ -2186,12 +2187,12 @@ class ElectronLoader {
             return [];
         }
 
-        return _.orderBy(fs.readdirSync(backupsDir)
+        return orderBy(fs.readdirSync(backupsDir)
             .filter(filePath => filePath.endsWith(".json"))
             .map((filePath) => ({
                 filePath,
                 backupDate: fs.lstatSync(path.join(backupsDir, filePath)).mtime
-            })), "backupDate", "desc");
+            })), ["backupDate"], ["desc"]);
     }
 
     /** @returns {AppProfileBackupEntry[]} */
@@ -2204,11 +2205,11 @@ class ElectronLoader {
             return [];
         }
 
-        return _.orderBy(fs.readdirSync(backupsDir)
+        return orderBy(fs.readdirSync(backupsDir)
             .map((filePath) => ({
                 filePath,
                 backupDate: fs.lstatSync(path.join(backupsDir, filePath)).mtime
-            })), "backupDate", "desc");
+            })), ["backupDate"], ["desc"]);
     }
 
     /** @returns {void} */
@@ -2848,7 +2849,7 @@ class ElectronLoader {
         return (await this.findProfileExternalFilesInDir(profile, gameModDir, false))
                 .filter((modFile) => {
                     // Make sure this is a mod file
-                    return gameDetails?.pluginFormats.includes(_.last(modFile.split("."))?.toLowerCase() ?? "");
+                    return gameDetails?.pluginFormats.includes(last(modFile.split("."))?.toLowerCase() ?? "");
                 })
                 .sort((externalPluginA, externalPluginB) => {
                     const externalPlugins = [externalPluginA, externalPluginB];
@@ -3123,7 +3124,7 @@ class ElectronLoader {
     ) {
         const gameDetails = this.#getGameDetails(profile.gameId);
         // Substitute variables for profile
-        const gameActionCmd = _.template(gameAction.actionScript)({ ...profile, gameDetails });
+        const gameActionCmd = template(gameAction.actionScript)({ ...profile, gameDetails });
         
         // Run the action
         try {
@@ -3247,7 +3248,7 @@ class ElectronLoader {
                         if (extFilesList?.includes(modFile)) {
                             // Backup original external file to temp directory for deploy and override
                             fs.moveSync(destFilePath, path.join(extFilesBackupDir, modFile));
-                            _.remove(extFilesList, extFile => extFile === modFile);
+                            remove(extFilesList, extFile => extFile === modFile);
                         } else {
                             // Don't override deployed files
                             shouldCopy = false;
@@ -3586,7 +3587,7 @@ class ElectronLoader {
                 ? this.#getCoreSteamCompatRoot(profile.steamCustomGameId)
                 : undefined;
 
-            const extFilesBackupDirs = _.uniq([
+            const extFilesBackupDirs = uniq([
                 path.join(gameModDir, ElectronLoader.DEPLOY_EXT_BACKUP_DIR),
                 path.join(gameRootDir, ElectronLoader.DEPLOY_EXT_BACKUP_DIR),
                 ... profile.gameInstallation.configFilePath ? [path.join(profile.gameInstallation.configFilePath, ElectronLoader.DEPLOY_EXT_BACKUP_DIR)] : [],
@@ -3779,7 +3780,7 @@ class ElectronLoader {
         }
 
         for (const defaultGameInstallation of gameDetails.installations) {
-            const customGameInstallation = _.cloneDeep(defaultGameInstallation);
+            const customGameInstallation = cloneDeep(defaultGameInstallation);
             customGameInstallation.rootDir = rootDir;
 
             result.push(...this.#expandGameInstallation(customGameInstallation).filter((expandedInstallation) => {
@@ -3796,7 +3797,7 @@ class ElectronLoader {
 
         if (gameInstallation.steamId?.length) {
             for (const steamId of gameInstallation.steamId) {
-                const expandedInstallation = _.cloneDeep(gameInstallation);
+                const expandedInstallation = cloneDeep(gameInstallation);
                 expandedInstallation.steamId = [steamId];
                 expandedInstallation.rootDir = this.#expandPath(expandedInstallation.rootDir);
 
@@ -3816,7 +3817,7 @@ class ElectronLoader {
                 expandedInstallations.push(expandedInstallation);
             }
         } else {
-            expandedInstallations.push(_.cloneDeep(gameInstallation));
+            expandedInstallations.push(cloneDeep(gameInstallation));
         }
 
         expandedInstallations.forEach((gameInstallation) => {

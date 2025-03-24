@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { last, remove } from "es-toolkit";
 import { Injectable, ElementRef, ComponentRef, ViewRef, Injector, InjectionToken } from "@angular/core";
 import {
     Overlay,
@@ -81,7 +81,7 @@ export class OverlayHelpers {
 
     public closeOverlay(): void {
         if (this.overlayStack.length > 0) {
-            _.last(this.overlayStack)?.close();
+            last(this.overlayStack)?.close();
         } else {
             throw new Error("No overlays are open.");
         }
@@ -270,7 +270,7 @@ export class OverlayHelpers {
         }
 
         // When the overlay is closed, remove it from the stack
-        helpersRef.onClose$.subscribe(() => _.remove(this.overlayStack, overlayRef => overlayRef === helpersRef));
+        helpersRef.onClose$.subscribe(() => remove(this.overlayStack, overlayRef => overlayRef === helpersRef));
 
         return helpersRef;
     }

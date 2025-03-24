@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, Injector } from "@angular/core";
 import { moveItemInArray, CdkDropList, CdkDrag } from "@angular/cdk/drag-drop";
 import { Store } from "@ngxs/store";

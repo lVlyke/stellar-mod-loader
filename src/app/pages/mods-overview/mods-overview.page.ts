@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { orderBy } from "es-toolkit";
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from "@angular/core";
 import { NgTemplateOutlet, AsyncPipe, TitleCasePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
@@ -201,7 +201,7 @@ export class AppModsOverviewPage extends BasePage {
         super({ cdRef });
 
         this.profiles$ = store.select(AppState.getProfileDescriptions).pipe(
-            map(profiles => _.orderBy(profiles, ["gameId", "name"], "asc"))
+            map(profiles => orderBy(profiles, ["gameId", "name"], ["asc"]))
         );
         this.activeProfile$ = store.select(AppState.getActiveProfile);
         this.isPluginsEnabled$ = store.select(AppState.isPluginsEnabled);

@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { cloneDeep, merge, toMerged } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild } from "@angular/core";
 import { AsyncPipe } from "@angular/common";
 import { AbstractControl, NgForm, ValidationErrors, FormsModule } from "@angular/forms";
@@ -288,7 +288,7 @@ export class AppProfileSettingsComponent extends BaseComponent {
         // Create the customGameInstaller settings from the initial profile, if any
         stateRef.get("initialProfile").subscribe((initialProfile) => {
             this._customGameInstaller = initialProfile.gameInstallation
-                ? _.cloneDeep(initialProfile.gameInstallation)
+                ? cloneDeep(initialProfile.gameInstallation)
                 : this._customGameInstaller ?? GameInstallation.empty();
         });
         
@@ -312,7 +312,7 @@ export class AppProfileSettingsComponent extends BaseComponent {
                 map(() => form.control.getRawValue()),
                 startWith(form.control.getRawValue())
             )),
-            map(formValue => _.merge({}, this.initialProfile, formValue)),
+            map(formValue => toMerged(this.initialProfile, formValue)),
             distinctUntilChanged((x, y) => LangUtils.isEqual(x, y))
         ).subscribe(formModel => this.formModel$.next(formModel));
 
@@ -417,7 +417,7 @@ export class AppProfileSettingsComponent extends BaseComponent {
     }
 
     protected updateCustomGameInstallation(gameInstallation: GameInstallation, gameInstallationSelect: MatSelect): void {
-        this._customGameInstaller = _.merge(this._customGameInstaller, _.cloneDeep(gameInstallation));
+        this._customGameInstaller = merge(this._customGameInstaller, cloneDeep(gameInstallation));
 
         // Set the current installation to the custom installation
         gameInstallationSelect.value = this._customGameInstaller;

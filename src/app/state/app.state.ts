@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { cloneDeep } from "es-toolkit";
 import { AppData } from "../models/app-data";
 import { Injectable } from "@angular/core";
 import { State, Selector, Action, StateContext } from "@ngxs/store";
@@ -91,7 +91,7 @@ export class AppState {
 
     @Action(AppActions.UpdateSettingsFromUserCfg)
     public updateSettingsFromUserCfg(context: AppState.Context, { settings }: AppActions.UpdateSettingsFromUserCfg): void {
-        const state = _.cloneDeep(context.getState());
+        const state = cloneDeep(context.getState());
 
         if (settings.modListColumns !== undefined) {
             state.modListColumns = settings.modListColumns;
@@ -147,37 +147,37 @@ export class AppState {
 
     @Action(AppActions.updateActiveProfile)
     public updateActiveProfile(context: AppState.Context, state: AppActions.ActiveProfileAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.setDeployInProgress)
     public setDeployInProgress(context: AppState.Context, state: AppActions.DeployInProgressAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.setPluginsEnabled)
     public setPluginsEnabled(context: AppState.Context, state: AppActions.PluginsEnabledAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.setNormalizePathCasing)
     public setNormalizePathCasing(context: AppState.Context, state: AppActions.NormalizePathCasingAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.setVerifyProfileOnStart)
     public setVerifyProfileOnStart(context: AppState.Context, state: AppActions.VerifyProfileOnStartAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.updateGameDb)
     public updateGameDb(context: AppState.Context, state: AppActions.GameDbAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.updateModListColumns)
     public updateModListColumns(context: AppState.Context, state: AppActions.ModListColumnsAction): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.UpdateCustomGame)
@@ -191,7 +191,7 @@ export class AppState {
 
     @Action(AppActions.DeleteCustomGame)
     public deleteCustomGame(context: AppState.Context, { gameId }: AppActions.DeleteCustomGame): void {
-        const state = _.cloneDeep(context.getState());
+        const state = cloneDeep(context.getState());
 
         if (!!state.customGameDb)
         {
@@ -203,9 +203,9 @@ export class AppState {
 
     @Action(AppActions.ToggleModListColumn)
     public toggleModListColumn(context: AppState.Context, { column }: AppActions.ToggleModListColumn): void {
-        const state = _.cloneDeep(context.getState());
+        const state = cloneDeep(context.getState());
         if (!state.modListColumns) {
-            state.modListColumns = _.cloneDeep(AppData.DEFAULT_MOD_LIST_COLUMNS);
+            state.modListColumns = cloneDeep(AppData.DEFAULT_MOD_LIST_COLUMNS);
         }
 
         const colIndex = state.modListColumns.findIndex(c => c === column);
@@ -220,7 +220,7 @@ export class AppState {
 
     @Action(AppActions.ResetModListColumns)
     public resetModListColumns(context: AppState.Context, _action: AppActions.ResetModListColumns): void {
-        const state = _.cloneDeep(context.getState());
+        const state = cloneDeep(context.getState());
 
         delete state.modListColumns;
 
@@ -229,7 +229,7 @@ export class AppState {
 
     @Action(AppActions.ToggleLogPanel)
     public toggleLogPanel(context: AppState.Context, { enabled }: AppActions.ToggleLogPanel): void {
-        const state = _.cloneDeep(context.getState());
+        const state = cloneDeep(context.getState());
 
         state.logPanelEnabled = enabled !== undefined ? enabled : !state.logPanelEnabled;
 

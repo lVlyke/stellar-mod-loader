@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { cloneDeep } from "es-toolkit";
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -118,7 +118,7 @@ export class AppSelectEditComponent<T> extends BaseComponent implements ControlV
     }
 
     public addEntry(value?: T, valueSelect?: MatSelect): void {
-        value ??= _.cloneDeep(this.valueIdentity!);
+        value ??= cloneDeep(this.valueIdentity!);
 
         if (this.value) {
             this.value.push(value);

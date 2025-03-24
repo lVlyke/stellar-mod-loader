@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { cloneDeep } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild } from "@angular/core";
 import { NgForm, FormsModule } from "@angular/forms";
 import { MatCheckbox } from "@angular/material/checkbox";
@@ -58,7 +58,7 @@ export class AppPreferencesComponent extends BaseComponent {
         super({ cdRef });
 
         stateRef.get("preferences").subscribe((preferences) => {
-            this._formModel = _.cloneDeep(preferences);
+            this._formModel = cloneDeep(preferences);
         });
 
         this.onFormSubmit$.pipe(

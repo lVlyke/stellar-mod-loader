@@ -7,12 +7,12 @@ const BUILD_DIR = "./dist";
 
 // All deps used in `electron.js`
 const DEPENDENCIES = [
+    "es-toolkit",
     "electron-log",
     "fs-extra",
     "graceful-fs",
     "jsonfile",
     "universalify",
-    "lodash",
     "lodash.defaultsdeep",
     "lodash.defaultto",
     "lodash.flattendeep",

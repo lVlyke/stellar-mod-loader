@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { cloneDeep, remove } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from "@angular/core";
 import { AsyncPipe } from "@angular/common";
 import { AbstractControl, FormsModule, NgForm, ValidationErrors } from "@angular/forms";
@@ -150,11 +150,11 @@ export class AppGameManagerComponent extends BaseComponent {
         super({ cdRef });
 
         this.gameDb$ = store.select(AppState.getGameDb).pipe(
-            map(gameDb => _.cloneDeep(gameDb))
+            map(gameDb => cloneDeep(gameDb))
         );
 
         this.customGameDb$ = store.select(AppState.getCustomGameDb).pipe(
-            map(gameDb => _.cloneDeep(gameDb))
+            map(gameDb => cloneDeep(gameDb))
         );
 
         // Add form validators
@@ -283,7 +283,7 @@ export class AppGameManagerComponent extends BaseComponent {
     }
 
     public removeGameInstallation(gameDetails: GameDetails, gameInstallation: GameInstallation): void {
-        _.remove(gameDetails.installations, installation => installation === gameInstallation);
+        remove(gameDetails.installations, installation => installation === gameInstallation);
     }
 
     public saveChanges(games: GameDatabase): Observable<unknown> {

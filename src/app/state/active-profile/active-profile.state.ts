@@ -1,4 +1,5 @@
-import _ from "lodash";
+import { cloneDeep, pick } from "es-toolkit";
+import { find, uniqBy } from "es-toolkit/compat";
 import { Injectable } from "@angular/core";
 import { Action, Selector, State, StateContext } from "@ngxs/store";
 import { AppProfile } from "../../models/app-profile";
@@ -51,12 +52,12 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.Lock)
     public lock(context: ActiveProfileState.Context, state: ActiveProfileActions.Lock): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(ActiveProfileActions.AddMod)
     public addMod(context: ActiveProfileState.Context, { root, name, mod }: ActiveProfileActions.AddMod): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         if (root) {
             RelativeOrderedMap.insert(state.rootMods, name, mod);
@@ -69,7 +70,7 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.DeleteMod)
     public deleteMod(context: ActiveProfileState.Context, { root, name }: ActiveProfileActions.DeleteMod): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         if (root) {
             RelativeOrderedMap.erase(state.rootMods, name);
@@ -82,7 +83,7 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.RenameMod)
     public renameMod(context: ActiveProfileState.Context, { root, curName, newName }: ActiveProfileActions.RenameMod): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modList = root ? state.rootMods : state.mods;
 
         RelativeOrderedMap.forEach(modList, (mod, modName) => {
@@ -123,7 +124,7 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.ReorderMods)
     public reorderMods(context: ActiveProfileState.Context, { root, modOrder }: ActiveProfileActions.ReorderMods): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modList = root ? state.rootMods : state.mods;
 
         modOrder.forEach((modName) => {
@@ -145,7 +146,7 @@ export class ActiveProfileState {
         { mods }: ActiveProfileActions.ReconcileModList
     ): void {
         const MOD_LIST_KEYS = ["rootMods", "mods"] as const;
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         if (!!state.baseProfile) {
             MOD_LIST_KEYS.forEach((listKey) => {
@@ -200,7 +201,7 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { plugins, pluginTypeOrder }: ActiveProfileActions.ReconcilePluginList
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modList = RelativeOrderedMap.entries(state.mods);
 
         // TODO - Scan root mods?
@@ -239,7 +240,7 @@ export class ActiveProfileState {
 
                 // Preserve plugin enabled and promotion state of existing plugins
                 return activePlugin ? Object.assign(activePlugin,
-                    _.pick<GamePluginProfileRef, keyof GamePluginProfileRef>(plugin, "enabled", "promotedType")
+                    pick<GamePluginProfileRef, keyof GamePluginProfileRef>(plugin, ["enabled", "promotedType"])
                 ) : undefined;
             })
             .filter((plugin): plugin is GamePluginProfileRef => !!plugin)
@@ -256,7 +257,7 @@ export class ActiveProfileState {
             orderedPlugins.forEach((activePlugin) => {
                 const modEntry = activePlugin.modId !== undefined ? modList.find(([modId]) => activePlugin.modId === modId) : undefined;
                 if (activePlugin.modId === undefined || (modEntry && !modEntry[1].baseProfile && modEntry[1].enabled)) {
-                    const basePlugin = _.find(mergedPlugins, { plugin: activePlugin.plugin });
+                    const basePlugin = find(mergedPlugins, { plugin: activePlugin.plugin });
 
                     if (!basePlugin) {
                         // Add the missing plugin relative to its previous order
@@ -291,7 +292,7 @@ export class ActiveProfileState {
         }
 
         // Remove duplicate plugins
-        orderedPlugins = _.uniqBy(orderedPlugins, "plugin");
+        orderedPlugins = uniqBy(orderedPlugins, "plugin");
 
         // Sort plugins by type order (if required)
         if (pluginTypeOrder) {
@@ -313,12 +314,12 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.UpdatePlugins)
     public updatePlugins(context: ActiveProfileState.Context, state: ActiveProfileActions.UpdatePlugins): void {
-        context.patchState(_.cloneDeep(state));
+        context.patchState(cloneDeep(state));
     }
 
     @Action(ActiveProfileActions.UpdatePlugin)
     public updatePlugin(context: ActiveProfileState.Context, { plugin }: ActiveProfileActions.UpdatePlugin): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         const existingPlugin = state.plugins.find((curPlugin) => curPlugin.plugin === plugin.plugin);
         if (existingPlugin) {
@@ -335,7 +336,7 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { root, modName, section, toTop }: ActiveProfileActions.MoveModToSection
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modList = root ? state.rootMods : state.mods;
         const modSections = (root ? state.rootModSections : state.modSections) ?? [];
         const modIndex = RelativeOrderedMap.indexOf(modList, modName);
@@ -388,7 +389,7 @@ export class ActiveProfileState {
     ): void {
         const SECTION_LIST_KEYS = ["rootModSections", "modSections"] as const;
         const MOD_LIST_KEYS = ["rootMods", "mods"] as const;
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         if (!!state.baseProfile) {
             SECTION_LIST_KEYS.forEach((listKey, listKeyIndex) => {
@@ -403,7 +404,7 @@ export class ActiveProfileState {
 
                 // Merge in the base profile's sections accounting for shifted indices in this profile's list
                 baseProfileSections.forEach((baseSection) => {
-                    const existingSection = _.find(mergedProfileSections, { name: baseSection.name });
+                    const existingSection = find(mergedProfileSections, { name: baseSection.name });
                     if (!existingSection) {
                         // Update the section index based on the new index of the mod in this profile
                         let modIndexBefore = baseSection.modIndexBefore;
@@ -433,11 +434,11 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { oldSection, newSection, root }: ActiveProfileActions.UpdateModSection
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         state.rootModSections ??= [];
         state.modSections ??= [];
         const modSections = root ? state.rootModSections! : state.modSections!;
-        const existingSection = _.find(modSections, { name: (oldSection ?? newSection).name });
+        const existingSection = find(modSections, { name: (oldSection ?? newSection).name });
 
         if (existingSection) {
             Object.assign(existingSection, newSection);
@@ -453,7 +454,7 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { section, root, modIndexBefore }: ActiveProfileActions.ReorderModSection
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modSections = (root ? state.rootModSections : state.modSections) ?? [];
         const existingSection = modSections.find(curSection => LangUtils.isEqual(section, curSection));
 
@@ -468,7 +469,7 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { section, root }: ActiveProfileActions.DeleteModSection
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modSections = (root ? state.rootModSections : state.modSections) ?? [];
         const existingSectionIndex = modSections.findIndex(curSection => LangUtils.isEqual(section, curSection));
 
@@ -483,7 +484,7 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { section, root, enabled }: ActiveProfileActions.UpdateModsInSection
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modList = root ? state.rootMods : state.mods;
         const startIndex = section.modIndexBefore !== undefined ? section.modIndexBefore + 1 : 0;
         const nextSection = this._getNextModSection(state, root, section);
@@ -502,7 +503,7 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.AddCustomGameAction)
     public addCustomGameAction(context: ActiveProfileState.Context, { gameAction }: ActiveProfileActions.AddCustomGameAction): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         state.customGameActions ??= [];
         state.customGameActions.push(gameAction);
@@ -512,7 +513,7 @@ export class ActiveProfileState {
 
     @Action(ActiveProfileActions.EditCustomGameAction)
     public editCustomGameAction(context: ActiveProfileState.Context, { gameActionIndex, gameAction }: ActiveProfileActions.EditCustomGameAction): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         if (state.customGameActions && gameActionIndex < state.customGameActions.length) {
             state.customGameActions[gameActionIndex] = gameAction;
@@ -528,7 +529,7 @@ export class ActiveProfileState {
         context: ActiveProfileState.Context,
         { gameActionIndex }: ActiveProfileActions.RemoveCustomGameAction
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
 
         if (state.customGameActions && gameActionIndex < state.customGameActions.length) {
             state.customGameActions.splice(gameActionIndex, 1);
@@ -600,7 +601,7 @@ export class ActiveProfileState {
         root: boolean,
         modVerificationResults: AppProfile.VerificationResultRecord
     ): void {
-        const state = _.cloneDeep(context.getState()!);
+        const state = cloneDeep(context.getState()!);
         const modList = root ? state.rootMods : state.mods;
 
         Object.entries(modVerificationResults).forEach(([modName, verificationResult]) => {

@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { head, orderBy} from "es-toolkit";
 import {
     Component,
     ChangeDetectionStrategy,
@@ -251,7 +251,7 @@ export class AppModInstallerComponent extends BaseComponent {
             distinctUntilChanged(),
             map(index => this._installSteps[index]),
             filterDefined(),
-            map(selectedInstallStep => _.first(_.first(selectedInstallStep.pluginGroups)?.plugins ?? [])),
+            map(selectedInstallStep => head(head(selectedInstallStep.pluginGroups)?.plugins ?? [])),
             filterDefined()
         ).subscribe(firstPlugin => this.previewPlugin = firstPlugin);
     }
@@ -714,9 +714,9 @@ export class AppModInstallerComponent extends BaseComponent {
     ): T[] {
         order ??= ModInstaller.Order.Ascending;
         if (order === ModInstaller.Order.Ascending) {
-            namedItems = _.orderBy(namedItems, "name", "asc");
+            namedItems = orderBy(namedItems, ["name"], ["asc"]);
         } else if (order === ModInstaller.Order.Descending) {
-            namedItems = _.orderBy(namedItems, "name", "desc");
+            namedItems = orderBy(namedItems, ["name"], ["desc"]);
         }
 
         return namedItems;
