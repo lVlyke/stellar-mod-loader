@@ -29,6 +29,30 @@
 
         > td, th {
             padding: 0;
+
+            .col-line {
+                display: flex;
+                align-items: center;
+            }
+
+            .mod-icon-marker {
+                margin-left: 0.3rem;
+                display: inline-flex;
+                align-items: end;
+
+                &.mod-icon-action {
+                    cursor: pointer;
+                }
+
+                .mod-icon {
+                    @include mixins.mat-icon-size(0.95rem);
+                }
+
+                .mod-base-profile-icon {
+                    font-weight: 600;
+                    align-self: end;
+                }
+            }
         }
 
         > th {
@@ -42,23 +66,6 @@
             .mod-section-title {
                 font-size: var(--mat-card-title-text-size, var(--mat-sys-title-large-size));
                 font-weight: var(--mat-card-title-text-weight, var(--mat-sys-title-large-weight));
-            }
-
-            .mod-title-sections {
-                display: flex;
-                align-items: center;
-            }
-
-            .mod-base-profile-marker {
-                margin-left: 0.25rem;
-                display: inline-flex;
-                align-items: end;
-                align-self: end;
-
-                .mod-base-profile-icon {
-                    font-weight: 600;
-                    @include mixins.mat-icon-size(0.95rem);
-                }
             }
             
             .manual-mod-text {

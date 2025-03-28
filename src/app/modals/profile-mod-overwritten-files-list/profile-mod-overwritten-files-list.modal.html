@@ -1,0 +1,25 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>Files overwritten by {{ modName }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+        <div class="files">
+            @for (fileEntry of overwrittenFiles; track fileEntry.modName) {
+                <details [open]="true">
+                    <summary>{{ fileEntry.modName ?? "[External files]" }}</summary>
+                    
+                    @for (file of fileEntry.files; track file) {
+                        <div class="file">{{ file }}</div>
+                    }
+                </details>
+            }
+        </div>
+    </mat-card-content>
+
+    <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="overlayRef.close()">
+            Close
+        </button>
+    </mat-card-actions>
+</mat-card>

@@ -1,9 +1,26 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, Injector } from "@angular/core";
+import { DatePipe } from "@angular/common";
 import { moveItemInArray, CdkDropList, CdkDrag } from "@angular/cdk/drag-drop";
+import {
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow
+} from "@angular/material/table";
+import { MatCheckbox } from "@angular/material/checkbox";
+import { MatIcon } from "@angular/material/icon";
+import { MatTooltip } from "@angular/material/tooltip";
 import { Store } from "@ngxs/store";
-import { Observable, combineLatest } from "rxjs";
-import { BaseComponent } from "../../core/base-component";
 import { AsyncState, ComponentState, ComponentStateRef } from "@lithiumjs/angular";
+import { Observable, combineLatest } from "rxjs";
+import { debounceTime, filter, finalize, switchMap } from "rxjs/operators";
+import { BaseComponent } from "../../core/base-component";
 import { ThemeContainer } from "@lithiumjs/ngx-material-theming";
 import { AppProfile } from "../../models/app-profile";
 import { ModProfileRef } from "../../models/mod-profile-ref";
@@ -15,11 +32,13 @@ import { AppProfileExternalFilesListModal, FILE_LIST_TOKEN } from "../../modals/
 import { ModSection } from "../../models/mod-section";
 import { RelativeOrderedMap } from "../../util/relative-ordered-map";
 import { AppModSectionContextMenuModal } from "../../modals/mod-section-context-menu";
-import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from "@angular/material/table";
-import { MatCheckbox } from "@angular/material/checkbox";
-import { MatIcon } from "@angular/material/icon";
-import { MatTooltip } from "@angular/material/tooltip";
-import { DatePipe } from "@angular/common";
+import { ProfileManager } from "../../services/profile-manager";
+import { ModOverwriteFiles, ModOverwriteFilesEntry} from "../../models/mod-overwrite-files";
+import {
+    AppProfileModOverwrittenFilesListModal,
+    MOD_NAME_TOKEN,
+    OVERWRITTEN_FILES_TOKEN
+} from "../../modals/profile-mod-overwritten-files-list";
 
 type ModListEntryType = "manual" | "mod" | "section";
 
@@ -105,12 +124,15 @@ export class AppProfileModListComponent extends BaseComponent {
     protected displayedColumns: string[] = [];
     protected externalModFiles: string[] = [];
     protected modListDataSource: ModListDataSource = [];
+    protected modOverwriteFiles: ModOverwriteFiles = {};
+    protected calculatingOverwriteFiles: number = 0;
 
     constructor(
         cdRef: ChangeDetectorRef,
         stateRef: ComponentStateRef<AppProfileModListComponent>,
         store: Store,
-        private injector: Injector,
+        private readonly profileManager: ProfileManager,
+        private readonly injector: Injector,
         private readonly overlayHelpers: OverlayHelpers,
         protected readonly themeContainer: ThemeContainer
     ) {
@@ -118,6 +140,22 @@ export class AppProfileModListComponent extends BaseComponent {
 
         this.modListColumns$ = store.select(AppState.getModListColumns);
 
+        // Recalculate mod overwrite files on profile changes
+        combineLatest(stateRef.getAll(
+            "profile",
+            "root"
+        )).pipe(
+            filter(([profile]) => !!profile.calculateModOverwriteFiles),
+            debounceTime(150),
+            switchMap(([profile, root]) => {
+                ++this.calculatingOverwriteFiles;
+                return profileManager.calculateModOverwriteFiles(profile, root).pipe(
+                    finalize(() => --this.calculatingOverwriteFiles)
+                );
+        })
+        ).subscribe(modOverwriteFiles => this.modOverwriteFiles = modOverwriteFiles);
+
+        // Recalculate table data source on profile changes
         combineLatest(stateRef.getAll(
             "profile",
             "root",
@@ -239,6 +277,14 @@ export class AppProfileModListComponent extends BaseComponent {
         }
     }
 
+    protected enableModOverwriteCalculation(enabled: boolean): Observable<unknown> {
+        if (!enabled) {
+            this.modOverwriteFiles = {};
+        }
+
+        return this.profileManager.enableModOverwriteCalculation(enabled);
+    }
+
     protected showEntryContextMenu(event: MouseEvent, listEntry: ModListEntry): void {
         const modalAnchor = {
             x: event.clientX,
@@ -286,5 +332,18 @@ export class AppProfileModListComponent extends BaseComponent {
             maxHeight: "80vh",
             panelClass: "mat-app-background"
         }, [[FILE_LIST_TOKEN, this.externalModFiles]]);
+    }
+
+    protected showOverwrittenFileList(modName: string, files: ModOverwriteFilesEntry[]): void {
+        this.overlayHelpers.createFullScreen(AppProfileModOverwrittenFilesListModal, {
+            hasBackdrop: true,
+            width: "55vw",
+            height: "auto",
+            maxHeight: "80vh",
+            panelClass: "mat-app-background"
+        }, [
+            [MOD_NAME_TOKEN, modName],
+            [OVERWRITTEN_FILES_TOKEN, files]
+        ]);
     }
 }

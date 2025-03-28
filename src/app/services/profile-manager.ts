@@ -14,6 +14,7 @@ import {
     skip,
     switchMap,
     take,
+    takeWhile,
     tap,
     throttleTime,
     toArray,
@@ -51,6 +52,7 @@ import { log } from "../util/logger";
 import { RelativeOrderedMap } from "../util/relative-ordered-map";
 import { ModSection } from "../models/mod-section";
 import { GameInstallation } from "../models/game-installation";
+import { ModOverwriteFiles } from "../models/mod-overwrite-files";
 
 @Injectable({ providedIn: "root" })
 export class ProfileManager {
@@ -67,7 +69,7 @@ export class ProfileManager {
     public readonly isPluginsEnabled$: Observable<boolean>;
 
     constructor(
-        messageHandler: AppMessageHandler,
+        private readonly messageHandler: AppMessageHandler,
         private readonly store: Store,
         private readonly overlayHelpers: OverlayHelpers,
         private readonly dialogs: AppDialogs,
@@ -658,6 +660,24 @@ export class ProfileManager {
                 }
             })
         ));
+    }
+
+    public calculateModOverwriteFiles(profile: AppProfile | AppBaseProfile, root: boolean): Observable<ModOverwriteFiles> {
+        const result: ModOverwriteFiles = {};
+        const nonce = Math.random();
+
+        // Start overwrite calculation
+        return ElectronUtils.invoke("profile:calculateModOverwriteFilesStart", { profile, root, nonce }).pipe(
+            switchMap(() => this.messageHandler.messages$.pipe(
+                // Receive calculation updates and add to the result until completed
+                filter(message => message.id === "profile:calculateModOverwriteFilesUpdate"),
+                filter(({ data }) => data.nonce === nonce),
+                tap(({ data }) => Object.assign(result, data.overwriteFiles)),
+                takeWhile(({ data }) => !data.completed),
+                toArray()
+            )),
+            map(() => result)
+        );
     }
 
     public updateModVerifications(root: boolean, modVerificationResults: AppProfile.CollectedVerificationResult): Observable<any> {
@@ -1256,6 +1276,10 @@ export class ProfileManager {
             take(1),
             switchMap(profile => ElectronUtils.invoke("profile:setArchiveInvalidationEnabled", { profile: profile!, enabled }))
         ));
+    }
+
+    public enableModOverwriteCalculation(enabled: boolean): Observable<unknown> {
+        return this.store.dispatch(new ActiveProfileActions.setCalculateModOverwriteFiles(enabled));
     }
 
     public setActiveGameAction(gameAction: GameAction): Observable<unknown> {

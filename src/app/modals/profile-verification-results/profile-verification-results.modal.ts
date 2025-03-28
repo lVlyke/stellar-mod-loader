@@ -59,7 +59,8 @@ export class AppProfileVerificationResultsModal extends BaseComponent {
         customGameActions: "Invalid custom game actions",
         activeGameAction: "Invalid active game action",
         rootModSections: "Invalid root mod section",
-        modSections: "Invalid mod section"
+        modSections: "Invalid mod section",
+        calculateModOverwriteFiles: "Invalid mod overwrite settings"
     };
 
     private static readonly VERIFICATION_ERROR_DESCS: Record<string, string> = {

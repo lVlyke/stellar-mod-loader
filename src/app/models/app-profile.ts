@@ -23,6 +23,7 @@ export interface AppBaseProfile {
     rootModSections?: ModSection[];
     modSections?: ModSection[];
     invalid?: boolean;
+    calculateModOverwriteFiles?: boolean;
 }
 
 export interface AppProfile extends AppBaseProfile {
@@ -149,7 +150,8 @@ export namespace AppProfile {
             rootMods: [],
             plugins: [],
             defaultGameActions: [],
-            deployed: false
+            deployed: false,
+            calculateModOverwriteFiles: false
         };
     }
 

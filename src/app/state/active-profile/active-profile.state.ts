@@ -575,6 +575,11 @@ export class ActiveProfileState {
         context.patchState(state);
     }
 
+    @Action(ActiveProfileActions.setCalculateModOverwriteFiles)
+    public setCalculateModOverwriteFiles(context: ActiveProfileState.Context, state: ActiveProfileActions.CalculateModOverwriteFilesAction): void {
+        context.patchState(state);
+    }
+
     private _getNextModSection(
         state: AppProfile,
         root: boolean,

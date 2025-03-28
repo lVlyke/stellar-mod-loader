@@ -31,6 +31,8 @@
  * @typedef {import("./app/models/fomod").Fomod.ModuleConfig} FomodModuleConfig;
  * @typedef {import("./app/models/game-plugin-profile-ref").GamePluginProfileRef} GamePluginProfileRef;
  * @typedef {import("./app/models/game-action").GameAction} GameAction;
+ * @typedef {import("./app/models/mod-overwrite-files").ModOverwriteFiles} ModOverwriteFiles;
+ * @typedef {import("./app/models/mod-overwrite-files").ModOverwriteFilesEntry} ModOverwriteFilesEntry;
  */
 
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell, nativeImage } = require("electron");
@@ -596,7 +598,8 @@ class ElectronLoader {
                 customGameActions: VERIFY_SUCCESS, // TODO
                 activeGameAction: VERIFY_SUCCESS, // TODO
                 rootModSections: VERIFY_SUCCESS, // TODO
-                modSections: VERIFY_SUCCESS // TODO
+                modSections: VERIFY_SUCCESS, // TODO
+                calculateModOverwriteFiles: VERIFY_SUCCESS
             };
 
             function hasVerificationError(result) {
@@ -718,6 +721,29 @@ class ElectronLoader {
             /** @type {import("./app/models/app-message").AppMessageData<"profile:findExternalFiles">} */ { profile }
         ) => {
             return this.findProfileExternalFiles(profile);
+        });
+
+        ipcMain.handle("profile:calculateModOverwriteFilesStart", async (
+            _event,
+            /** @type {import("./app/models/app-message").AppMessageData<"profile:calculateModOverwriteFilesStart">} */ {
+                profile,
+                root,
+                nonce
+            }
+        ) => {
+            // Return results asynchronously to avoid blocking the renderer thread
+            this.calculateModOverwriteFiles(profile, root, async (modOverwriteFiles, modName, _modRef, completed) => {
+                // Send progress update to renderer
+                if (modOverwriteFiles.length > 0 || completed) {
+                    this.mainWindow.webContents.send("profile:calculateModOverwriteFilesUpdate", {
+                        profile,
+                        root,
+                        nonce,
+                        completed,
+                        overwriteFiles: modOverwriteFiles.length > 0 ? { [modName]: modOverwriteFiles } : {}
+                    });
+                }
+            });
         });
 
         ipcMain.handle("profile:findDeployedProfile", async (
@@ -2778,24 +2804,76 @@ class ElectronLoader {
         return fs.writeFileSync(metaFilePath, JSON.stringify(deploymentMetadata));
     }
 
-    /** @returns {Promise<AppProfileExternalFiles>} */
-    async findProfileExternalFiles(/** @type {AppProfile} */ profile) {
-        if (!!profile.gameInstallation) {
-            // Scan game dir for external files
-            return {
-                modDirFiles: await this.findProfileExternalFilesInDir(profile, profile.gameInstallation.modDir, true),
-                gameDirFiles: await this.findProfileExternalFilesInDir(profile, profile.gameInstallation.rootDir, false),
-                pluginFiles: await this.findProfileExternalPluginFiles(profile)
-            };
-        } else {
-            // Use default plugin list from game db
-            const gameDb = this.loadGameDatabase();
-            const gameDetails = gameDb[profile.gameId];
-            const defaultPlugins = (gameDetails?.pinnedPlugins ?? []).map(pinnedPlugin => pinnedPlugin.plugin);
-            return {
-                modDirFiles: [],
-                gameDirFiles: [],
-                pluginFiles: defaultPlugins
+    /** @returns {Promise<void>} */
+    async calculateModOverwriteFiles(
+        /** @type {AppProfile | AppBaseProfile} */ profile,
+        /** @type {boolean} */ root,
+        /** @type {(modOverwriteFiles: ModOverwriteFilesEntry[], modName: string, modRef: ModProfileRef, completed: boolean) => Promise<unknown>} */ task
+    ) {
+        /** @type { ModOverwriteFilesEntry[] } */ const fileCache = [];
+        const modsList = root ? profile.rootMods : profile.mods;
+
+        // Add external files to cache
+        if ("externalFilesCache" in profile) {
+            const externalFiles = (root
+                ? profile.externalFilesCache?.gameDirFiles
+                : profile.externalFilesCache?.modDirFiles) ?? [];
+
+            if (root && profile.externalFilesCache?.modDirFiles && "gameInstallation" in profile) {
+                const modDirRelName = path.relative(profile.gameInstallation.rootDir, profile.gameInstallation.modDir);
+
+                // Add mod dir files if mod dir is a child of root dir
+                if (!modDirRelName.startsWith("..") && !path.isAbsolute(modDirRelName)) {
+                    externalFiles.push(...profile.externalFilesCache.modDirFiles.map((modFile) => {
+                        return path.join(modDirRelName, modFile);
+                    }));
+                }
+            }
+
+            fileCache.push({ files: externalFiles });
+        }
+
+        for (let modIndex = 0; modIndex < modsList.length; ++modIndex) {
+            const [modName, modRef] = modsList[modIndex];
+            const modDirPath = this.getProfileModDir(profile, modName, modRef);
+
+            if (await fs.exists(modDirPath)) {
+                const modDirEntries = await fs.readdir(modDirPath, { encoding: "utf-8", recursive: true });
+                const modDirFiles = [];
+
+                // Get all mod files
+                for (const modDirEntry of modDirEntries) {
+                    if ((await fs.lstat(path.join(modDirPath, modDirEntry))).isFile()) {
+                        modDirFiles.push(modDirEntry);
+                    }
+                }
+
+                /** @type { ModOverwriteFilesEntry[] } */ const modOverwriteFiles = [];
+                await this.#batchTaskAsync(modDirFiles, 100, async (modFile) => {
+                    // TODO - Normalize path case if enabled
+                    const overwrittenFiles = fileCache.filter(fileEntry => fileEntry.files.includes(modFile));
+                    
+                    // Record any overwritten files
+                    if (overwrittenFiles.length > 0) {
+                        for (const overwrittenFile of overwrittenFiles) {
+                            const overwriteEntry = modOverwriteFiles.find((fileEntry) => {
+                                return fileEntry.modName === overwrittenFile.modName;
+                            });
+                            
+                            if (!!overwriteEntry) {
+                                overwriteEntry.files.push(modFile);
+                            } else {
+                                modOverwriteFiles.push({ modName: overwrittenFile.modName, files: [modFile] });
+                            }
+                        }
+                    }
+                });
+
+                // Add files to cache
+                fileCache.push({ modName, files: modDirFiles });
+
+                // Notify of new overwrite files
+                await task(modOverwriteFiles, modName, modRef, modIndex === modsList.length - 1);
             }
         }
     }
@@ -2883,6 +2961,28 @@ class ElectronLoader {
 
                     return 0;
                 });
+    }
+
+    /** @returns {Promise<AppProfileExternalFiles>} */
+    async findProfileExternalFiles(/** @type {AppProfile} */ profile) {
+        if (!!profile.gameInstallation) {
+            // Scan game dir for external files
+            return {
+                modDirFiles: await this.findProfileExternalFilesInDir(profile, profile.gameInstallation.modDir, true),
+                gameDirFiles: await this.findProfileExternalFilesInDir(profile, profile.gameInstallation.rootDir, false),
+                pluginFiles: await this.findProfileExternalPluginFiles(profile)
+            };
+        } else {
+            // Use default plugin list from game db
+            const gameDb = this.loadGameDatabase();
+            const gameDetails = gameDb[profile.gameId];
+            const defaultPlugins = (gameDetails?.pinnedPlugins ?? []).map(pinnedPlugin => pinnedPlugin.plugin);
+            return {
+                modDirFiles: [],
+                gameDirFiles: [],
+                pluginFiles: defaultPlugins
+            }
+        }
     }
 
     /** @returns {string[]} */
@@ -4060,6 +4160,27 @@ class ElectronLoader {
         return path.isAbsolute(profileDir)
             ? profileDir
             : path.join(this.getProfileDir(profile), profileDir)
+    }
+
+    /**
+     * @template T
+     */
+    async #batchTaskAsync(
+        /** @type {T[]} */ items,
+        /** @type {number} */ batchSize,
+        /** @type {(T, number) => Promise<unknown>} */ task
+        /** @returns {Promise<void>} */
+    ) {
+        let curIndex = 0;
+        while (curIndex < items.length) {
+            await new Promise(async (resolve) => {
+                for (let j = 0; j < Math.min(batchSize, items.length - curIndex); ++j, ++curIndex) {
+                    await task(items[curIndex], curIndex);
+                }
+
+                setTimeout(() => resolve(undefined));
+            });
+        }
     }
 
     #checkLinkSupported(

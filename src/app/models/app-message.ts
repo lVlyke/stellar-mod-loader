@@ -14,6 +14,7 @@ import { LogEntry } from "../util/logger";
 import { GameInstallation } from "./game-installation";
 import { AppWarnings } from "./app-warnings";
 import { GameDetails } from "./game-details";
+import { ModOverwriteFiles } from "./mod-overwrite-files";
 
 export type AppMessage
     = AppMessage.AppMessage
@@ -562,6 +563,26 @@ export namespace AppMessage {
         result: AppProfile.ExternalFiles;
     }
 
+    export interface CalculateModOverwriteFilesStart extends Base {
+        id: `${ProfileMessage.Prefix}:calculateModOverwriteFilesStart`;
+        data: {
+            profile: AppProfile | AppBaseProfile;
+            root: boolean;
+            nonce: number;
+        };
+    }
+
+    export interface CalculateModOverwriteFilesUpdate extends Base {
+        id: `${ProfileMessage.Prefix}:calculateModOverwriteFilesUpdate`;
+        data: {
+            profile: AppProfile | AppBaseProfile;
+            root: boolean;
+            nonce: number;
+            overwriteFiles: ModOverwriteFiles;
+            completed: boolean;
+        };
+    }
+
     export interface ShowModInFileExplorer extends Base {
         id: `${ProfileMessage.Prefix}:showModInFileExplorer`;
         data: {
@@ -733,6 +754,8 @@ export namespace AppMessage {
                                | UndeployProfile
                                | FindDeployedProfile
                                | FindProfileExternalFiles
+                               | CalculateModOverwriteFilesStart
+                               | CalculateModOverwriteFilesUpdate
                                | ShowModInFileExplorer
                                | ShowProfileDirInFileExplorer
                                | ShowProfileModOrderBackupsInFileExplorer
@@ -817,6 +840,8 @@ export namespace AppMessage {
         "profile:undeploy",
         "profile:findDeployedProfile",
         "profile:findExternalFiles",
+        "profile:calculateModOverwriteFilesStart",
+        "profile:calculateModOverwriteFilesUpdate",
         "profile:showModInFileExplorer",
         "profile:showProfileDirInFileExplorer",
         "profile:showProfileModOrderBackupsInFileExplorer",

@@ -7,15 +7,18 @@ import { ModSection } from "../../models/mod-section";
 
 export namespace ActiveProfileActions {
 
-    function createBasicAction(property: keyof AppProfile, action: string): BasicAction.Constructor<AppProfile, keyof AppProfile> {
-        return BasicAction.create<AppProfile, keyof AppProfile>(
+    function createBasicAction<K extends keyof AppProfile>(
+        property: K,
+        action: string
+    ): BasicAction.Constructor<AppProfile, K> {
+        return BasicAction.create<AppProfile, K>(
             "project",
             action,
             property
         );
     }
 
-    function createUpdateAction(property: keyof AppProfile): BasicAction.Constructor<AppProfile, keyof AppProfile> {
+    function createUpdateAction<K extends keyof AppProfile>(property: K): BasicAction.Constructor<AppProfile, K> {
         return createBasicAction(property, "update");
     }
 
@@ -25,12 +28,14 @@ export namespace ActiveProfileActions {
     export type CustomGameActionsAction = BasicAction<AppProfile, "customGameActions">;
     export type ActiveGameActionAction = BasicAction<AppProfile, "activeGameAction">;
     export type InvalidAction = BasicAction<AppProfile, "invalid">;
+    export type CalculateModOverwriteFilesAction = BasicAction<AppProfile, "calculateModOverwriteFiles">;
 
     export const setDeployed = createUpdateAction("deployed");
     export const setBaseProfile = createUpdateAction("baseProfile");
     export const manageExternalPlugins = createUpdateAction("manageExternalPlugins");
     export const setActiveGameAction = createUpdateAction("activeGameAction");
     export const setInvalid = createUpdateAction("invalid");
+    export const setCalculateModOverwriteFiles = createUpdateAction("calculateModOverwriteFiles");
 
     export class AddMod {
         public static readonly type = `[activeProfile] add mod`;

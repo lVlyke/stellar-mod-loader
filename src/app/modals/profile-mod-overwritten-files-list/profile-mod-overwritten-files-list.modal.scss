@@ -1,0 +1,40 @@
+:host {
+    &, > mat-card {
+        width: 100%;
+        height: 100%;
+    }
+
+    mat-card-content {
+        height: 100%;
+        padding: 1rem;
+        overflow: auto;
+
+        .files {
+            details {
+                overflow-x: auto;
+                border: 1px solid grey;
+                border-radius: 0.25rem;
+                margin-bottom: 1rem;
+
+                > summary {
+                    padding: 0.5rem;
+                }
+
+                &[open] > summary {
+                    border-bottom: 1px solid grey;
+                }
+
+                > .file {
+                    font-family: monospace;
+                    padding: 0.25rem;
+                }
+            }
+        }
+    }
+
+    mat-card-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}

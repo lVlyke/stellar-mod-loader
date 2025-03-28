@@ -15,7 +15,24 @@
     </ng-container>
 
     <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Mod Name</th>
+        <th mat-header-cell *matHeaderCellDef>
+            <div class="col-line">
+                Mod Name
+
+                @if (calculatingOverwriteFiles > 0) {
+                    <span class="mod-icon-marker"
+                        matTooltip="Calculating overwrite files...">
+                        <mat-icon class="mod-icon slow-rotate">sync</mat-icon>
+                    </span>
+                } @else {
+                    <span class="mod-icon-marker mod-icon-action"
+                        matTooltip="{{ profile.calculateModOverwriteFiles ? 'Hide' : 'Show' }} overwrite files"
+                        (click)="enableModOverwriteCalculation(!profile.calculateModOverwriteFiles)">
+                        <mat-icon class="mod-icon" [color]="profile.calculateModOverwriteFiles ? 'primary' : undefined">file_copy</mat-icon>
+                    </span>
+                }
+            </div>
+        </th>
         <td mat-cell *matCellDef="let listEntry" class="mod-title">
             @if (isManualEntry(listEntry)) {
                 <span class="manual-mod-text">
@@ -34,15 +51,24 @@
                     {{ listEntry.section.name }}
                 </div>
             } @else if (isModEntry(listEntry)) {
-                <div class="mod-title-sections">
+                <div class="col-line">
                     @let baseProfile = listEntry.modRef.baseProfile;
 
                     <span>{{ listEntry.name }}</span>
 
                     @if (!!baseProfile) {
-                        <span class="mod-base-profile-marker"
+                        <span class="mod-icon-marker"
                             matTooltip="Managed by {{baseProfile}}">
-                            <mat-icon class="mod-base-profile-icon" color="accent">arrow_outward</mat-icon>
+                            <mat-icon class="mod-icon mod-base-profile-icon" color="accent">arrow_outward</mat-icon>
+                        </span>
+                    }
+
+                    @let overwrittenFiles = modOverwriteFiles[listEntry.name];
+                    @if (!!overwrittenFiles?.length) {
+                        <span class="mod-icon-marker"
+                            matTooltip="Overwritten Files"
+                            (click)="showOverwrittenFileList(listEntry.name, overwrittenFiles)">
+                            <mat-icon class="mod-icon" color="primary">file_copy</mat-icon>
                         </span>
                     }
                             
