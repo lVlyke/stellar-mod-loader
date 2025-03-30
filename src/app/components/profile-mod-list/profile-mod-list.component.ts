@@ -1,3 +1,4 @@
+import { pick } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, Injector } from "@angular/core";
 import { DatePipe } from "@angular/common";
 import { moveItemInArray, CdkDropList, CdkDrag } from "@angular/cdk/drag-drop";
@@ -19,7 +20,7 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { Store } from "@ngxs/store";
 import { AsyncState, ComponentState, ComponentStateRef } from "@lithiumjs/angular";
 import { Observable, combineLatest } from "rxjs";
-import { debounceTime, filter, finalize, switchMap } from "rxjs/operators";
+import { debounceTime, distinctUntilChanged, filter, finalize, map, switchMap } from "rxjs/operators";
 import { BaseComponent } from "../../core/base-component";
 import { ThemeContainer } from "@lithiumjs/ngx-material-theming";
 import { AppProfile } from "../../models/app-profile";
@@ -39,6 +40,7 @@ import {
     MOD_NAME_TOKEN,
     OVERWRITTEN_FILES_TOKEN
 } from "../../modals/profile-mod-overwritten-files-list";
+import { LangUtils } from "../../util/lang-utils";
 
 type ModListEntryType = "manual" | "mod" | "section";
 
@@ -140,19 +142,28 @@ export class AppProfileModListComponent extends BaseComponent {
 
         this.modListColumns$ = store.select(AppState.getModListColumns);
 
-        // Recalculate mod overwrite files on profile changes
-        combineLatest(stateRef.getAll(
-            "profile",
-            "root"
-        )).pipe(
+        // Recalculate mod overwrite files on relevant profile changes
+        combineLatest([
+            stateRef.get("profile").pipe(map(profile => pick(
+                profile,
+                [
+                    "rootMods",
+                    "mods",
+                    "gameInstallation",
+                    "calculateModOverwriteFiles"
+                ]
+            ))),
+            stateRef.get("root")
+        ]).pipe(
+            distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             filter(([profile]) => !!profile.calculateModOverwriteFiles),
             debounceTime(150),
-            switchMap(([profile, root]) => {
+            switchMap(() => {
                 ++this.calculatingOverwriteFiles;
-                return profileManager.calculateModOverwriteFiles(profile, root).pipe(
+                return profileManager.calculateModOverwriteFiles(this.profile, this.root).pipe(
                     finalize(() => --this.calculatingOverwriteFiles)
                 );
-        })
+            })
         ).subscribe(modOverwriteFiles => this.modOverwriteFiles = modOverwriteFiles);
 
         // Recalculate table data source on profile changes
