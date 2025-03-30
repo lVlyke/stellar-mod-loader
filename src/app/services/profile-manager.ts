@@ -898,7 +898,9 @@ export class ProfileManager {
                 if (!!existingMod && importRequest.importStatus !== "CANCELED") {
                     if (!!existingMod.baseProfile) {
                         return this.dialogManager.createNotice(
-                            `"${importRequest.modName}" already exists in base profile "${existingMod.baseProfile}". Please choose a different mod name.`
+                            `"${importRequest.modName}" already exists in base profile "${existingMod.baseProfile}". Please choose a different mod name.`,
+                            DialogManager.OK_ACTION_PRIMARY,
+                            { disposeOnBackdropClick: false }
                         ).pipe(
                             map(() => {
                                 importRequest.importStatus = "RESTART";

@@ -1,3 +1,4 @@
+import { without } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, ViewChild } from "@angular/core";
 import { NgTemplateOutlet, AsyncPipe } from "@angular/common";
 import { AbstractControl, ControlValueAccessor, NG_VALUE_ACCESSOR, NgForm, ValidationErrors, FormsModule } from "@angular/forms";
@@ -200,30 +201,29 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
         stateRef.get("fileDataInput").subscribe((dataInput) => {
             this.filesDataSource.data = dataInput;
 
-            const findRootNode = (nodes: FileTreeNode[]): FileTreeNode | undefined => {
-                return nodes.reduce<FileTreeNode | undefined>((rootDirNode, node) => {
-                    if (rootDirNode) {
-                        return rootDirNode;
-                    }
-                    
-                    if (this.importRequest.modSubdirRoot.toLowerCase().includes(node.fullPath.toLowerCase())) {
-                        if (node.fullPath.toLowerCase() === this.importRequest.modSubdirRoot.toLowerCase()) {
-                            return node;
-                        } else if (!!node.children) {
-                            return findRootNode(node.children);
+            const findRootNodes = (nodes: FileTreeNode[]): FileTreeNode[] => {
+                return nodes.reduce<FileTreeNode[]>((rootDirNodes, node) => {
+                    for (const modSubdirRoot of this.importRequest.modSubdirRoots) {
+                        if (modSubdirRoot.toLowerCase().includes(node.fullPath.toLowerCase())) {
+                            if (node.fullPath.toLowerCase() === modSubdirRoot.toLowerCase()) {
+                                rootDirNodes.push(node);
+                            } else if (!!node.children) {
+                                rootDirNodes.push(...findRootNodes(node.children));
+                            }
                         }
                     }
 
-                    return undefined;
-                }, undefined);
+                    return rootDirNodes;
+                }, []);
             };
 
-            // Find the root data dir node (if there is one) and expand it
-            let rootDirNode = findRootNode(dataInput);
-            while (rootDirNode) {
-                this.treeControl.expand(rootDirNode);
-                rootDirNode = rootDirNode.parent;
-            }
+            // Find the root data dir nodes (if any) and expand them
+            findRootNodes(dataInput).forEach((rootDirNode: FileTreeNode | undefined) => {
+                while (rootDirNode) {
+                    this.treeControl.expand(rootDirNode);
+                    rootDirNode = rootDirNode.parent;
+                }
+            });
         });
 
         // Add a validator for ensuring at least 1 file is selected
@@ -241,11 +241,11 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
                 gameDetails, { 
                 modFilePaths,
                 filePathSeparator,
-                modSubdirRoot
+                modSubdirRoots
             }]) => gameDetails!.scriptExtenders!.filter(scriptExtender => scriptExtender.modPaths.some((seModPath) => {
-                seModPath = this.normalizePath(seModPath, filePathSeparator, modSubdirRoot);
+                seModPath = this.normalizePath(seModPath, filePathSeparator, modSubdirRoots);
                 const normalizedModPaths = modFilePaths.map(({ filePath }) => {
-                    return this.normalizePath(filePath, filePathSeparator, modSubdirRoot);
+                    return this.normalizePath(filePath, filePathSeparator, modSubdirRoots);
                 });
                 
                 // Make sure the current mod isn't itself a script extender
@@ -349,9 +349,15 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
      * it will also return `true` if `node` is a nested child of the root dir node.
      */
     protected isRootDirNode(node: FileTreeNode, nestedCheck = false): boolean {
-        return nestedCheck
-            ? node.fullPath.toLowerCase().includes(this.importRequest.modSubdirRoot.toLowerCase())
-            : node.fullPath.toLowerCase() === this.importRequest.modSubdirRoot.toLowerCase();
+        if (nestedCheck && this.importRequest.modSubdirRoots.length === 0) {
+            return true;
+        }
+        
+        return this.importRequest.modSubdirRoots.some((modSubdirRoot) => {
+            return nestedCheck
+                ? node.fullPath.toLowerCase().includes(modSubdirRoot.toLowerCase())
+                : node.fullPath.toLowerCase() === modSubdirRoot.toLowerCase();
+        });
     }
 
     /**
@@ -384,14 +390,43 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
     }
 
     /**
-     * @description Makes `modSubdirRoot` the new root dir.
+     * @description Adds `modSubdirRoot` as a root dir.
      */
-    protected setModRootSubdir(modSubdirRoot: string): void {
-        this.importRequest = Object.assign(this.importRequest, { modSubdirRoot });
+    protected addModRootSubdir(modSubdirRoot: string): void {
+        const modSubdirRoots = this.importRequest.modSubdirRoots
+            // Remove existing parent subdir and child subdir roots
+            .filter((existingModSubdirRoot) => {
+                
+                return !(modSubdirRoot.startsWith(existingModSubdirRoot) || existingModSubdirRoot.startsWith(modSubdirRoot));
+            })
+            // Add new subdir root
+            .concat([modSubdirRoot]);
+
+        this.importRequest = Object.assign(this.importRequest, { modSubdirRoots });
     }
 
-    private normalizePath(path: string, sep: string, modSubdirRoot?: string): string {
-        return LangUtils.normalizeFilePath(path, sep)
-            .replace(modSubdirRoot ? `${this.normalizePath(modSubdirRoot, sep)}${sep}` : "", "");
+    /**
+     * @description Removes `modSubdirRoot` as a root dir.
+     */
+    protected removeModRootSubdir(modSubdirRoot: string): void {
+        this.importRequest = Object.assign(this.importRequest, {
+            modSubdirRoots: without(this.importRequest.modSubdirRoots, modSubdirRoot)
+        });
+    }
+
+    private normalizePath(path: string, sep: string, modSubdirRoots?: string[]): string {
+        let result = LangUtils.normalizeFilePath(path, sep);
+
+        if (modSubdirRoots) {
+            for (const modSubdirRoot of modSubdirRoots) {
+                const modSubdirRootNorm = `${this.normalizePath(modSubdirRoot, sep)}${sep}`;
+                if (result.startsWith(modSubdirRootNorm)) {
+                    result = result.replace(modSubdirRootNorm, "");
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 }

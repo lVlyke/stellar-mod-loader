@@ -2402,11 +2402,11 @@ class ElectronLoader {
         const gameDetails = gameDb[profile.gameId];
         const gamePluginFormats = gameDetails?.pluginFormats ?? [];
         const modDataDirs = ["Data", "data"];
-        let modSubdirRoot = "";
+        let foundModSubdirRoot = "";
         
         // Look for nested "data" dir for non-root mods
         if (!root) {
-            modSubdirRoot = modDataDirs.find(dataDir => fs.existsSync(path.join(modImportPath, dataDir))) ?? "";
+            foundModSubdirRoot = modDataDirs.find(dataDir => fs.existsSync(path.join(modImportPath, dataDir))) ?? "";
         }
 
         const modPreparedFilePaths = modFilePaths
@@ -2519,9 +2519,9 @@ class ElectronLoader {
                 // Update the root subdir to the parent dir of the `fomod` folder
                 const fomodFilePath = (fomodModuleInfoFile ?? fomodModuleConfigFile)?.filePath;
                 if (fomodFilePath) {
-                    modSubdirRoot = path.dirname(path.dirname(fomodFilePath));
-                    if (modSubdirRoot === ".") {
-                        modSubdirRoot = "";
+                    foundModSubdirRoot = path.dirname(path.dirname(fomodFilePath));
+                    if (foundModSubdirRoot === ".") {
+                        foundModSubdirRoot = "";
                     }
                 }
             } while(false);
@@ -2538,7 +2538,7 @@ class ElectronLoader {
             modFilePaths: modPreparedFilePaths,
             modPath: modImportPath,
             filePathSeparator: path.sep,
-            modSubdirRoot,
+            modSubdirRoots: foundModSubdirRoot ? [foundModSubdirRoot] : [],
             installer
         };
     }
@@ -2554,7 +2554,7 @@ class ElectronLoader {
             importStatus,
             mergeStrategy,
             modFilePaths,
-            modSubdirRoot,
+            modSubdirRoots,
             modPlugins,
             modFilePathMapFilter
         }
@@ -2570,14 +2570,8 @@ class ElectronLoader {
                 fileEntry.filePath = this.#expandPath(fileEntry.filePath);
 
                 if (modFilePathMapFilter) {
-                    // Check if a mapping entry exists for the current file path
-                    const mappedEntry = Object.entries(modFilePathMapFilter).find(([pathMapSrcRaw]) => {
-                        let pathMapSrcNorm = this.#expandPath(pathMapSrcRaw).toLowerCase();
-
-                        if (!pathMapSrcNorm.startsWith(modSubdirRoot.toLowerCase())) {
-                            pathMapSrcNorm = path.join(modSubdirRoot, pathMapSrcNorm).toLowerCase();
-                        }
-
+                    /** @returns { boolean } */
+                    function filEntryMatchesPath(/** @type {string} */ pathMapSrcNorm) {
                         // Check if the mapping src is a direct match for the file
                         if (fileEntry.filePath.toLowerCase() === pathMapSrcNorm) {
                             return true;
@@ -2589,6 +2583,24 @@ class ElectronLoader {
 
                         // Check if the file is inside the mapping src dir
                         return fileEntry.filePath.toLowerCase().startsWith(pathMapSrcNorm);
+                    }
+
+                    // Check if a mapping entry exists for the current file path
+                    const mappedEntry = Object.entries(modFilePathMapFilter).find(([pathMapSrcRaw]) => {
+                        if (modSubdirRoots.length > 0) {
+                            return modSubdirRoots.some((modSubdirRoot) => {
+                                let pathMapSrcNorm = this.#expandPath(pathMapSrcRaw).toLowerCase();
+
+                                if (!pathMapSrcNorm.startsWith(modSubdirRoot.toLowerCase())) {
+                                    pathMapSrcNorm = path.join(modSubdirRoot, pathMapSrcNorm).toLowerCase();
+                                }
+        
+                                return filEntryMatchesPath(pathMapSrcNorm);
+                            });
+                        } else {
+                            const pathMapSrcNorm = this.#expandPath(pathMapSrcRaw).toLowerCase();
+                            return filEntryMatchesPath(pathMapSrcNorm);
+                        }
                     });
                     fileEntry.enabled = !!mappedEntry;
 
@@ -2602,8 +2614,10 @@ class ElectronLoader {
                             fileEntry.mappedFilePath = fileEntry.mappedFilePath.replace(/^[Dd]ata[\\/]/, "");
                         }
                     }
-                } else {
-                    fileEntry.enabled = fileEntry.enabled && fileEntry.filePath.toLowerCase().startsWith(modSubdirRoot.toLowerCase());
+                } else if (modSubdirRoots.length > 0) {
+                    fileEntry.enabled = fileEntry.enabled && modSubdirRoots.some((modSubdirRoot) => {
+                        return fileEntry.filePath.toLowerCase().startsWith(modSubdirRoot.toLowerCase())
+                    });
                 }
 
                 if (fileEntry.enabled) {
@@ -2638,11 +2652,15 @@ class ElectronLoader {
                     srcFilePath = path.join(modPath, srcFilePath);
 
                     if (!fs.lstatSync(srcFilePath).isDirectory()) {
-                        // Normalize path to the mod subdir root
-                        const modSubdirPrefix = `${modSubdirRoot}${path.sep}`.toLowerCase();
                         let rootFilePath = destBasePath;
-                        if (modSubdirRoot && rootFilePath.toLowerCase().startsWith(modSubdirPrefix)) {
-                            rootFilePath = rootFilePath.slice(modSubdirPrefix.length);
+
+                        // Normalize path to its mod subdir root, if any
+                        for (const modSubdirRoot of modSubdirRoots) {
+                            const modSubdirPrefix = `${modSubdirRoot}${path.sep}`.toLowerCase();
+                            if (rootFilePath.toLowerCase().startsWith(modSubdirPrefix)) {
+                                rootFilePath = rootFilePath.slice(modSubdirPrefix.length);
+                                break;
+                            }
                         }
                         
                         const destFilePath = path.join(modProfilePath, rootFilePath);
@@ -2659,6 +2677,11 @@ class ElectronLoader {
                             modFileOperations.push(fs.move(srcFilePath, destFilePath, {
                                 overwrite: overwriteExistingFiles
                             }));
+                        }
+
+                        // Write files sequentially if more than one root in order to preserve write order (i.e. BAIN mods)
+                        if (modSubdirRoots.length > 1) {
+                            await Promise.all(modFileOperations);
                         }
                     }
                 }

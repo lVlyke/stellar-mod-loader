@@ -41,7 +41,7 @@
                     @if (!isRootDirNode(node)) {
                         <a mat-button
                             class="path-info-badge root-dir-action root-dir-select-action"
-                            (click)="setModRootSubdir(node.fullPath)">
+                            (click)="addModRootSubdir(node.fullPath)">
                             &lt;set data dir&gt;
                         </a>
                     } @else {
@@ -54,7 +54,7 @@
                         <mat-icon color="warn"
                                 class="path-info-badge root-dir-action root-dir-clear-action"
                                 matTooltip="Clear data dir"
-                                (click)="setModRootSubdir('')">
+                                (click)="removeModRootSubdir(node.fullPath)">
                             close
                         </mat-icon>
                     }

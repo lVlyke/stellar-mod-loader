@@ -14,8 +14,9 @@ export class AppModImportRequestImagePipe implements PipeTransform {
             return NEVER;
         }
 
-        if (importRequest.modSubdirRoot) {
-            const subdirRoot = importRequest.modSubdirRoot + importRequest.filePathSeparator;
+        if (importRequest.modSubdirRoots.length > 0) {
+            // TODO - This assumes at most one subdir root for installers, which is presently true
+            const subdirRoot = importRequest.modSubdirRoots[0] + importRequest.filePathSeparator;
 
             if (!path.startsWith(subdirRoot)) {
                 path = subdirRoot + path;

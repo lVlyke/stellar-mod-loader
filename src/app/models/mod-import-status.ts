@@ -16,7 +16,7 @@ export interface ModImportRequest {
     modFilePaths: ModImportRequest.ModPathReference[];
     modPlugins: string[];
     filePathSeparator: string;
-    modSubdirRoot: string;
+    modSubdirRoots: string[];
     installer?: ModInstaller;
     modFilePathMapFilter?: Record<string, string>;
 }
