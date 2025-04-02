@@ -408,12 +408,12 @@
                     <span matLine>Copy Profile</span>
                 </button>
 
-                <button mat-list-item (click)="exportActiveProfile(); showProfileMgmtMenuRef?.close()">
+                <button mat-list-item [disabled]="activeProfile!.locked" (click)="exportActiveProfile(); showProfileMgmtMenuRef?.close()">
                     <mat-icon matListIcon color="accent">person_remove</mat-icon>
                     <span matLine>Export Profile</span>
                 </button>
 
-                <button mat-list-item (click)="deleteActiveProfile(); showProfileMgmtMenuRef?.close()">
+                <button mat-list-item [disabled]="activeProfile!.locked" (click)="deleteActiveProfile(); showProfileMgmtMenuRef?.close()">
                     <mat-icon matListIcon color="warn">person_off</mat-icon>
                     <span matLine>Delete Profile</span>
                 </button>

@@ -196,7 +196,7 @@ export class AppProfileSettingsComponent extends BaseComponent {
 
         stateRef.get("gameDb").pipe(
             map((gameDb) => (Object.keys(gameDb) as GameId[]).filter(
-                gameId => gameId !== "$unknown" && gameId !== "$none"
+                gameId => gameId !== GameId.UNKNOWN && gameId !== GameId.NONE
             ))
         ).subscribe(gameIds => this.gameIds = gameIds);
 

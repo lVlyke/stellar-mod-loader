@@ -22,6 +22,13 @@
                     <app-game-badge [gameId]="formModel.gameId!" />
                 </mat-select-trigger>
             }
+
+            @if (baseProfileMode) {
+                <mat-option [value]="GameId.NONE">
+                    <app-game-badge [gameId]="GameId.NONE" />
+                </mat-option>
+            }
+
             @for (gameId of gameIds; track gameId) {
                 <mat-option [value]="gameId">
                     <app-game-badge [gameId]="gameId" />

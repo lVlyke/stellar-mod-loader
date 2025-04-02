@@ -206,10 +206,6 @@ class ElectronLoader {
             }
             
             const profileActionIds = [
-                "new-profile",
-                "add-external-profile",
-                "import-profile",
-                "copy-profile",
                 "export-profile",
                 "delete-profile",
                 "mods"
