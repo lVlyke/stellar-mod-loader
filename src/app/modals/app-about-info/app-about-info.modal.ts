@@ -4,11 +4,11 @@ import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { ComponentState } from "@lithiumjs/angular";
 import { BaseComponent } from "../../core/base-component";
-import { AppMessageData } from "../../models/app-message";
+import { AppInfo } from "../../models/app-info";
 import { OverlayHelpersRef, OverlayRefSymbol } from "../../services/overlay-helpers";
 import { AppExternalUrlComponent } from "../../components/external-url";
 
-export const DEPS_INFO_TOKEN = new InjectionToken<AppMessageData<"app:showAboutInfo">>("DEPS_INFO_TOKEN");
+export const APP_INFO_TOKEN = new InjectionToken<AppInfo>("APP_INFO_TOKEN");
 
 @Component({
     selector: "app-about-info-modal",
@@ -32,7 +32,7 @@ export class AppAboutInfoModal extends BaseComponent {
     
     constructor(
         cdRef: ChangeDetectorRef,
-        @Inject(DEPS_INFO_TOKEN) protected readonly aboutData: AppMessageData<"app:showAboutInfo">,
+        @Inject(APP_INFO_TOKEN) protected readonly aboutData: AppInfo,
         @Inject(OverlayRefSymbol) protected readonly overlayRef: OverlayHelpersRef,
     ) {
         super({ cdRef });

@@ -2,13 +2,13 @@ import { Injectable } from "@angular/core";
 import { Store } from "@ngxs/store";
 import { EMPTY, from, Observable, of, throwError } from "rxjs";
 import { catchError, concatMap, distinctUntilChanged, filter, map, skip, switchMap, take, toArray } from "rxjs/operators";
-import { AppMessage, AppMessageData } from "../models/app-message";
+import { AppMessage } from "../models/app-message";
 import { AppActions, AppState } from "../state";
 import { AppMessageHandler } from "./app-message-handler";
 import { OverlayHelpers, OverlayHelpersComponentRef, OverlayHelpersRef } from "./overlay-helpers";
 import { AppProfile } from "../models/app-profile";
 import { AppModSyncIndicatorModal, LOADING_MSG_TOKEN } from "../modals/loading-indicator";
-import { AppAboutInfoModal, DEPS_INFO_TOKEN } from "../modals/app-about-info";
+import { AppAboutInfoModal, APP_INFO_TOKEN } from "../modals/app-about-info";
 import { ElectronUtils } from "../util/electron-utils";
 import { ExternalFile } from "../models/external-file";
 import { AppData } from "../models/app-data";
@@ -24,6 +24,7 @@ import { AppWarnings } from "../models/app-warnings";
 import { AppGameManagerModal } from "../modals/game-manager";
 import { GameDetails } from "../models/game-details";
 import { GameId } from "../models/game-id";
+import { AppInfo } from "../models/app-info";
 
 @Injectable({ providedIn: "root" })
 export class AppStateBehaviorManager {
@@ -121,6 +122,10 @@ export class AppStateBehaviorManager {
                 };
             })
         );
+    }
+
+    public getAppInfo(): Observable<AppInfo> {
+        return ElectronUtils.invoke("app:getInfo", {});
     }
 
     public setPluginsEnabled(pluginsEnabled: boolean): Observable<void> {
@@ -291,7 +296,7 @@ export class AppStateBehaviorManager {
         return of(modContextMenuRef);
     }
 
-    public showAppAboutInfo(aboutData: AppMessageData<"app:showAboutInfo">): void {
+    public showAppAboutInfo(aboutData: AppInfo): void {
         this.overlayHelpers.createFullScreen(AppAboutInfoModal, {
             width: "50vw",
             height: "auto",
@@ -300,7 +305,7 @@ export class AppStateBehaviorManager {
             hasBackdrop: true,
             disposeOnBackdropClick: true,
             panelClass: "mat-app-background"
-        }, [[DEPS_INFO_TOKEN, aboutData]]);
+        }, [[APP_INFO_TOKEN, aboutData]]);
     }
 
     public resolveResourceUrl(resource: AppResource): Observable<string | undefined> {

@@ -1,28 +1,29 @@
-# Starfield Mod Loader
+# Stellar Mod Loader
 
-A cross-platform mod manager for Starfield and other games.
-
-![Starfield Mod Loader](/docs/app1.png)
+Stellar is a mod manager for Windows and Linux that supports games including Fallout, Skyrim, and Starfield. Formerly known as Starfield Mod Loader.
 
 # Features
 
-* **Add**, **re-order**, **rename**, **disable** and **remove** your mods and plugins
-* **Multiple profiles** enable quick switching between different games and mod loadouts
-* **Base profiles** allow for creating a base set of mods that can be dynamically extended by other profiles
-* **Root mod** support enables management of ENBs, script extenders, and other injectors
-* **Cross-platform**: Native clients for Windows and Linux (including Steam Deck)
-* Per-profile management of config files, save files, and archive invalidation
-* Support for FOMOD installers
-* Support for **Steam**, **UWP (Game Pass)** and other versions of games
+* **Add**, **re-order**, **rename**, **disable** and **remove** your mods and plugins.
+* **Multiple profiles** enable quick switching between different games and mod loadouts.
+* **Base profiles** allows for easily syncing mods between different devices, or VR and non-VR versions of games.
+* **Root mod** support enables management of ENBs, script extenders, and other injectors.
+* **Custom game support** allows Stellar to work with many games.
+* **Cross-platform**: Native clients for Windows and Linux (including Steam Deck).
+* Per-profile management of config files, save files, and archive invalidation.
+* Support for FOMOD installers.
+* Support for **Steam**, **UWP (Game Pass)** and other versions of games.
+
+![Stellar Mod Loader](/docs/app1.png)
 
 # Releases
 
 Releases can be found here:
 
-&nbsp;&nbsp;&nbsp;&nbsp;[Starfield Mod Loader releases](https://github.com/lVlyke/starfield-mod-loader/releases)
+&nbsp;&nbsp;&nbsp;&nbsp;[Stellar releases](https://github.com/lVlyke/stellar-mod-loader/releases)
 
 # Supported Games
-Starfield Mod Loader currently supports the following games:
+Stellar currently supports the following games:
 
 * **Elder Scrolls IV: Oblivion**
 * **Elder Scrolls V: Skyrim LE**
@@ -36,11 +37,11 @@ Starfield Mod Loader currently supports the following games:
 
 # Installation
 
-To install Starfield Mod Loader, simply download the latest release from the [releases page](https://github.com/lVlyke/starfield-mod-loader/releases) and extract the archive to a folder of your choice.
+To install Stellar, simply download the latest release from the [releases page](https://github.com/lVlyke/stellar-mod-loader/releases) and extract the archive to a folder of your choice.
 
 **Note:** [7-Zip](https://www.7-zip.org/) is required to be installed in order to add mods that use RAR archives.
 
-# Using Starfield Mod Loader
+# Using Stellar
 
 > **Quick Links:**
 > * **Profiles**
@@ -129,7 +130,7 @@ Link mode can also be separately enabled for config files and save files. To ena
 
 ### Archive invalidation
 
-Certain games require a feature called **Archive Invalidation** to properly load mod files. If this setting is enabled, Starfield Mod Loader will automatically enable archive invalidation to ensure all mods are loaded properly.
+Certain games require a feature called **Archive Invalidation** to properly load mod files. If this setting is enabled, Stellar will automatically enable archive invalidation to ensure all mods are loaded properly.
 
 **NOTE:** It is recommended to also enable the "Manage Config/INI Files" option. However if it is disabled, and existing config files can be located, archive invalidation can still be enabled.
 
@@ -145,7 +146,7 @@ You can choose to override any of the profile paths to point to other directorie
 
 #### Profile Root Path
 
-By default, profiles are stored in the `profiles` directory of Starfield Mod Loader. Overriding this path will allow you to store the profile at an alternative location. This can be useful if your game is installed on a different drive and you want to co-locate the profile to the same drive as the game to enable Link mode.
+By default, profiles are stored in the `profiles` directory where the application is located. Overriding this path will allow you to store the profile at an alternative location. This can be useful if your game is installed on a different drive and you want to co-locate the profile to the same drive as the game to enable Link mode.
 
 A profile with an overridden root path is called an **external profile**. Existing external profiles can also be added or imported by selecting **Profiles -> Add External Profile** or **Profiles -> Import Profile**.
 
@@ -171,7 +172,7 @@ When running a script extender such as SFSE via Steam/Proton, Steam will automat
 
 To avoid having two separate copies of these files, symlinks can be created on the virtual C drive for the script extender that point to the correct directory on the original game's virtual C drive. This allows both virtual C drives to use the same directory for reading config and save files.
 
-Starfield Mod Loader can automate this behavior by enabling **Manage Steam Compat Symlinks** for the profile.
+Stellar can automate this behavior by enabling **Manage Steam Compat Symlinks** for the profile.
 
 You will first need to figure out the new virtual C drive directory for the script extender, which will normally be located in `~/.local/share/Steam/steamapps/compatdata`. You will see a number of directories in here with numerical IDs. One of these directories corresponds to the game ID that Steam assigned to the script extender. To determine which game ID is the correct one, you can look at the folder's "Date modified" timestamp to figure out which virtual drive directories were created recently. Assuming you added the script extender to Steam recently, the directory should have a Date modified field that matches when it was added to Steam.
 
@@ -219,13 +220,13 @@ Now, only the files in `standard/Data` directory will be added for this mod.
 
 ### FOMOD installers
 
-Some mods are packaged with special metadata known as FOMOD that allows for customizing the installation through a guided flow. Starfield Mod Loader supports FOMOD and will automatically show the installation wizard for FOMOD-compatible mods, as shown in the example below:
+Some mods are packaged with special metadata known as FOMOD that allows for customizing the installation through a guided flow. Stellar supports FOMOD and will automatically show the installation wizard for FOMOD-compatible mods, as shown in the example below:
 
 ![FOMOD Installer Example 1](/docs/fomod-1.png)
 
 The installer will guide you through the installation of the mod. Hovering over or selecting an option will show information about what it does. If you wish to install the mod manually instead, you can click the **Manual Install** button at the bottom left corner of the installer window.
 
-**Note**: Many mods will ask you if you are using Vortex or Mod Organizer 2. Starfield Mod Loader supports either option, but if you encounter any issues, select **Mod Organizer 2**.
+**Note**: Many mods will ask you if you are using Vortex or Mod Organizer 2. Stellar supports either option, but if you encounter any issues, select **Mod Organizer 2**.
 
 **Tip**: Click the preview image (or the **?** tooltip in compact view) to show a fullscreen view of the image.
 
@@ -263,7 +264,7 @@ You can right click individual plugins to bring up additional options.
 
 ### Plugin type promotion
 
-Most games have rules regarding the load order of different types of plugins. For Starfield and other Bethesda games, the order is `ESM -> ESL -> ESP`. However, mods sometimes contain `ESP` plugins that are "flagged" as `ESM` or `ESL`. While Starfield Mod Loader does not currently parse these flags, you can manually account for this by using **plugin type promotion**. To promote a plugin to a new type, right-click it and use the "Plugin Type" option to select the new plugin type. Once promoted, the plugin will behave as if it were of the promoted type.
+Most games have rules regarding the load order of different types of plugins. For Starfield and other Bethesda games, the order is `ESM -> ESL -> ESP`. However, mods sometimes contain `ESP` plugins that are "flagged" as `ESM` or `ESL`. While Stellar does not currently parse these flags, you can manually account for this by using **plugin type promotion**. To promote a plugin to a new type, right-click it and use the "Plugin Type" option to select the new plugin type. Once promoted, the plugin will behave as if it were of the promoted type.
 
 ### External plugins
 
@@ -309,13 +310,13 @@ App settings can be changed via **File > Preferences** from the menu bar. The fo
 
 ### Normalize mod file path
 
-Some mods may use different casing for their files/folders (i.e. `Interface` vs `interface`) and this can cause issues on case-sensitive file systems, which are often used on Linux. When this setting is enabled, Starfield Mod Loader will automatically convert all activated mod files and folders to the correct case to avoid this issue.
+Some mods may use different casing for their files/folders (i.e. `Interface` vs `interface`) and this can cause issues on case-sensitive file systems, which are often used on Linux. When this setting is enabled, Stellar will automatically convert all activated mod files and folders to the correct case to avoid this issue.
 
 It is recommended to enable the **Normalize mod file path** setting when using Linux with a case-sensitive file system.
 
 ### Verify active profile on app startup
 
-Whether or not the active profile should be verified upon starting Starfield Mod Loader. This is recommended to be enabled, but can be disabled if verification takes too long.
+Whether or not the active profile should be verified upon starting Stellar. This is recommended to be enabled, but can be disabled if verification takes too long.
 
 ### Enable game plugins
 
@@ -341,11 +342,11 @@ Additional actions can be added by clicking the dropdown arrow to the right of t
 
 You can activate and launch a profile directly from the CLI by using the `--launch` argument. For example, if you want to activate the profile named "My Profile" and launch the game, you can specify the following:
 
-```starfield-mod-loader.exe --launch "My Profile"```
+```stellar-mod-loader.exe --launch "My Profile"```
 
 You can also optionally specify the game action to run:
 
-```starfield-mod-loader.exe --launch "My Profile" "Custom Action Name"```
+```stellar-mod-loader.exe --launch "My Profile" "Custom Action Name"```
 
 This will activate the given profile and invoke the given action (or the currently active action if one isn't specified).
 
@@ -357,7 +358,7 @@ This will activate the given profile and invoke the given action (or the current
 
 If you get a warning about symlinks not being enabled when creating or editing a profile, you need to enable symlink permissions.
 
-To enable symlinks in Windows, you can either A) enable Windows Developer Mode by going the Windows "Settings" app, select "For developers", and then enable "Developer Mode", or B) run Starfield Mod Loader as administrator (not recommended). Once enabled, Starfield Mod Loader should now be able to use symlinks.
+To enable symlinks in Windows, you can either A) enable Windows Developer Mode by going the Windows "Settings" app, select "For developers", and then enable "Developer Mode", or B) run Stellar as administrator (not recommended). Once enabled, Stellar should now be able to use symlinks.
 
 ### The app sits on the "Verifying Profile..." loading screen for a long time during startup
 
@@ -397,7 +398,7 @@ sPhotoModeFolder=Photos
 
 ## Report an issue
 
-If you run into a problem, please check the [issues page](https://github.com/lVlyke/starfield-mod-loader/issues) to see if your question has been answered or create a new issue if you have a bug to report.
+If you run into a problem, please check the [issues page](https://github.com/lVlyke/stellar-mod-loader/issues) to see if your question has been answered or create a new issue if you have a bug to report.
 
 If you have a suggestion for a new feature or a new game to support, feel free to open an issue for your request.
 

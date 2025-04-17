@@ -60,6 +60,17 @@ const BUILD_DATE_FILE = `${__dirname}/lastbuild.txt`;
 
 class ElectronLoader {
 
+    static APP_PACKAGE = (/** @returns {{ name: string; version: string; repository: String; }} */ () => {
+        try {
+            return fs.readJSONSync(ElectronLoader.APP_PACKAGE_FILE, { encoding: "utf-8" });
+        } catch (err) {
+            return { name: ElectronLoader.APP_NAME, version: "master", repository: "" };
+        }
+    })();
+
+    static /** @type {string} */ APP_VERSION = ElectronLoader.APP_PACKAGE.version;
+    static /** @type {string} */ APP_NAME = "Stellar Mod Loader";
+    static /** @type {string} */ APP_SHORT_NAME = "Stellar";
     static /** @type {string} */ STEAM_DEFAULT_COMPAT_DATA_ROOT = "~/.local/share/Steam/steamapps/compatdata";
     static /** @type {string} */ STEAM_COMPAT_STEAMUSER_DIR = "pfx/drive_c/users/steamuser";
     static /** @type {string} */ APP_SETTINGS_FILE = "settings.json";
@@ -83,20 +94,11 @@ class ElectronLoader {
     static /** @type {string} */ DEPLOY_EXT_BACKUP_DIR = ".sml.bak";
     static APP_ICON_IMG = nativeImage.createFromPath(path.join(__dirname, "favicon.png"));
 
-    static /** @type {string} */ APP_VERSION = (() => {
-        try {
-            const appPackage = fs.readJSONSync(ElectronLoader.APP_PACKAGE_FILE, { encoding: "utf-8" });
-            return `v${appPackage.version}`;
-        } catch (err) {
-            return "master";
-        }
-    })();
-
     static /** @type {Record<AppResource, string>} */ APP_RESOURCES = {
         "readme_offline": `file://${process.cwd()}/README.md`,
-        "readme_online": `https://github.com/lVlyke/starfield-mod-loader/blob/${ElectronLoader.APP_VERSION}/README.md`,
+        "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/${ElectronLoader.APP_VERSION}/README.md`,
         "license": `file://${process.cwd()}/LICENSE`,
-        "homepage": "https://github.com/lVlyke/starfield-mod-loader"
+        "homepage": ElectronLoader.APP_PACKAGE.repository
     };
 
     #CLI_COMMAND_EXECUTORS = {
@@ -162,6 +164,13 @@ class ElectronLoader {
             }
         });
 
+        ipcMain.handle("app:getInfo", (
+            _event,
+            /** @type {import("./app/models/app-message").AppMessageData<"app:getInfo">} */ {}
+        ) => {
+            return this.getAppAboutInfo();
+        });
+
         ipcMain.handle("app:syncUiState", (
             _event,
             /** @type {import("./app/models/app-message").AppMessageData<"app:syncUiState">} */ {
@@ -175,7 +184,7 @@ class ElectronLoader {
                 const gameId = appState.activeProfile.gameId;
                 const gameTitle = appState.gameDb[gameId]?.title ?? gameId ?? "Unknown";
 
-                this.mainWindow.setTitle(`${appState.activeProfile.name} [${gameTitle}] - SML`);
+                this.mainWindow.setTitle(`${appState.activeProfile.name} [${gameTitle}] - ${ElectronLoader.APP_SHORT_NAME}`);
             }
 
             // Sync mod list column menu checkbox state
@@ -1187,6 +1196,7 @@ class ElectronLoader {
     #initWindow() {
         // Create the browser window
         this.mainWindow = new BrowserWindow({
+            title: ElectronLoader.APP_NAME,
             icon: ElectronLoader.APP_ICON_IMG,
             width: 1280,
             height: 720,
@@ -1253,7 +1263,7 @@ class ElectronLoader {
             url.format({
                 pathname: path.join(__dirname, `index.html`),
                 protocol: "file:",
-                slashes: true
+                slashes: true,
             })
         );
     }
@@ -1468,7 +1478,7 @@ class ElectronLoader {
                         click: () => shell.openExternal(ElectronLoader.APP_RESOURCES["readme_online"])
                     },
                     {
-                        label: "About Starfield Mod Loader",
+                        label: `About ${ElectronLoader.APP_SHORT_NAME}`,
                         click: () => this.showAppAboutInfo()
                     }
                 ]
@@ -3772,6 +3782,8 @@ class ElectronLoader {
         } catch (_err) {}
 
         return {
+            appName: ElectronLoader.APP_NAME,
+            appShortName: ElectronLoader.APP_SHORT_NAME,
             appVersion: ElectronLoader.APP_VERSION,
             depsLicenseText,
             depsInfo
@@ -4082,7 +4094,7 @@ class ElectronLoader {
 
     /** @returns {string} */
     #createProfilePluginListHeader(/** @type {AppProfile} */ profile) {
-        return `# This file was generated automatically by Starfield Mod Loader for profile "${profile.name}"\n`;
+        return `# This file was generated automatically by ${ElectronLoader.APP_NAME} for profile "${profile.name}"\n`;
     }
 
     /** @returns {string} */

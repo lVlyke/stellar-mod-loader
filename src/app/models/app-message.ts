@@ -1,5 +1,5 @@
 import { AppData } from "./app-data";
-import { AppDependenciesInfo } from "./app-dependency-info";
+import { AppInfo } from "./app-info";
 import { AppBaseProfile, AppProfile } from "./app-profile";
 import { AppResource } from "./app-resource";
 import { AppSettingsUserCfg } from "./app-settings-user-cfg";
@@ -43,6 +43,12 @@ export namespace AppMessage {
         id: `${Prefix}:log`;
         data: LogEntry;
         result: LogEntry;
+    }
+
+    export interface GetInfo extends Base {
+        id: `${Prefix}:getInfo`;
+        data: {};
+        result: AppInfo;
     }
 
     export interface SyncUiState extends Base {
@@ -218,11 +224,7 @@ export namespace AppMessage {
 
     export interface ShowAboutInfo extends Base {
         id: `${Prefix}:showAboutInfo`;
-        data: {
-            appVersion: string;
-            depsInfo: AppDependenciesInfo;
-            depsLicenseText: string;
-        };
+        data: AppInfo;
     }
 
     export interface ToggleModListColumn extends Base {
@@ -263,6 +265,7 @@ export namespace AppMessage {
     }
 
     export type AppMessage = Log
+                           | GetInfo
                            | SyncUiState
                            | ChooseDirectory
                            | ChooseFilePath
@@ -778,6 +781,7 @@ export namespace AppMessage {
 
     export const record: Array<_AppMessage["id"]> = [
         "app:log",
+        "app:getInfo",
         "app:syncUiState",
         "app:chooseDirectory",
         "app:chooseFilePath",

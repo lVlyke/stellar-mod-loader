@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "starfield-mod-loader": {
+    "stellar-mod-loader": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -73,10 +73,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "starfield-mod-loader:build:production"
+              "buildTarget": "stellar-mod-loader:build:production"
             },
             "development": {
-              "buildTarget": "starfield-mod-loader:build:development"
+              "buildTarget": "stellar-mod-loader:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "starfield-mod-loader:build"
+            "buildTarget": "stellar-mod-loader:build"
           }
         },
         "test": {
