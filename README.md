@@ -23,7 +23,7 @@ Releases can be found here:
 &nbsp;&nbsp;&nbsp;&nbsp;[Stellar releases](https://github.com/lVlyke/stellar-mod-loader/releases)
 
 # Supported Games
-Stellar currently supports the following games:
+Stellar currently has built-in support the following games:
 
 * **Elder Scrolls IV: Oblivion**
 * **Elder Scrolls V: Skyrim LE**
@@ -34,6 +34,8 @@ Stellar currently supports the following games:
 * **Fallout 4 VR**
 * **Fallout: New Vegas**
 * **Starfield**
+
+Many other games are supported with **[custom game support](#custom-games)**.
 
 # Installation
 
@@ -58,9 +60,11 @@ To install Stellar, simply download the latest release from the [releases page](
 > * **Mods**
 >   * [**Adding mods**](#add-some-mods)
 >   * [**FOMOD installers**](#fomod-installers)
+>   * [**BAIN installers**](#bain-installers)
 >   * [**Root mods**](#root-mods)
 >   * [**Managing mods**](#managing-your-mods)
 >   * [**Mod section dividers**](#mod-section-dividers)
+>   * [**Mod file overwrite**](#mod-file-overwrite)
 >   * [**Activating mods**](#activate-your-mods)
 >   * [**Backup/restore mod order**](#backuprestore-mod-order)
 > * **Plugins**
@@ -71,12 +75,17 @@ To install Stellar, simply download the latest release from the [releases page](
 > * [**Config file management**](#config-file-management)
 >   * [**Backup/restore config files**](#backuprestore-config-files)
 > * [**Save file management**](#save-file-management)
+> * **Games**
+>   * [**Game manager**](#game-manager)
+>   * [**Custom games**](#custom-games)
 > * [**App settings**](#app-settings)
 >   * [**Mod file path case normalization (Linux)**](#normalize-mod-file-path)
 > * [**Launching games**](#launch-the-game)
 >   * [**Custom actions**](#custom-actions)
 >   * [**Launch profile from CLI**](#launch-profile-from-cli)
 > * [**Troubleshooting**](#troubleshooting)
+>   * [**Common issues**](#common-issues)
+>   * [**Report an issue**](#report-an-issue)
 
 **Note:** This guide refers specifically to Starfield in some places, but most of the information also applies to other games.
 
@@ -218,6 +227,8 @@ This mod contains a single root directory called `standard` that contains an inn
 
 Now, only the files in `standard/Data` directory will be added for this mod.
 
+**Tip:** Multiple directories can be marked as **root data dir** if needed.
+
 ### FOMOD installers
 
 Some mods are packaged with special metadata known as FOMOD that allows for customizing the installation through a guided flow. Stellar supports FOMOD and will automatically show the installation wizard for FOMOD-compatible mods, as shown in the example below:
@@ -229,6 +240,12 @@ The installer will guide you through the installation of the mod. Hovering over 
 **Note**: Many mods will ask you if you are using Vortex or Mod Organizer 2. Stellar supports either option, but if you encounter any issues, select **Mod Organizer 2**.
 
 **Tip**: Click the preview image (or the **?** tooltip in compact view) to show a fullscreen view of the image.
+
+### BAIN installers
+
+BAIN is another kind of packaging format for mods that allow for customizing installation. Mods that use BAIN will have directories that start with numbered prefixes (`00`, `10`, `20`, etc), representing features that can be optionally installed. To choose which features are installed, mark the features you want to install as **root data dirs**. Only these features will be installed.
+
+![BAIN Example 1](/docs/bain-1.png)
 
 ### Root mods
 
@@ -255,6 +272,10 @@ Mods can be easily moved between sections or to the top/bottom of a section by r
 ### External files
 
 Existing game files and other files that have been manually copied to the **Mod Base Directory** outside of your profile will show up in the UI as **External files**. When activating mods for a profile that overwrite external files, the original external files will be moved to a folder called `.sml.bak` while mods are activated. The files in the `.sml.bak` folder will be restored back to their original location upon deactivating mods.
+
+## Mod file overwrite
+
+You can see which files are being overwritten by specific mods by enabling mod overwrite calculations. To enable mod overwrite calculations, click the file icon next to the **Mod Name** header in the mod list. Once enabled, file icons will be displayed next to mods that overwrite files from other mods. Clicking the file icon will show the list of files being overwritten by that mod.
 
 ## Game plugins
 
@@ -303,6 +324,105 @@ Mods will now remain active until you press the **Deactivate Mods** button, even
 You can backup and restore the mod load order using the "Backup" button at the top of the mod list. Selecting the "Create Mod Order Backup" option will allow you to create a new mod order backup. Selecting the "Restore Mod Order" option will show a list of all available mod order backups that can be restored.
 
 Note that any mods in a backup that are not currently added to the profile will not be re-added.
+
+## Games
+
+### Game manager
+
+To open the **Game Manager**, select **File > Manage Games**. You can browse the built-in game definitions here, as well as add, import, and export custom game definitions.
+
+![Game Manager](/docs/game-manager-1.png)
+
+### Custom games
+
+If Stellar doesn't have built-in support for a game you want to mod, you can create a **custom game definition** to add support for it. Existing custom game definitions can also be imported or exported, allowing you to share game definitions with others or [submit them for inclusion directly into Stellar](#submit-custom-game).
+
+### Import a custom game definition
+
+To import an existing custom game definition, open the **Game Manager** and then click the **gear** icon and select "**Import Game**". Browse for the custom game definition file and select it.
+
+You can now create a new profile using this game definition.
+
+### Create a custom game definition
+
+To create a new custom game definition, open the **Game Manager** and then click the **gear** icon and select "**Add New Game**". You will be presented with a form to define the details for the custom game:
+
+#### Game ID
+
+The ID for the game. This must be unique.
+
+#### Title
+
+The title of the game.
+
+#### Background Color
+
+The background color for the game. Can be either a hex color or `rgb()` definition.
+
+#### Foreground Color
+
+The foreground (text) color for the game. Can be either a hex color or `rgb()` definition.
+
+#### Game Installations
+
+The default game installation paths for this game. These are typically the default installation folders for the game on supported platforms.
+
+- **Game Root Directory** - The root installation directory for the game.
+- **Game Data Directory** - The directory where mod data for the game is installed. If this is the same as the Game Root Directory you can simply specify the same path (or ".").
+- **Game Config Files Directory** - (Optional) The directory where config files for the game are located.
+- **Game Saves Directory** - (Optional) The directory where save files for the game are located.
+- **Game Plugin List Path** - (Optional) The location where the plugin list should be saved.
+- **Steam IDs** - (Optional) Any Steam game IDs associated with this installation (if applicable).
+
+#### Game Binaries
+
+(Optional) The names of binaries (i.e. the `exe` of the game). Also include the names of any possible mod loader binaries for the game here.
+
+#### Save Formats
+
+(Optional) The save file formats for the game.
+
+#### Plugin Formats
+
+(Optional) The plugin file formats for the game.
+
+##### Require External Plugins
+
+Whether or not external plugin file management is required for this game.
+
+#### Plugin List Type
+
+(Optional) The type of plugin list for the game, if applicable.
+
+#### Pinned Plugins
+
+(Optional) Any plugin files that are required to be present for the game.
+
+#### Game Config Files
+
+(Optional) The names of the config files for the game.
+
+#### Script Extenders
+
+(Optional) Any script extenders for the game.
+
+- **Name** - The name of the script extender.
+- **Binaries** - The names of any binaries associated with the script extender.
+- **Mod Paths** - Any directories that are used by mods associated with this script extender.
+
+For specific examples of these values you can also look at the definitions of the built-in games.
+
+Once you have defined all of the details for the custom game, click the "**Save**" button to confirm your changes. The button will be disabled if there are any errors in your game definition.
+
+You can now create a new profile using this game definition.
+
+### Export a custom game definition
+
+If you would like to share your existing custom game definition, open the **Game Manager** and then click the **gear** icon and select "**Export Game**". Select a file to save your game definition to. The game definition file can be shared and imported by others. You can also [submit your game definition file](#submit-custom-game) for inclusion directly into Stellar.
+
+### Submit a custom game definition for inclusion into Stellar <a name="submit-custom-game"></a>
+
+Once you have tested your game definition to make sure everything works as expected, feel free to open an [issue](https://github.com/lVlyke/stellar-mod-loader/issues) and submit your exported game definition file for inclusion directly into Stellar. If approved, your game definition will be added as a built-in game in a future release.
 
 ## App settings
 
@@ -398,7 +518,7 @@ sPhotoModeFolder=Photos
 
 ## Report an issue
 
-If you run into a problem, please check the [issues page](https://github.com/lVlyke/stellar-mod-loader/issues) to see if your question has been answered or create a new issue if you have a bug to report.
+If you run into a problem, please check the [issues page](https://github.com/lVlyke/stellar-mod-loader/issues) to see if your question has been answered, or create a new issue if you have a new bug to report.
 
 If you have a suggestion for a new feature or a new game to support, feel free to open an issue for your request.
 
