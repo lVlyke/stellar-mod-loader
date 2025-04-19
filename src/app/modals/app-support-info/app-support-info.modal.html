@@ -1,0 +1,25 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>Support {{appInfo.appName}}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+        <p>{{appInfo.appShortName}} is free to use and is developed in my spare time. If you have found it useful and are interested in supporting future development, below are some ways you can monetarily support the project (feel free to include any specific features or games you would like to see added):</p>
+
+        <div class="actions">
+            <app-external-url variant="default" color="accent" resource="paypal_donation" (click)="clickedSupportLink = true">
+                PayPal
+            </app-external-url>
+        </div>
+
+        @if (clickedSupportLink) {
+            <p class="thanks">Thank you for your support!</p>
+        }
+    </mat-card-content>
+
+    <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="overlayRef.close()">
+            Close
+        </button>
+    </mat-card-actions>
+</mat-card>

@@ -14,6 +14,10 @@
                 README
             </app-external-url>
 
+            <app-external-url variant="stroked-button" color="accent" resource="issues">
+                Report Issue
+            </app-external-url>
+
             <app-external-url variant="stroked-button" color="accent" resource="license">
                 License
             </app-external-url>
@@ -38,10 +42,13 @@
     </mat-card-content>
 
     <mat-card-actions>
+        <div class="spacer"></div>
+
         <button mat-raised-button color="primary" (click)="overlayRef.close()">
             Close
         </button>
-        <div class="copyright">
+
+        <div class="copyright spacer">
             Copyright (C) <span class="copyright-date">{{today | date:"y"}}</span> Mychal Thompson
         </div>
     </mat-card-actions>

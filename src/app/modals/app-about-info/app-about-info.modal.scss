@@ -21,6 +21,8 @@
             display: flex;
             align-items: center;
             justify-content: space-evenly;
+            flex-wrap: wrap;
+            gap: 1rem;
             margin-bottom: 2rem;
         }
 
@@ -39,15 +41,18 @@
         justify-content: center;
         align-items: center;
         position: relative;
+        flex-direction: row;
+
+        > .spacer {
+            flex: 1 1 100%;
+        }
 
         > .copyright {
-            position: absolute;
-            right: 0;
-            bottom: 0;
             padding: 1rem;
             display: flex;
             align-items: center;
             justify-content: flex-end;
+            flex-wrap: wrap;
 
             .copyright-date {
                 padding: 0 0.25rem;

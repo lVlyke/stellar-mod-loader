@@ -227,6 +227,11 @@ export namespace AppMessage {
         data: AppInfo;
     }
 
+    export interface ShowSupportInfo extends Base {
+        id: `${Prefix}:showSupportInfo`;
+        data: AppInfo;
+    }
+
     export interface ToggleModListColumn extends Base {
         id: `${Prefix}:toggleModListColumn`;
         data: {
@@ -291,6 +296,7 @@ export namespace AppMessage {
                            | FindGameInstallations
                            | FindGameInstallationsByRootDir
                            | ShowAboutInfo
+                           | ShowSupportInfo
                            | ToggleModListColumn
                            | ToggleLogPanel
                            | CheckLinkSupported
@@ -807,6 +813,7 @@ export namespace AppMessage {
         "app:findGameInstallations",
         "app:findGameInstallationsByRootDir",
         "app:showAboutInfo",
+        "app:showSupportInfo",
         "app:toggleModListColumn",
         "app:toggleLogPanel",
         "app:checkLinkSupported",

@@ -98,7 +98,9 @@ class ElectronLoader {
         "readme_offline": `file://${process.cwd()}/README.md`,
         "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/${ElectronLoader.APP_VERSION}/README.md`,
         "license": `file://${process.cwd()}/LICENSE`,
-        "homepage": ElectronLoader.APP_PACKAGE.repository
+        "homepage": ElectronLoader.APP_PACKAGE.repository,
+        "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
+        "paypal_donation": "https://paypal.me/lVlyke"
     };
 
     #CLI_COMMAND_EXECUTORS = {
@@ -1480,7 +1482,14 @@ class ElectronLoader {
                     {
                         label: `About ${ElectronLoader.APP_SHORT_NAME}`,
                         click: () => this.showAppAboutInfo()
-                    }
+                    },
+                    {
+                        type: "separator"
+                    },
+                    {
+                        label: `Support ${ElectronLoader.APP_SHORT_NAME}`,
+                        click: () => this.showAppSupportInfo()
+                    },
                 ]
             }
         ]);
@@ -3792,6 +3801,10 @@ class ElectronLoader {
     
     showAppAboutInfo() {
         this.mainWindow.webContents.send("app:showAboutInfo", this.getAppAboutInfo());
+    }
+
+    showAppSupportInfo() {
+        this.mainWindow.webContents.send("app:showSupportInfo", this.getAppAboutInfo());
     }
 
     /** @returns {boolean | undefined} */

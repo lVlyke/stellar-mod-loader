@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Inject, Output } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Output } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { Observable } from "rxjs";
@@ -7,6 +7,7 @@ import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../servi
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
 import { AppInfo } from "../../models/app-info";
 import { AppStateBehaviorManager } from "../../services/app-state-behavior-manager";
+import { BaseComponent } from "../../core/base-component";
 
 @Component({
     templateUrl: "./symlink-warning-dialog.component.html",
@@ -20,7 +21,7 @@ import { AppStateBehaviorManager } from "../../services/app-state-behavior-manag
     ],
     providers: [ComponentState.create(AppSymlinkWarningDialog)]
 })
-export class AppSymlinkWarningDialog implements DialogComponent {
+export class AppSymlinkWarningDialog extends BaseComponent implements DialogComponent {
 
     public readonly appInfo$: Observable<AppInfo>;
 
@@ -32,8 +33,11 @@ export class AppSymlinkWarningDialog implements DialogComponent {
 
     constructor(
         @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
+        cdRef: ChangeDetectorRef,
         appManager: AppStateBehaviorManager
     ) {
+        super({ cdRef });
+
         this.appInfo$ = appManager.getAppInfo();
     }
 }

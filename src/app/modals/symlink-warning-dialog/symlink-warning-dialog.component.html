@@ -4,17 +4,19 @@
     </mat-card-header>
     
     <mat-card-content>
-        <span class="info-text">
-            {{appInfo.appShortName}} does not currently have permission to create symlinks. Some functionality will be unavailble.
-            <br><br>
-            To enable symlinks, follow the guide below:
-        </span>
+        @if (appInfo) {
+            <span class="info-text">
+                {{appInfo.appShortName}} does not currently have permission to create symlinks. Some functionality will be unavailble.
+                <br><br>
+                To enable symlinks, follow the guide below:
+            </span>
 
-        <details>
-            <summary>Enable symlinks (Windows)</summary>
+            <details>
+                <summary>Enable symlinks (Windows)</summary>
 
-            To enable symlinks in Windows, you can either <b>A)</b> run {{appInfo.appShortName}} as administrator (not recommended) or <b>B)</b> enable Windows Developer Mode. To enable Developer Mode, open the Windows "Settings" app, go to "For developers", and then enable "Developer Mode". Once enabled, {{appInfo.appShortName}} should now be able to use symlinks.
-        </details>
+                To enable symlinks in Windows, you can either <b>A)</b> run {{appInfo.appShortName}} as administrator (not recommended) or <b>B)</b> enable Windows Developer Mode. To enable Developer Mode, open the Windows "Settings" app, go to "For developers", and then enable "Developer Mode". Once enabled, {{appInfo.appShortName}} should now be able to use symlinks.
+            </details>
+        }
     </mat-card-content>
 
     <mat-card-actions>

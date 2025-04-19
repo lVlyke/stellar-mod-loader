@@ -25,6 +25,7 @@ import { AppGameManagerModal } from "../modals/game-manager";
 import { GameDetails } from "../models/game-details";
 import { GameId } from "../models/game-id";
 import { AppInfo } from "../models/app-info";
+import { AppSupportInfoModal, APP_SUPPORT_INFO_TOKEN } from "../modals/app-support-info";
 
 @Injectable({ providedIn: "root" })
 export class AppStateBehaviorManager {
@@ -75,6 +76,10 @@ export class AppStateBehaviorManager {
         messageHandler.messages$.pipe(
             filter((message): message is AppMessage.ShowAboutInfo => message.id === "app:showAboutInfo")
         ).subscribe(({ data }) => this.showAppAboutInfo(data));
+
+        messageHandler.messages$.pipe(
+            filter((message): message is AppMessage.ShowSupportInfo => message.id === "app:showSupportInfo")
+        ).subscribe(({ data }) => this.showSupportInfo(data));
 
         messageHandler.messages$.pipe(
             filter((message): message is AppMessage.ToggleModListColumn => message.id === "app:toggleModListColumn"),
@@ -296,7 +301,7 @@ export class AppStateBehaviorManager {
         return of(modContextMenuRef);
     }
 
-    public showAppAboutInfo(aboutData: AppInfo): void {
+    public showAppAboutInfo(appInfo: AppInfo): void {
         this.overlayHelpers.createFullScreen(AppAboutInfoModal, {
             width: "50vw",
             height: "auto",
@@ -305,7 +310,19 @@ export class AppStateBehaviorManager {
             hasBackdrop: true,
             disposeOnBackdropClick: true,
             panelClass: "mat-app-background"
-        }, [[APP_INFO_TOKEN, aboutData]]);
+        }, [[APP_INFO_TOKEN, appInfo]]);
+    }
+
+    public showSupportInfo(appInfo: AppInfo): void {
+        this.overlayHelpers.createFullScreen(AppSupportInfoModal, {
+            width: "50vw",
+            height: "auto",
+            maxHeight: "75vh",
+            center: true,
+            hasBackdrop: true,
+            disposeOnBackdropClick: true,
+            panelClass: "mat-app-background"
+        }, [[APP_SUPPORT_INFO_TOKEN, appInfo]]);
     }
 
     public resolveResourceUrl(resource: AppResource): Observable<string | undefined> {
