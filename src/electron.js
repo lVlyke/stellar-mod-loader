@@ -60,6 +60,14 @@ const BUILD_DATE_FILE = `${__dirname}/lastbuild.txt`;
 
 class ElectronLoader {
 
+    static /** @type {string} */ APP_NAME = "Stellar Mod Loader";
+    static /** @type {string} */ APP_SHORT_NAME = "Stellar";
+    static /** @type {string} */ APP_SETTINGS_FILE = "settings.json";
+    static /** @type {string} */ APP_PROFILES_DIR = "profiles";
+    static /** @type {string} */ APP_PACKAGE_FILE = path.join(__dirname, "package.json");
+    static /** @type {string} */ APP_DEPS_LICENSES_FILE = path.join(__dirname, "3rdpartylicenses.txt");
+    static /** @type {string} */ APP_DEPS_INFO_FILE = path.join(__dirname, "3rdpartylicenses.json");
+    static APP_ICON_IMG = nativeImage.createFromPath(path.join(__dirname, "favicon.png"));
     static APP_PACKAGE = (/** @returns {{ name: string; version: string; repository: String; }} */ () => {
         try {
             return fs.readJSONSync(ElectronLoader.APP_PACKAGE_FILE, { encoding: "utf-8" });
@@ -67,17 +75,15 @@ class ElectronLoader {
             return { name: ElectronLoader.APP_NAME, version: "master", repository: "" };
         }
     })();
-
     static /** @type {string} */ APP_VERSION = ElectronLoader.APP_PACKAGE.version;
-    static /** @type {string} */ APP_NAME = "Stellar Mod Loader";
-    static /** @type {string} */ APP_SHORT_NAME = "Stellar";
-    static /** @type {string} */ STEAM_DEFAULT_COMPAT_DATA_ROOT = "~/.local/share/Steam/steamapps/compatdata";
-    static /** @type {string} */ STEAM_COMPAT_STEAMUSER_DIR = "pfx/drive_c/users/steamuser";
-    static /** @type {string} */ APP_SETTINGS_FILE = "settings.json";
-    static /** @type {string} */ APP_PROFILES_DIR = "profiles";
-    static /** @type {string} */ APP_PACKAGE_FILE = path.join(__dirname, "package.json");
-    static /** @type {string} */ APP_DEPS_LICENSES_FILE = path.join(__dirname, "3rdpartylicenses.txt");
-    static /** @type {string} */ APP_DEPS_INFO_FILE = path.join(__dirname, "3rdpartylicenses.json");
+    static /** @type {Record<AppResource, string>} */ APP_RESOURCES = {
+        "readme_offline": `file://${process.cwd()}/README.md`,
+        "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/${ElectronLoader.APP_VERSION}/README.md`,
+        "license": `file://${process.cwd()}/LICENSE`,
+        "homepage": ElectronLoader.APP_PACKAGE.repository,
+        "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
+        "paypal_donation": "https://paypal.me/lVlyke"
+    };
     static /** @type {number} */ GAME_SCHEMA_VERSION = 1.0;
     static /** @type {string} */ GAME_DB_FILE = path.join(__dirname, "game-db.json");
     static /** @type {string} */ GAME_RESOURCES_DIR = path.join(__dirname, "resources");
@@ -93,16 +99,8 @@ class ElectronLoader {
     static /** @type {string} */ PROFILE_MODS_STAGING_DIR = "_tmp";
     static /** @type {string} */ PROFILE_LINK_SUPPORT_TEST_FILE = ".sml_link_test";
     static /** @type {string} */ DEPLOY_EXT_BACKUP_DIR = ".sml.bak";
-    static APP_ICON_IMG = nativeImage.createFromPath(path.join(__dirname, "favicon.png"));
-
-    static /** @type {Record<AppResource, string>} */ APP_RESOURCES = {
-        "readme_offline": `file://${process.cwd()}/README.md`,
-        "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/${ElectronLoader.APP_VERSION}/README.md`,
-        "license": `file://${process.cwd()}/LICENSE`,
-        "homepage": ElectronLoader.APP_PACKAGE.repository,
-        "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
-        "paypal_donation": "https://paypal.me/lVlyke"
-    };
+    static /** @type {string} */ STEAM_DEFAULT_COMPAT_DATA_ROOT = "~/.local/share/Steam/steamapps/compatdata";
+    static /** @type {string} */ STEAM_COMPAT_STEAMUSER_DIR = "pfx/drive_c/users/steamuser";
 
     #CLI_COMMAND_EXECUTORS = {
         "-l": async (...args) => this.directLaunchProfileByName(args[0], args[1]),
