@@ -22,7 +22,7 @@ import { log } from "../util/logger";
 import { AppDialogs } from "./app-dialogs";
 import { AppWarnings } from "../models/app-warnings";
 import { AppGameManagerModal } from "../modals/game-manager";
-import { GameDetails } from "../models/game-details";
+import { ExportedGameDetails, GameDetails } from "../models/game-details";
 import { GameId } from "../models/game-id";
 import { AppInfo } from "../models/app-info";
 import { AppSupportInfoModal, APP_SUPPORT_INFO_TOKEN } from "../modals/app-support-info";
@@ -230,7 +230,7 @@ export class AppStateBehaviorManager {
         return runOnce(ElectronUtils.invoke("app:exportGame", { gameDetails }));
     }
 
-    public readGame(): Observable<[GameId, GameDetails] | undefined> {
+    public readGame(): Observable<[GameId, ExportedGameDetails] | undefined> {
         return ElectronUtils.invoke("app:readGame", {});
     }
 

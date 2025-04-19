@@ -6,4 +6,5 @@ export interface AppInfo {
     appVersion: string;
     depsInfo: AppDependenciesInfo;
     depsLicenseText: string;
+    gameSchemaVersion: number;
 }

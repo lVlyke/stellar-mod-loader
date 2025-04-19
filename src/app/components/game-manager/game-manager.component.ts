@@ -20,8 +20,18 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { MatCard, MatCardContent } from "@angular/material/card";
 import { MatActionList, MatListItem } from "@angular/material/list";
 import { MatLine } from "@angular/material/core";
-import { EMPTY, Observable, combineLatest, forkJoin } from "rxjs";
-import { defaultIfEmpty, delay, distinctUntilChanged, map, startWith, switchMap, take, tap } from "rxjs/operators";
+import { EMPTY, Observable, combineLatest, forkJoin, of } from "rxjs";
+import {
+    defaultIfEmpty,
+    delay,
+    distinctUntilChanged,
+    map,
+    startWith,
+    switchMap,
+    take,
+    tap,
+    withLatestFrom
+} from "rxjs/operators";
 import {
     AsyncState,
     ComponentState,
@@ -260,7 +270,19 @@ export class AppGameManagerComponent extends BaseComponent {
     public importGame(): Observable<unknown> {
         return runOnce(this.appManager.readGame().pipe(
             filterDefined(),
-            tap(([gameId, gameDetails]) => this.addCustomGame(gameId, gameDetails))
+            withLatestFrom(this.appManager.getAppInfo()),
+            switchMap(([[gameId, gameDetails], appInfo]) => (() => {
+                if (gameDetails.schemaVersion !== appInfo.gameSchemaVersion) {
+                    return this.appDialogs.showDefault(
+                        `This game definition is from a different version of ${appInfo.appShortName}. Some values may not be imported correctly.`
+                    );
+                } else {
+                    return of(true);
+                }
+            })().pipe(
+                filterTrue(),
+                tap(() => this.addCustomGame(gameId, gameDetails))
+            ))
         ));
     }
 

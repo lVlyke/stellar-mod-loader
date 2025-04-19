@@ -13,7 +13,7 @@ import { ModProfileRef } from "./mod-profile-ref";
 import { LogEntry } from "../util/logger";
 import { GameInstallation } from "./game-installation";
 import { AppWarnings } from "./app-warnings";
-import { GameDetails } from "./game-details";
+import { ExportedGameDetails, GameDetails } from "./game-details";
 import { ModOverwriteFiles } from "./mod-overwrite-files";
 
 export type AppMessage
@@ -120,7 +120,7 @@ export namespace AppMessage {
 
     export interface ReadGame extends Base {
         id: `${Prefix}:readGame`;
-        result?: [GameId, GameDetails];
+        result?: [GameId, ExportedGameDetails];
     }
 
     export interface NewProfile extends Base {

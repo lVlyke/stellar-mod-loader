@@ -18,6 +18,10 @@ export interface GameDetails {
     archiveInvalidation?: GameDetails.ArchiveInvalidationConfig;
 }
 
+export interface ExportedGameDetails extends GameDetails {
+    schemaVersion: number;
+}
+
 export namespace GameDetails {
 
     export type ArchiveInvalidationConfig = Record<string, string>;

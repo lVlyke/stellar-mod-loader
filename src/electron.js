@@ -78,6 +78,7 @@ class ElectronLoader {
     static /** @type {string} */ APP_PACKAGE_FILE = path.join(__dirname, "package.json");
     static /** @type {string} */ APP_DEPS_LICENSES_FILE = path.join(__dirname, "3rdpartylicenses.txt");
     static /** @type {string} */ APP_DEPS_INFO_FILE = path.join(__dirname, "3rdpartylicenses.json");
+    static /** @type {number} */ GAME_SCHEMA_VERSION = 1.0;
     static /** @type {string} */ GAME_DB_FILE = path.join(__dirname, "game-db.json");
     static /** @type {string} */ GAME_RESOURCES_DIR = path.join(__dirname, "resources");
     static /** @type {string} */ PROFILE_SETTINGS_FILE = "profile.json";
@@ -1563,7 +1564,10 @@ class ElectronLoader {
         /** @type {GameDetails} */ gameDetails,
         /** @type {string} */ gamePath
     ) {
-        fs.writeJSONSync(gamePath, gameDetails, { spaces: 4 });
+        fs.writeJSONSync(gamePath, {
+            ...gameDetails,
+            schemaVersion: ElectronLoader.GAME_SCHEMA_VERSION
+        }, { spaces: 4 });
     }
 
     /** @returns {string} */
@@ -3794,6 +3798,7 @@ class ElectronLoader {
             appName: ElectronLoader.APP_NAME,
             appShortName: ElectronLoader.APP_SHORT_NAME,
             appVersion: ElectronLoader.APP_VERSION,
+            gameSchemaVersion: ElectronLoader.GAME_SCHEMA_VERSION,
             depsLicenseText,
             depsInfo
         };
