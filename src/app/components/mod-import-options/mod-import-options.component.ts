@@ -1,4 +1,4 @@
-import { without } from "es-toolkit";
+import { without, sortBy } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, ViewChild } from "@angular/core";
 import { NgTemplateOutlet, AsyncPipe } from "@angular/common";
 import { AbstractControl, ControlValueAccessor, NG_VALUE_ACCESSOR, NgForm, ValidationErrors, FormsModule } from "@angular/forms";
@@ -160,7 +160,7 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
 
         // Create a nested array of `FileTreeNode` objects based on `importRequest.modFilePaths`
         stateRef.get("importRequest").pipe(
-            map((importRequest) => importRequest.modFilePaths.reduce((inputData, { filePath, enabled }) => {
+            map((importRequest) => sortBy(importRequest.modFilePaths, ["filePath"]).reduce((inputData, { filePath, enabled }) => {
                 const pathParts = filePath.split(importRequest.filePathSeparator);
                 let curPath = "";
                 let parentInputData: FileTreeNode | undefined = undefined;
