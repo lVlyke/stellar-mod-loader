@@ -1,6 +1,6 @@
 # Stellar Mod Loader
 
-Stellar is a mod manager for Windows and Linux that supports games including Fallout, Skyrim, and Starfield. Formerly known as Starfield Mod Loader.
+Stellar is a mod manager for Windows and Linux that supports games including Fallout, Oblivion, Skyrim, and Starfield. Formerly known as Starfield Mod Loader.
 
 # Features
 
@@ -26,6 +26,7 @@ Releases can be found here:
 Stellar currently has built-in support the following games:
 
 * **Elder Scrolls IV: Oblivion**
+* **Elder Scrolls IV: Oblivion Remastered**
 * **Elder Scrolls V: Skyrim LE**
 * **Elder Scrolls V: Skyrim SE**
 * **Elder Scrolls V: Skyrim VR**

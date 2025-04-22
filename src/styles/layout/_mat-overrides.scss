@@ -1,5 +1,11 @@
 @mixin declare() {
 
+    mat-card.card-scroll {
+        mat-card-content {
+            overflow: auto;
+        }
+    }
+
     mat-checkbox {
 
         .mdc-label {

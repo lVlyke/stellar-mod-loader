@@ -3423,16 +3423,15 @@ class ElectronLoader {
         const pluginListPath = profile.gameInstallation.pluginListPath ? path.resolve(this.#expandPath(profile.gameInstallation.pluginListPath)) : undefined;
 
         if (pluginListPath) {
-            fs.mkdirpSync(path.dirname(pluginListPath));
+            const pluginListDir = path.dirname(pluginListPath);
+            fs.mkdirpSync(pluginListDir);
             
             // Backup any existing plugins file
             if (fs.existsSync(pluginListPath)) {
-                let backupFile = `${pluginListPath}.sml_bak`;
-                while (fs.existsSync(backupFile)) {
-                    backupFile += `_${this.#currentDateTimeAsFileName()}`;
-                }
+                const backupDir = path.join(pluginListDir, ElectronLoader.DEPLOY_EXT_BACKUP_DIR);
 
-                fs.copyFileSync(pluginListPath, backupFile);
+                fs.mkdirpSync(backupDir);
+                fs.copyFileSync(pluginListPath, path.join(backupDir, path.parse(pluginListPath).base));
             }
 
             // Write the plugin list
@@ -3732,6 +3731,7 @@ class ElectronLoader {
                 path.join(gameRootDir, ElectronLoader.DEPLOY_EXT_BACKUP_DIR),
                 ... profile.gameInstallation.configFilePath ? [path.join(profile.gameInstallation.configFilePath, ElectronLoader.DEPLOY_EXT_BACKUP_DIR)] : [],
                 ... profile.gameInstallation.saveFolderPath ? [path.join(path.dirname(profile.gameInstallation.saveFolderPath), ElectronLoader.DEPLOY_EXT_BACKUP_DIR)] : [],
+                ... profile.gameInstallation.pluginListPath ? [path.join(path.dirname(profile.gameInstallation.pluginListPath), ElectronLoader.DEPLOY_EXT_BACKUP_DIR)] : [],
                 ... customSteamCompatRoot ? [path.join(customSteamCompatRoot, ElectronLoader.DEPLOY_EXT_BACKUP_DIR)] : [],
             ]);
             

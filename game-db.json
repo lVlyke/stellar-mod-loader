@@ -92,6 +92,109 @@
             "Oblivion.ini": "; The following section has been added automatically by Starfield Mod Loader. Place any additional changes after this section.\r\n[Archive]\r\nSArchiveList=Invalidation.bsa, Oblivion - Meshes.bsa, Oblivion - Textures - Compressed.bsa, Oblivion - Sounds.bsa, Oblivion - Voices1.bsa, Oblivion - Voices2.bsa, Oblivion - Misc.bsa\r\n\r\n"
         }
     },
+    "elder_scrolls_oblivion_remastered": {
+        "title": "Elder Scrolls: Oblivion Remastered",
+        "bkgColor": "#bd4219",
+        "fgColor": "#fefef4",
+        "installations": [
+            {
+                "steamId": ["2623190"],
+                "rootDir": "%PROGRAMFILES%\\Steam\\steamapps\\common\\Oblivion Remastered",
+                "modDir": "OblivionRemastered\\Content\\Dev\\ObvData\\Data",
+                "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
+                "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
+                "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
+            },
+            {
+                "steamId": ["2623190"],
+                "rootDir": "%PROGRAMFILES(X86)%\\Steam\\steamapps\\common\\Oblivion Remastered",
+                "modDir": "OblivionRemastered\\Content\\Dev\\ObvData\\Data",
+                "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
+                "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
+                "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
+            },
+            {
+                "rootDir": "C:\\XboxGames\\Oblivion Remastered\\Content",
+                "modDir": "OblivionRemastered\\Content\\Dev\\ObvData\\Data",
+                "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
+                "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
+                "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
+            },
+            {
+                "steamId": ["2623190"],
+                "rootDir": "~/.local/share/Steam/steamapps/common/Oblivion Remastered",
+                "modDir": "OblivionRemastered/Content/Dev/ObvData/Data",
+                "pluginListPath": "OblivionRemastered/Content/Dev/ObvData/Data/Plugins.txt",
+                "configFilePath": "$/pfx/drive_c/users/steamuser/Documents/My Games/Oblivion Remastered/Saved/Config/Windows",
+                "saveFolderPath": "$/pfx/drive_c/users/steamuser/Documents/My Games/Oblivion Remastered/Saved/SaveGames"
+            }
+        ],
+        "gameBinary": ["OblivionRemastered.exe"],
+        "pluginListType": "Gamebryo",
+        "pluginFormats": ["esm", "esp"],
+        "saveFormats": ["sav"],
+        "pinnedPlugins": [
+            {
+                "plugin": "Oblivion.esm",
+                "required": true
+            }
+        ],
+        "requireExternalPlugins": true,
+        "gameConfigFiles": [
+            "AltarGameUserSetting.ini",
+            "AltarImageCalibration.ini",
+            "Altar.ini",
+            "AltarWindows.ini",
+            "Bridge.ini",
+            "CommonUI.ini",
+            "Compat.ini",
+            "ConcertSyncCore.ini",
+            "ConsoleVariables.ini",
+            "ControlRig.ini",
+            "DatasmithContent.ini",
+            "DatasmithImporter.ini",
+            "DeformerGraph.ini",
+            "DeviceProfiles.ini",
+            "EditorScriptingUtilities.ini",
+            "Engine.ini",
+            "EnhancedInput.ini",
+            "FullBodyIK.ini",
+            "Game.ini",
+            "GameplayTags.ini",
+            "GameUserSettings.ini",
+            "GLTFExporter.ini",
+            "HairStrands.ini",
+            "Hardware.ini",
+            "HoudiniNiagara.ini",
+            "IKRig.ini",
+            "Input.ini",
+            "InstallBundle.ini",
+            "Interchange.ini",
+            "LiveLink.ini",
+            "Metasound.ini",
+            "ModelViewViewModel.ini",
+            "MovieRenderPipeline.ini",
+            "NiagaraFluids.ini",
+            "Niagara.ini",
+            "OnlineSubsystemEOS.ini",
+            "Paper2D.ini",
+            "QMPSettings.ini",
+            "RuntimeOptions.ini",
+            "Scalability.ini",
+            "StructUtils.ini",
+            "Synthesis.ini",
+            "ToolPresets.ini",
+            "TraceUtilities.ini",
+            "VariantManagerContent.ini",
+            "VirtuosEditorAutomationTesting.ini",
+            "Wwise.ini"
+        ],
+        "resources": {
+            "mods": {
+                "elder_scrolls_oblivion_remastered/Invalidation.bsa": "Invalidation.bsa"
+            }
+        }
+    },
     "elder_scrolls_skyrim_le": {
         "title": "Elder Scrolls: Skyrim LE",
         "bkgColor": "#222222",

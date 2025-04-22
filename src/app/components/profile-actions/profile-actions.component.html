@@ -141,7 +141,7 @@
 
 <!-- Profile folders menu -->
 <ng-template #profileFoldersMenu cdkPortal>
-    <mat-card class="mat-elevation-z3">
+    <mat-card class="mat-elevation-z3 card-scroll">
         <mat-card-content>
             <mat-action-list>
                 @for (folderEntry of profileFolderKeys; track folderEntry[0]) {
@@ -157,7 +157,7 @@
 
 <!-- Game folders menu -->
 <ng-template #gameFoldersMenu cdkPortal>
-    <mat-card class="mat-elevation-z3">
+    <mat-card class="mat-elevation-z3 card-scroll">
         <mat-card-content>
             <mat-action-list>
                 @for (folderEntry of gameFolderKeys; track folderEntry[0]) {
@@ -173,7 +173,7 @@
 
 <!-- Game config file menu popup -->
 <ng-template #gameConfigFileMenu cdkPortal>
-    <mat-card class="mat-elevation-z3">
+    <mat-card class="mat-elevation-z3 card-scroll">
         <mat-card-content>
             <mat-action-list>
                 @for (gameConfigFileName of gameDetails!.gameConfigFiles; track gameConfigFileName) {
@@ -191,7 +191,7 @@
 
 <!-- Game actions button popup -->
 <ng-template #gameActionsMenu cdkPortal>
-    <mat-card class="mat-elevation-z3 game-actions-popup">
+    <mat-card class="mat-elevation-z3 game-actions-popup card-scroll">
         <mat-card-content>
             <mat-action-list>
                 <!-- Default actions -->
