@@ -114,7 +114,7 @@
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
             },
             {
-                "rootDir": "C:\\XboxGames\\Oblivion Remastered\\Content",
+                "rootDir": "C:\\XboxGames\\The Elder Scrolls IV- Oblivion Remastered\\Content",
                 "modDir": ".",
                 "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
@@ -138,6 +138,50 @@
         "pinnedPlugins": [
             {
                 "plugin": "Oblivion.esm",
+                "required": true
+            },
+            {
+                "plugin": "DLCBattlehornCastle.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCFrostcrag.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCHorseArmor.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCMehrunesRazor.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCOrrery.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCShiveringIsles.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCSpellTomes.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCThievesDen.esp",
+                "required": false
+            },
+            {
+                "plugin": "DLCVileLair.esp",
+                "required": false
+            },
+            {
+                "plugin": "Knights.esp",
+                "required": false
+            },
+            {
+                "plugin": "AltarESPMain.esp",
                 "required": true
             }
         ],
@@ -190,6 +234,19 @@
             "VariantManagerContent.ini",
             "VirtuosEditorAutomationTesting.ini",
             "Wwise.ini"
+        ],
+        "scriptExtenders": [
+            {
+                "name": "UE4SS",
+                "binaries": [
+                    "OblivionRemastered/Binaries/Win64/ue4ss/UE4SS.dll",
+                    "OblivionRemastered/Binaries/WinGDK/ue4ss/UE4SS.dll"
+                ],
+                "modPaths": [
+                    "OblivionRemastered/Binaries/Win64/Mods/Scripts",
+                    "OblivionRemastered/Binaries/WinGDK/Mods/Scripts"
+                ]
+            }
         ],
         "resources": {
             "mods": {

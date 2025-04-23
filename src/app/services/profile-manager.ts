@@ -1171,6 +1171,7 @@ export class ProfileManager {
     public isUsingScriptExtender(scriptExtender: GameDetails.ScriptExtender, profile: AppProfile): Observable<boolean> {
         // First check if script extender exists in external root dir files
         let usingScriptExtender = !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
+            externalFile = LangUtils.normalizeFilePath(externalFile, "/");
             return scriptExtender!.binaries.find(binary => externalFile.endsWith(LangUtils.normalizeFilePath(binary, "/")));
         });
 
@@ -1181,6 +1182,19 @@ export class ProfileManager {
                 return this.readModFilePaths(modName, modRef, true);
             })).pipe(
                 map(modFileList => modFileList.some((files) => files.some((file) => {
+                    file = LangUtils.normalizeFilePath(file, "/");
+                    return scriptExtender.binaries.find(binary => file.endsWith(LangUtils.normalizeFilePath(binary, "/")));
+                })))
+            );
+        }
+
+        // Next, check if script extender exists in mod files
+        if (!usingScriptExtender && profile.mods.length > 0) {
+            usingScriptExtender$ = forkJoin(profile.mods.map(([modName, modRef]) => {
+                return this.readModFilePaths(modName, modRef, true);
+            })).pipe(
+                map(modFileList => modFileList.some((files) => files.some((file) => {
+                    file = LangUtils.normalizeFilePath(file, "/");
                     return scriptExtender.binaries.find(binary => file.endsWith(LangUtils.normalizeFilePath(binary, "/")));
                 })))
             );
