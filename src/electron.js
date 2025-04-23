@@ -3362,9 +3362,15 @@ class ElectronLoader {
         const gameDetails = gameDb[profile.gameId];
         const gamePluginFormats = gameDetails?.pluginFormats ?? [];
 
-        const existingDataSubdirs = (await fs.readdir(gameModDir)).filter((existingModFile) => {
-            return fs.lstatSync(path.join(gameModDir, existingModFile)).isDirectory();
-        });
+        // Build Map of all existing data subdirs for path normalization
+        /** @type {Map<string, string>} */ const existingDataSubdirs = new Map();
+        if (normalizePathCasing) {
+            (await fs.readdir(gameModDir, { recursive: true })).forEach((existingModFile) => {
+                if (fs.lstatSync(path.join(gameModDir, /** @type {string} */ (existingModFile))).isDirectory()) {
+                    existingDataSubdirs.set(/** @type {string} */ (existingModFile).toLowerCase(), existingModFile);
+                }
+            });
+        }
 
         // Copy all mods to the gameModDir for this profile
         // (Copy mods in reverse with `overwrite: false` to follow load order and allow existing manual mods in the folder to be preserved)
@@ -3390,21 +3396,16 @@ class ElectronLoader {
                             modFile = modFile.toLowerCase();
                         }
 
-                        if (root) {
-                            // Preserve capitalization of Data directory for root mods
-                            modFile = modFile.replace(/^data[\\/]/, `Data${path.sep}`);
-                        } else {
-                            // Apply capitalization rules of any existing Data subdirectories to ensure only one folder is created
-                            // TODO - Also do this for root mods
-                            // TODO - Do this recursively
-                            existingDataSubdirs.forEach((existingDataSubdir) => {
-                                existingDataSubdir = `${existingDataSubdir}${path.sep}`;
-                                const lowerSubdir = existingDataSubdir.toLowerCase();
-
-                                if (modFile.startsWith(lowerSubdir)) {
-                                    modFile = modFile.replace(lowerSubdir, existingDataSubdir);
-                                }
-                            });
+                        // Apply existing capitalization rules of mod data subdirectories to ensure only one folder is created
+                        let modFileBase = path.dirname(modFile);
+                        while (modFileBase !== "." && modFileBase !== path.sep) {
+                            const existingBase = existingDataSubdirs.get(modFileBase.toLowerCase());
+                            if (existingBase) {
+                                modFile = modFile.replace(modFileBase, existingBase);
+                                break;
+                            } else {
+                                modFileBase = path.dirname(modFileBase);
+                            }
                         }
                     }
 
@@ -3612,12 +3613,22 @@ class ElectronLoader {
 
         // Some games require processing of plugin file timestamps to enforce load order
         if (!!gameDetails?.pluginListType && profile.plugins && timestampedPluginTypes.includes(gameDetails.pluginListType)) {
-            const gameModDir = path.resolve(this.#expandPath(profile.gameInstallation.modDir));
+            let gamePluginDir = this.#expandPath(profile.gameInstallation.modDir);
+
+            if (gameDetails.pluginDataRoot) {
+                gamePluginDir = path.join(gamePluginDir, gameDetails.pluginDataRoot);
+            }
+
             let pluginTimestamp = Date.now() / 1000 | 0;
             profile.plugins.forEach((pluginRef) => {
-                // Set plugin order using the plugin file's "last modified" timestamp
-                fs.utimesSync(path.join(gameModDir, pluginRef.plugin), pluginTimestamp, pluginTimestamp);
-                ++pluginTimestamp;
+                const pluginPath = path.join(gamePluginDir, pluginRef.plugin);
+                if (fs.existsSync(pluginPath)) {
+                    // Set plugin order using the plugin file's "last modified" timestamp
+                    fs.utimesSync(pluginPath, pluginTimestamp, pluginTimestamp);
+                    ++pluginTimestamp;
+                } else {
+                    log.warn("Missing plugin file", pluginPath);
+                }
             });
         }
 
