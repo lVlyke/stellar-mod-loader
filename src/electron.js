@@ -84,7 +84,7 @@ class ElectronLoader {
         "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
         "paypal_donation": "https://paypal.me/lVlyke"
     };
-    static /** @type {number} */ GAME_SCHEMA_VERSION = 1.0;
+    static /** @type {number} */ GAME_SCHEMA_VERSION = 1.1;
     static /** @type {string} */ GAME_DB_FILE = path.join(__dirname, "game-db.json");
     static /** @type {string} */ GAME_RESOURCES_DIR = path.join(__dirname, "resources");
     static /** @type {string} */ PROFILE_SETTINGS_FILE = "profile.json";
@@ -824,6 +824,21 @@ class ElectronLoader {
             return this.readModFilePaths(profile, modName, modRef, normalizePaths);
         });
 
+        ipcMain.handle("profile:readDataSubdirs", async (
+            _event,
+            /** @type {import("./app/models/app-message").AppMessageData<"profile:readDataSubdirs">} */ {
+                profile
+            }
+        ) => {
+            const modDir = this.getProfileDirByKey(profile, "modDir");
+            if (modDir === undefined || !fs.existsSync(modDir)) {
+                return [];
+            }
+
+            return fs.readdirSync(modDir, { recursive: true })
+                .filter((file) => fs.lstatSync(path.join(modDir, /** @type {string} */ (file))).isDirectory());
+        });
+
         ipcMain.handle("profile:findPluginFiles", async (
             _event,
             /** @type {import("./app/models/app-message").AppMessageData<"profile:findPluginFiles">} */ { profile }
@@ -1537,7 +1552,7 @@ class ElectronLoader {
         );
     }
 
-    /** @returns {GameDatabase | {}} */
+    /** @returns {GameDatabase} */
     loadGameDatabase(includeCustomGames = true) {
         if (!fs.existsSync(ElectronLoader.GAME_DB_FILE)) {
             return {};
@@ -2418,12 +2433,16 @@ class ElectronLoader {
         const gameDb = this.loadGameDatabase();
         const gameDetails = gameDb[profile.gameId];
         const gamePluginFormats = gameDetails?.pluginFormats ?? [];
-        const modDataDirs = ["Data", "data"];
         let foundModSubdirRoot = "";
         
-        // Look for nested "data" dir for non-root mods
         if (!root) {
-            foundModSubdirRoot = modDataDirs.find(dataDir => fs.existsSync(path.join(modImportPath, dataDir))) ?? "";
+            const modDirRelName = path.relative(profile.gameInstallation.rootDir, profile.gameInstallation.modDir);
+            // If mod dir is child of root dir, determine if mod is packaged relative to root dir
+            if (!modDirRelName.startsWith(".") && !path.isAbsolute(modDirRelName)) {
+                if (fs.existsSync(path.join(modImportPath, modDirRelName))) {
+                    foundModSubdirRoot = modDirRelName;
+                }
+            }
         }
 
         const modPreparedFilePaths = modFilePaths
@@ -2571,6 +2590,7 @@ class ElectronLoader {
             importStatus,
             mergeStrategy,
             modFilePaths,
+            modFilePrefix,
             modSubdirRoots,
             modPlugins,
             modFilePathMapFilter
@@ -2680,7 +2700,7 @@ class ElectronLoader {
                             }
                         }
                         
-                        const destFilePath = path.join(modProfilePath, rootFilePath);
+                        const destFilePath = path.join(modProfilePath, modFilePrefix ?? "", rootFilePath);
                         
                         // Copy all enabled files to the final mod folder
                         if (externalImport) {
@@ -2962,9 +2982,13 @@ class ElectronLoader {
     /** @returns {Promise<Array<string>>} */
     async findProfileExternalPluginFiles(/** @type {AppProfile} */ profile) {
         const gameDetails = this.#getGameDetails(profile.gameId);
-        const gameModDir = this.#expandPath(profile.gameInstallation.modDir);
+        let gamePluginDir = this.#expandPath(profile.gameInstallation.modDir);
 
-        return (await this.findProfileExternalFilesInDir(profile, gameModDir, false))
+        if (gameDetails?.pluginDataRoot) {
+            gamePluginDir = path.join(gamePluginDir, gameDetails.pluginDataRoot);
+        }
+
+        return (await this.findProfileExternalFilesInDir(profile, gamePluginDir, false))
                 .filter((modFile) => {
                     // Make sure this is a mod file
                     return gameDetails?.pluginFormats.includes(last(modFile.split("."))?.toLowerCase() ?? "");
@@ -2989,7 +3013,7 @@ class ElectronLoader {
                     } else {
                         // Order plugin by file's "last modified" timestamp
                         const fileTime = externalPlugins.map((externalPlugin) => {
-                            return fs.statSync(path.join(gameModDir, externalPlugin)).mtime;
+                            return fs.statSync(path.join(gamePluginDir, externalPlugin)).mtime;
                         });
 
                         if (fileTime[0] < fileTime[1]) {
@@ -3221,18 +3245,22 @@ class ElectronLoader {
         return profile.mods
             .filter(mod => mod[1].enabled)
             .reduce((/** @type {GamePluginProfileRef[]} */ plugins, [modId, modRef]) => {
-                const modDirPath = this.getProfileModDir(profile, modId, modRef);
+                let pluginDirPath = this.getProfileModDir(profile, modId, modRef);
+
+                if (gameDetails.pluginDataRoot) {
+                    pluginDirPath = path.join(pluginDirPath, gameDetails.pluginDataRoot);
+                }
                 
-                if (fs.existsSync(modDirPath)) {
-                    const modFiles = fs.readdirSync(modDirPath, { encoding: "utf-8", recursive: false });
-                    const modPlugins = modFiles
-                        .filter((modFile) => gamePluginFormats.some((gamePluginFormat) => {
-                            return modFile.toLowerCase().endsWith(`.${gamePluginFormat}`);
+                if (fs.existsSync(pluginDirPath)) {
+                    const pluginFiles = fs.readdirSync(pluginDirPath, { encoding: "utf-8", recursive: false });
+                    const modPlugins = pluginFiles
+                        .filter((pluginFile) => gamePluginFormats.some((gamePluginFormat) => {
+                            return pluginFile.toLowerCase().endsWith(`.${gamePluginFormat}`);
                         }))
-                        .filter((modFile) => fs.lstatSync(path.join(modDirPath, modFile)).isFile())
-                        .map((modFile) => ({
+                        .filter((pluginFile) => fs.lstatSync(path.join(pluginDirPath, pluginFile)).isFile())
+                        .map((pluginFile) => ({
                             modId,
-                            plugin: modFile,
+                            plugin: pluginFile,
                             enabled: modRef.enabled
                         }));
 

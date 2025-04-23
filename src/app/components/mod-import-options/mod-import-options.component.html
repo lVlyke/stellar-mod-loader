@@ -12,54 +12,104 @@
                 (ngModelChange)="importRequestChange$.emit(importRequest)">
         </mat-form-field>
 
-        <mat-label class="files-label">Mod Files</mat-label>
+        @if (importRequest.modFilePrefix && !showInstallFolderPicker) {
+            <mat-form-field appearance="fill">
+                <mat-label>Installation Directory</mat-label>
+                <input matInput
+                    name="modFilePrefix"
+                    type="text"
+                    [disabled]="true"
+                    [ngModel]="importRequest.modFilePrefix">
+            </mat-form-field>
+        }
+
+        <div class="editor-pane">
+            @if (showInstallFolderPicker) {
+                <div>
+                    <mat-label class="files-label">Installation Directory</mat-label>
+
+                    <div class="mod-file-tree-container">
+                        <mat-radio-group name="installationDir"
+                                         [ngModel]="importRequest.modFilePrefix"
+                                         (ngModelChange)="setModFilePrefix($event)">
+                            <mat-tree class="file-tree" [dataSource]="gameDirDataSource" [treeControl]="treeControl">
+                                <mat-tree-node *matTreeNodeDef="let node"
+                                            matTreeNodePadding
+                                            [matTreeNodePaddingIndent]="24">
         
-        <div class="mod-file-tree-container">
-            <mat-tree class="file-tree" [dataSource]="filesDataSource" [treeControl]="treeControl">
-                <!-- File node -->
-                <mat-tree-node *matTreeNodeDef="let node"
-                               matTreeNodePadding
-                               [matTreeNodePaddingIndent]="24"
-                               [attr.mod-enabled]="isNodeEnabled$(node) | async">
-                    <button type="button" mat-icon-button disabled></button>
-                    <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: node }" />
-                </mat-tree-node>
+                                    @if (!node.terminal) {
+                                        <button type="button" mat-icon-button matTreeNodeToggle>
+                                            <mat-icon class="mat-icon-rtl-mirror">
+                                                {{ treeControl.isExpanded(node) ? "expand_more" : "chevron_right" }}
+                                            </mat-icon>
+                                        </button>
+                                    } @else {
+                                        <button type="button" mat-icon-button disabled></button>
+                                    }
+        
+                                    <mat-radio-button [value]="node.fullPath" />
+        
+                                    <span class="mod-path-part">
+                                        {{ node.pathPart }}
+                                    </span>
+                                </mat-tree-node>
+                            </mat-tree>
+                        </mat-radio-group>
+                    </div>
+                </div>
+            }
 
-                <!-- Directory node -->
-                <mat-tree-node *matTreeNodeDef="let node; when: nodeIsDir"
-                               matTreeNodePadding
-                               [matTreeNodePaddingIndent]="24"
-                               [attr.mod-enabled]="!isRootDirNode(node) && (isNodeEnabled$(node) | async)">
-                    <button type="button" mat-icon-button matTreeNodeToggle>
-                        <mat-icon class="mat-icon-rtl-mirror">
-                            {{ treeControl.isExpanded(node) ? "expand_more" : "chevron_right" }}
-                        </mat-icon>
-                    </button>
+            <div>
+                <mat-label class="files-label">Mod Files</mat-label>
 
-                    <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: node }" />
-
-                    @if (!isRootDirNode(node)) {
-                        <a mat-button
-                            class="path-info-badge root-dir-action root-dir-select-action"
-                            (click)="addModRootSubdir(node.fullPath)">
-                            &lt;set data dir&gt;
-                        </a>
-                    } @else {
-                        <span class="path-info-badge root-dir-marker"
-                            matColor="primary"
-                            matTooltip="Only files inside this directory will be added">
-                            &lt;data dir&gt;
-                        </span>
-
-                        <mat-icon color="warn"
-                                class="path-info-badge root-dir-action root-dir-clear-action"
-                                matTooltip="Clear data dir"
-                                (click)="removeModRootSubdir(node.fullPath)">
-                            close
-                        </mat-icon>
-                    }
-                </mat-tree-node>
-            </mat-tree>
+                <div class="mod-file-tree-container">
+                    <mat-tree class="file-tree" [dataSource]="modFileTreeDataSource" [treeControl]="treeControl">
+                        <!-- File node -->
+                        <mat-tree-node *matTreeNodeDef="let node"
+                                       matTreeNodePadding
+                                       [matTreeNodePaddingIndent]="24"
+                                       [attr.mod-enabled]="isNodeEnabled$(node) | async">
+                            <button type="button" mat-icon-button disabled></button>
+                            <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: node }" />
+                        </mat-tree-node>
+        
+                        <!-- Directory node -->
+                        <mat-tree-node *matTreeNodeDef="let node; when: nodeIsDir"
+                                       matTreeNodePadding
+                                       [matTreeNodePaddingIndent]="24"
+                                       [attr.mod-enabled]="!isRootDirNode(node) && (isNodeEnabled$(node) | async)">
+                            <button type="button" mat-icon-button matTreeNodeToggle>
+                                <mat-icon class="mat-icon-rtl-mirror">
+                                    {{ treeControl.isExpanded(node) ? "expand_more" : "chevron_right" }}
+                                </mat-icon>
+                            </button>
+        
+                            <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: node }" />
+        
+                            @if (!isRootDirNode(node)) {
+                                <a mat-button
+                                    class="path-info-badge root-dir-action root-dir-select-action"
+                                    (click)="addModRootSubdir(node.fullPath)">
+                                    &lt;set data dir&gt;
+                                </a>
+                            } @else {
+                                <span class="path-info-badge root-dir-marker"
+                                    matColor="primary"
+                                    matTooltip="Only files inside this directory will be added">
+                                    &lt;data dir&gt;
+                                </span>
+        
+                                <mat-icon color="warn"
+                                        class="path-info-badge root-dir-action root-dir-clear-action"
+                                        matTooltip="Clear data dir"
+                                        (click)="removeModRootSubdir(node.fullPath)">
+                                    close
+                                </mat-icon>
+                            }
+                        </mat-tree-node>
+                    </mat-tree>
+                </div>
+            </div>
         </div>
     }
 </form>

@@ -1162,6 +1162,12 @@ export class ProfileManager {
         );
     }
 
+    public readDataSubdirs(profile: AppProfile): Observable<string[]> {
+        return ElectronUtils.invoke("profile:readDataSubdirs", {
+            profile
+        });
+    }
+
     public isUsingScriptExtender(scriptExtender: GameDetails.ScriptExtender, profile: AppProfile): Observable<boolean> {
         // First check if script extender exists in external root dir files
         let usingScriptExtender = !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
@@ -1594,9 +1600,9 @@ export class ProfileManager {
             hasBackdrop: true,
             disposeOnBackdropClick: false,
             minWidth: "24rem",
-            width: "40%",
+            width: "65%",
             height: "auto",
-            maxHeight: "75%",
+            maxHeight: "85%",
             panelClass: "mat-app-background"
         });
 

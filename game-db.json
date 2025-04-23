@@ -100,7 +100,7 @@
             {
                 "steamId": ["2623190"],
                 "rootDir": "%PROGRAMFILES%\\Steam\\steamapps\\common\\Oblivion Remastered",
-                "modDir": "OblivionRemastered\\Content\\Dev\\ObvData\\Data",
+                "modDir": ".",
                 "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
@@ -108,14 +108,14 @@
             {
                 "steamId": ["2623190"],
                 "rootDir": "%PROGRAMFILES(X86)%\\Steam\\steamapps\\common\\Oblivion Remastered",
-                "modDir": "OblivionRemastered\\Content\\Dev\\ObvData\\Data",
+                "modDir": ".",
                 "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
             },
             {
                 "rootDir": "C:\\XboxGames\\Oblivion Remastered\\Content",
-                "modDir": "OblivionRemastered\\Content\\Dev\\ObvData\\Data",
+                "modDir": ".",
                 "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
@@ -123,15 +123,17 @@
             {
                 "steamId": ["2623190"],
                 "rootDir": "~/.local/share/Steam/steamapps/common/Oblivion Remastered",
-                "modDir": "OblivionRemastered/Content/Dev/ObvData/Data",
+                "modDir": ".",
                 "pluginListPath": "OblivionRemastered/Content/Dev/ObvData/Data/Plugins.txt",
                 "configFilePath": "$/pfx/drive_c/users/steamuser/Documents/My Games/Oblivion Remastered/Saved/Config/Windows",
                 "saveFolderPath": "$/pfx/drive_c/users/steamuser/Documents/My Games/Oblivion Remastered/Saved/SaveGames"
             }
         ],
+        "multipleDataRoots": true,
         "gameBinary": ["OblivionRemastered.exe"],
         "pluginListType": "Gamebryo",
         "pluginFormats": ["esm", "esp"],
+        "pluginDataRoot": "OblivionRemastered/Content/Dev/ObvData/Data",
         "saveFormats": ["sav"],
         "pinnedPlugins": [
             {

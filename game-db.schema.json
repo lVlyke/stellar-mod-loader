@@ -38,11 +38,17 @@
           },
           "type": "array"
         },
+        "multipleDataRoots": {
+          "type": "boolean"
+        },
         "pinnedPlugins": {
           "items": {
             "$ref": "#/definitions/GameDetails.PinnedPlugin"
           },
           "type": "array"
+        },
+        "pluginDataRoot": {
+          "type": "string"
         },
         "pluginFormats": {
           "items": {

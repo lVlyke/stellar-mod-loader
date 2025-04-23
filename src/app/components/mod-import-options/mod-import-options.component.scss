@@ -7,7 +7,31 @@
             display: block;
         }
 
+        .editor-pane {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+
+            > * {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 100%;
+
+                > .mod-file-tree-container {
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1 1 100%;
+                }
+            }
+        }
+
+        mat-radio-group {
+            display: contents;
+        }
+
         mat-tree {
+            flex: 1 1 100%;
+            border-radius: 1rem;
 
             [mod-enabled] {
 

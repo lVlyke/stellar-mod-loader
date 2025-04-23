@@ -10,6 +10,8 @@ export interface GameDetails {
     pluginFormats: string[];
     saveFormats: string[];
     requireExternalPlugins: boolean;
+    pluginDataRoot?: string;
+    multipleDataRoots?: boolean;
     pluginListType?: GamePluginListType;
     pinnedPlugins?: GameDetails.PinnedPlugin[];
     gameConfigFiles?: string[];

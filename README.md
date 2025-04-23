@@ -230,6 +230,12 @@ Now, only the files in `standard/Data` directory will be added for this mod.
 
 **Tip:** Multiple directories can be marked as **root data dir** if needed.
 
+Some games will use multiple directories for mods. In this case, Stellar will attempt to figure out where to install mods if possible, but some mods may be packaged in a way where this is not possible. If Stellar cannot deduce the installation directory, you will need to choose which folder to install the mod to:
+
+![Add Mod Example 2](/docs/mod-add-3.png)
+
+Select the installation directory on the left. If no folder is selected, mod will be installed to the top level data directory.
+
 ### FOMOD installers
 
 Some mods are packaged with special metadata known as FOMOD that allows for customizing the installation through a guided flow. Stellar supports FOMOD and will automatically show the installation wizard for FOMOD-compatible mods, as shown in the example below:
@@ -375,6 +381,10 @@ The default game installation paths for this game. These are typically the defau
 - **Game Plugin List Path** - (Optional) The location where the plugin list should be saved.
 - **Steam IDs** - (Optional) Any Steam game IDs associated with this installation (if applicable).
 
+#### Multiple Mod Data Roots
+
+Whether or not the game uses multiple subdirectories for mod data.
+
 #### Game Binaries
 
 (Optional) The names of binaries (i.e. the `exe` of the game). Also include the names of any possible mod loader binaries for the game here.
@@ -390,6 +400,10 @@ The default game installation paths for this game. These are typically the defau
 ##### Require External Plugins
 
 Whether or not external plugin file management is required for this game.
+
+#### Plugin Data Directory
+
+(Optional) The directory where plugin files are located, relative to the **Game Data Directory**.
 
 #### Plugin List Type
 

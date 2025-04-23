@@ -131,6 +131,13 @@
                 </button>
             }
 
+            <!-- Multiple Data Roots -->
+            <mat-checkbox name="multipleDataRoots"
+                        [disabled]="!isCustomGameDetails"
+                        [(ngModel)]="activeGameDetails.multipleDataRoots">
+                Multiple Mod Data Roots
+            </mat-checkbox>
+
             <!-- Game Binaries -->
             <app-select-edit name="gameBinaries"
                              label="Game Binaries"
@@ -162,6 +169,23 @@
                             [(ngModel)]="activeGameDetails.requireExternalPlugins">
                     Require External Plugins
                 </mat-checkbox>
+            }
+
+            @if (activeGameDetails.pluginDataRoot !== undefined) {
+                <!-- Plugin Data Root -->
+                <mat-form-field appearance="fill" [attr.subscript]="false">
+                    <mat-label>Plugin Data Directory</mat-label>
+                    <input matInput
+                            name="pluginDataRot"
+                            type="text"
+                            [disabled]="!isCustomGameDetails"
+                            [(ngModel)]="activeGameDetails.pluginDataRoot">
+                </mat-form-field>
+            } @else if (isCustomGameDetails && activeGameDetails.pluginFormats.length > 0) {
+                <button mat-raised-button (click)="activeGameDetails.pluginDataRoot = ''">
+                    <mat-icon color="accent">add</mat-icon>
+                    Add Plugin Data Directory
+                </button>
             }
 
             @if (!!activeGameDetails.pluginListType) {

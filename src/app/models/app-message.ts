@@ -402,6 +402,14 @@ export namespace AppMessage {
         result: string[];
     }
 
+    export interface ReadDataSubdirs extends Base {
+        id: `${ProfileMessage.Prefix}:readDataSubdirs`;
+        data: {
+            profile: AppProfile;
+        };
+        result: string[];
+    }
+
     export interface FindPluginFiles extends Base {
         id: `${ProfileMessage.Prefix}:findPluginFiles`;
         data: {
@@ -742,6 +750,7 @@ export namespace AppMessage {
                                | DeleteProfileMod
                                | RenameProfileMod
                                | ReadProfileModFilePaths
+                               | ReadDataSubdirs
                                | FindPluginFiles
                                | FindModFiles
                                | ImportProfileModOrderBackup
@@ -830,6 +839,7 @@ export namespace AppMessage {
         "profile:deleteMod",
         "profile:renameMod",
         "profile:readModFilePaths",
+        "profile:readDataSubdirs",
         "profile:findPluginFiles",
         "profile:findModFiles",
         "profile:importModOrderBackup",
