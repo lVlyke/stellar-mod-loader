@@ -44,6 +44,7 @@ const path = require("path");
 const os = require("os");
 const { exec } = require("child_process");
 const fs = require("fs-extra");
+const fsPromises = require("fs/promises");
 const Seven = require("node-7z");
 const sevenBin = require("7zip-bin");
 const which = require("which");
@@ -3293,6 +3294,8 @@ class ElectronLoader {
         const gameDetails = this.#getGameDetails(profile.gameId);
         // Substitute variables for profile
         const gameActionCmd = template(gameAction.actionScript)({ ...profile, gameDetails });
+
+        log.info("Running game action: ", gameActionCmd);
         
         // Run the action
         try {
@@ -3415,9 +3418,14 @@ class ElectronLoader {
 
                     if (fs.existsSync(destFilePath)) {
                         if (extFilesList?.includes(modFile)) {
-                            // Backup original external file to temp directory for deploy and override
-                            fs.moveSync(destFilePath, path.join(extFilesBackupDir, modFile));
-                            remove(extFilesList, extFile => extFile === modFile);
+                            if (!shouldCopy) {
+                                log.warn("Original file to backup is a directory, this should not happen.");
+                            } else {
+                                // Backup original external file to temp directory for deploy and override
+                                fs.moveSync(destFilePath, path.join(extFilesBackupDir, modFile));
+                                remove(extFilesList, extFile => extFile === modFile);
+                            }
+                            
                         } else {
                             // Don't override deployed files
                             shouldCopy = false;
@@ -3753,8 +3761,13 @@ class ElectronLoader {
                 // Recursively remove empty parent directories
                 let existingDir = path.dirname(fullExistingPath);
                 while (existingDir !== profile.gameInstallation.modDir && fs.existsSync(existingDir) && fs.readdirSync(existingDir).length === 0) {
-                    fs.rmdirSync(existingDir);
-                    existingDir = path.dirname(existingDir);
+                    try {
+                        fs.rmdirSync(existingDir);
+                        existingDir = path.dirname(existingDir);
+                    } catch (error) {
+                        log.error("Failed to remove dir", existingDir, error);
+                        break;
+                    }
                 }
             });
 
@@ -3776,25 +3789,38 @@ class ElectronLoader {
             
             // Restore original external files, if any were moved
             for (const extFilesBackupDir of extFilesBackupDirs) {
-                if (fs.existsSync(extFilesBackupDir)) {
-                    const backupTransfers = fs.readdirSync(extFilesBackupDir).map((backupFile) => {
-                        const backupSrc = path.join(extFilesBackupDir, backupFile);
-                        const backupDest = path.join(path.dirname(extFilesBackupDir), backupFile);
+                if (await fs.exists(extFilesBackupDir)) {
+                    const backupEntries = await fs.readdir(extFilesBackupDir);
 
-                        if (fs.existsSync(backupDest)) {
-                            fs.removeSync(backupDest);
-                        }
+                    for (const backupEntry of backupEntries) {
+                        const backupSrc = path.join(extFilesBackupDir, backupEntry);
+                        const backupSrcIsDir = (await fs.lstat(backupSrc)).isDirectory();
+                        const backupDest = path.join(path.dirname(extFilesBackupDir), backupEntry);
+                        const backupDestExists = await fs.exists(backupDest);
+                        const backupDestIsDir = backupDestExists && (await fs.lstat(backupDest)).isDirectory();
 
-                        // Use hardlinks for faster file restoration in link mode
-                        if (profile.modLinkMode && !fs.lstatSync(backupSrc).isDirectory()) {
-                            // TODO - Recursively do this when encountering directories
-                            return fs.link(backupSrc, backupDest);
+                        if (backupDestIsDir) {
+                            if (backupSrcIsDir) {
+                                log.info("Merging restored game file backups with existing directory.");
+
+                                await fsPromises.cp(backupSrc, backupDest, { recursive: true });
+                            } else {
+                                throw new Error("Backup file is not a directory but write dest is. This should not happen.");
+                            }
                         } else {
-                            return fs.copy(backupSrc, backupDest);
-                        }
-                    });
+                            if (backupDestExists) {
+                                await fs.remove(backupDest);
+                            }
 
-                    await Promise.all(backupTransfers);
+                            if (profile.modLinkMode && !backupSrcIsDir) {
+                                // Use hardlinks for faster file restoration in link mode
+                                // TODO - Recursively do this when encountering directories
+                                await fs.link(backupSrc, backupDest);
+                            } else {
+                                await fs.copy(backupSrc, backupDest);
+                            }
+                        }
+                    }
                 }
             }
 

@@ -117,7 +117,7 @@
                 "rootDir": "C:\\XboxGames\\The Elder Scrolls IV- Oblivion Remastered\\Content",
                 "modDir": ".",
                 "pluginListPath": "OblivionRemastered\\Content\\Dev\\ObvData\\Data\\Plugins.txt",
-                "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\Windows",
+                "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\Config\\WinGDK",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Oblivion Remastered\\Saved\\SaveGames"
             },
             {

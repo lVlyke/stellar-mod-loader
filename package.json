@@ -3,7 +3,7 @@
   "author": "Mychal Thompson <mychal.r.thompson@gmail.com>",
   "repository": "https://github.com/lVlyke/stellar-mod-loader",
   "license": "GPL-3.0",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "main": "electron.js",
   "scripts": {
     "app:build-dist-debug": "npm run build && npm run package",
