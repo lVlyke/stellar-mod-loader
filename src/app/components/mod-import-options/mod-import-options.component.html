@@ -12,19 +12,20 @@
                 (ngModelChange)="importRequestChange$.emit(importRequest)">
         </mat-form-field>
 
-        @if (importRequest.modFilePrefix && !showInstallFolderPicker) {
+        @if (showInstallFolderPicker ? gameModSubdirs.length === 0 : !!importRequest.modFilePrefix) {
             <mat-form-field appearance="fill">
                 <mat-label>Installation Directory</mat-label>
                 <input matInput
                     name="modFilePrefix"
                     type="text"
-                    [disabled]="true"
-                    [ngModel]="importRequest.modFilePrefix">
+                    [disabled]="!showInstallFolderPicker || gameModSubdirs.length > 0"
+                    [ngModel]="importRequest.modFilePrefix"
+                    (ngModelChange)="setModFilePrefix($event)">
             </mat-form-field>
         }
 
         <div class="editor-pane">
-            @if (showInstallFolderPicker) {
+            @if (showInstallFolderPicker && gameModSubdirs.length > 0) {
                 <div>
                     <mat-label class="files-label">Installation Directory</mat-label>
 

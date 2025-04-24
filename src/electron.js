@@ -2436,7 +2436,7 @@ class ElectronLoader {
         const gamePluginFormats = gameDetails?.pluginFormats ?? [];
         let foundModSubdirRoot = "";
         
-        if (!root) {
+        if (!root && profile.gameInstallation) {
             const modDirRelName = path.relative(profile.gameInstallation.rootDir, profile.gameInstallation.modDir);
             // If mod dir is child of root dir, determine if mod is packaged relative to root dir
             if (!modDirRelName.startsWith(".") && !path.isAbsolute(modDirRelName)) {
