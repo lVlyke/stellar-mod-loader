@@ -85,6 +85,7 @@ class ElectronLoader {
         "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
         "paypal_donation": "https://paypal.me/lVlyke"
     };
+    static /** @type {string} */ APP_TMP_DIR = path.resolve(path.join(os.tmpdir(), "SML"));
     static /** @type {number} */ GAME_SCHEMA_VERSION = 1.1;
     static /** @type {string} */ GAME_DB_FILE = path.join(__dirname, "game-db.json");
     static /** @type {string} */ GAME_RESOURCES_DIR = path.join(__dirname, "resources");
@@ -382,19 +383,69 @@ class ElectronLoader {
 
         ipcMain.handle("app:loadExternalProfile", async (
             _event,
-            /** @type {import("./app/models/app-message").AppMessageData<"app:loadExternalProfile">} */ { profilePath }
+            /** @type {import("./app/models/app-message").AppMessageData<"app:loadExternalProfile">} */ { profilePath, directImport }
         ) => {
             if (!profilePath) {
+                const allowedExtensions = ["json"];
+
+                // Allow importing from archive if not doing a direct import
+                if (!directImport) {
+                    allowedExtensions.push("7z", "7zip", "zip", "rar")
+                }
+
                 const pickedFile = (await dialog.showOpenDialog({
-                    properties: ["openDirectory"]
+                    properties: ["openFile"],
+                    filters: [{
+                        name: "SML Profile",
+                        extensions: allowedExtensions
+                    }]
                 }));
                 
                 profilePath = pickedFile?.filePaths[0];
             }
 
+            if (!profilePath) {
+                return null;
+            }
+
+            // If profile is uncompressed, use the dirname
+            if (profilePath.endsWith(".json")) {
+                profilePath = path.dirname(profilePath);
+            } else {
+                const archivePath = profilePath;
+                const profileName = path.basename(archivePath, path.extname(archivePath));
+
+                try {
+                    const stagingDir = path.resolve(path.join(ElectronLoader.APP_TMP_DIR, profileName));
+                    const _7zBinaryPath = this.#resolve7zBinaryPath();
+
+                    // Clean the tmp staging dir
+                    await fs.remove(stagingDir);
+
+                    // Decompress profile to staging dir
+                    await new Promise((resolve, reject) => {
+                        const decompressStream = Seven.extractFull(archivePath, stagingDir, { $bin: _7zBinaryPath });
+                        decompressStream.on("end", () => resolve(true));
+                        decompressStream.on("error", (e) => reject(e));
+                    });
+
+                    profilePath = stagingDir;
+                } catch (e) {
+                    log.error("Failed to load external profile from path:", profilePath, e);
+                    return null;
+                }
+            }
+
+            // Attempt to load the profile
             if (profilePath) {
                 profilePath = path.resolve(profilePath); // Make sure path is absolute
-                return this.loadProfileFromPath(profilePath, profilePath);
+                const loadedProfile = this.loadProfileFromPath(profilePath, profilePath);
+
+                if (!loadedProfile) {
+                    log.error("Failed to load external profile from path:", profilePath);
+                }
+
+                return loadedProfile;
             }
         });
 
@@ -412,34 +463,52 @@ class ElectronLoader {
             const profileDir = this.getProfileDir(profile);
             const defaultProfileDir = this.getDefaultProfileDir(profile.name);
 
-            if (profileDir === defaultProfileDir) {
-                /** @type { string | undefined } */ let exportFolder = undefined;
+            // Choose path to save profile archive
+            const exportFilePath = (await dialog.showSaveDialog({
+                defaultPath: profile.name,
+                filters: [{
+                    name: "Exported Profile",
+                    extensions: ["7z"]
+                }]
+            }))?.filePath;
 
-                // Pick a path that isn't in the profiles directory
-                do {
-                    const exportFolderPick = (await dialog.showOpenDialog({
-                        properties: ["openDirectory"]
-                    }));
-                    
-                    exportFolder = exportFolderPick?.filePaths[0];
-                } while (exportFolder && path.resolve(exportFolder).startsWith(path.resolve(ElectronLoader.APP_PROFILES_DIR)));
-
-                if (!exportFolder) {
-                    return undefined;
-                }
-
-                // Move profile to the new folder
-                fs.moveSync(profileDir, exportFolder, { overwrite: true });
-
-                return exportFolder;
-            } else if (fs.existsSync(defaultProfileDir)) {
-                // If the profile is located at a non-default path, we just need to remove its symlink
-                fs.removeSync(defaultProfileDir);
-
-                return profileDir;
+            if (!exportFilePath) {
+                return undefined;
             }
 
-            return undefined;
+            const initialCwd = process.cwd();
+            // Compress the profile data to archive
+            try {
+                const _7zBinaryPath = this.#resolve7zBinaryPath();
+
+                process.chdir(path.resolve(profileDir));
+
+                await new Promise((resolve, reject) => {
+                    const compressStream = Seven.add(exportFilePath, ".", {
+                        $bin: _7zBinaryPath,
+                        recursive: true
+                    });
+
+                    compressStream.on("end", () => resolve(true));
+                    compressStream.on("error", (e) => reject(e));
+                });
+            } catch (e) {
+                log.error("Failed to export profile: ", e);
+                return undefined;
+            } finally {
+                process.chdir(initialCwd);
+            }
+
+            // Remove profile from SML and back up files to app tmp dir
+            const backupDir = path.join(ElectronLoader.APP_TMP_DIR, `${profile.name}.bak_${this.#asFileName(new Date().toISOString())}`);
+            await fs.move(profileDir, backupDir, { overwrite: true });
+
+            // Remove any symlinks to profile
+            if (profileDir !== defaultProfileDir) {
+                await fs.remove(defaultProfileDir);
+            }
+
+            return exportFilePath;
         });
 
         ipcMain.handle("app:deleteProfile", async (
@@ -2322,45 +2391,7 @@ class ElectronLoader {
                 case ".zip":
                 case ".rar": {
                     decompressOperation = new Promise((resolve, _reject) => {
-                        // Look for 7-Zip installed on system
-                        const _7zBinaries = [
-                            "7zzs",
-                            "7zz",
-                            "7z",
-                            "7z.exe"
-                        ];
-
-                        const _7zBinaryLocations = [
-                            "C:\\Program Files\\7-Zip\\7z.exe",
-                            "C:\\Program Files (x86)\\7-Zip\\7z.exe"
-                        ];
-
-                        let _7zBinaryPath = _7zBinaryLocations.find(_7zPath => fs.existsSync(_7zPath));
-                        
-                        if (!_7zBinaryPath) {
-                            _7zBinaryPath = _7zBinaries.reduce((_7zBinaryPath, _7zBinaryPathGuess) => {
-                                try {
-                                    const which7zBinaryPath = which.sync(_7zBinaryPathGuess);
-                                    _7zBinaryPath = (Array.isArray(which7zBinaryPath)
-                                        ? which7zBinaryPath[0]
-                                        : which7zBinaryPath
-                                    ) ?? undefined;
-                                } catch (_err) {}
-
-                                return _7zBinaryPath;
-                            }, _7zBinaryPath);
-                        }
-
-                        if (!_7zBinaryPath) {
-                            // Fall back to bundled 7-Zip binary if it's not found on system
-                            // TODO - Warn user about opening RARs if 7-Zip not installed on machine
-                            _7zBinaryPath = sevenBin.path7za;
-
-                            log.warn("7-Zip binary was not found on this machine. Falling back to bundled binary.");
-                        } else {
-                            log.info("Found 7-Zip binary: ", _7zBinaryPath);
-                        }
-
+                        const _7zBinaryPath = this.#resolve7zBinaryPath();
                         const decompressStream = Seven.extractFull(filePath, modDirStagingPath, { $bin: _7zBinaryPath });
                         decompressStream.on("end", () => resolve(true));
                         decompressStream.on("error", (e) => {
@@ -4411,6 +4442,51 @@ class ElectronLoader {
         }
 
         return "";
+    }
+
+    /** @return {string} */
+    #resolve7zBinaryPath() {
+        // Look for 7-Zip installed on system
+        const _7zBinaries = [
+            "7zzs",
+            "7zz",
+            "7z",
+            "7z.exe"
+        ];
+
+        const _7zBinaryLocations = [
+            "C:\\Program Files\\7-Zip\\7z.exe",
+            "C:\\Program Files (x86)\\7-Zip\\7z.exe"
+        ];
+
+        let _7zBinaryPath = _7zBinaryLocations.find(_7zPath => fs.existsSync(_7zPath));
+        
+        if (!_7zBinaryPath) {
+            _7zBinaryPath = _7zBinaries.reduce((_7zBinaryPath, _7zBinaryPathGuess) => {
+                try {
+                    const which7zBinaryPath = which.sync(_7zBinaryPathGuess);
+                    _7zBinaryPath = (Array.isArray(which7zBinaryPath)
+                        ? which7zBinaryPath[0]
+                        : which7zBinaryPath
+                    ) ?? undefined;
+                } catch (_err) {}
+
+                return _7zBinaryPath;
+            }, _7zBinaryPath);
+        }
+
+        if (!_7zBinaryPath) {
+            // Fall back to bundled 7-Zip binary if it's not found on system
+            // TODO - Warn user about opening RARs if 7-Zip not installed on machine
+            _7zBinaryPath = sevenBin.path7za;
+
+            log.warn("7-Zip binary was not found on this machine. Falling back to bundled binary.");
+            log.warn("NOTE: RAR archives can not be read using the bundled binary. Install 7-Zip to read RAR archives.");
+        } else {
+            log.info("Found 7-Zip binary: ", _7zBinaryPath);
+        }
+
+        return _7zBinaryPath;
     }
 
     /** @return {string} */

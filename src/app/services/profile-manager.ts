@@ -722,7 +722,7 @@ export class ProfileManager {
 
     public importProfileFromUser(directImport: boolean = false): Observable<AppProfile | undefined> {
         // Load the external profile
-        return runOnce(ElectronUtils.invoke("app:loadExternalProfile", {}).pipe(
+        return runOnce(ElectronUtils.invoke("app:loadExternalProfile", { directImport }).pipe(
             switchMap((profile) => {
                 if (profile) {
                     const profileName = last(profile.name.split(/[\\/]/)) ?? "Imported Profile";

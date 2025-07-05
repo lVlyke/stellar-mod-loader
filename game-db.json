@@ -130,7 +130,7 @@
             }
         ],
         "multipleDataRoots": true,
-        "gameBinary": ["OblivionRemastered.exe"],
+        "gameBinary": ["OblivionRemastered.exe", "OblivionRemastered/Binaries/Win64/obse64_loader.exe"],
         "pluginListType": "Gamebryo",
         "pluginFormats": ["esm", "esp"],
         "pluginDataRoot": "OblivionRemastered/Content/Dev/ObvData/Data",
@@ -237,14 +237,23 @@
         ],
         "scriptExtenders": [
             {
+                "name": "OBSE64",
+                "binaries": [
+                    "OblivionRemastered/Binaries/Win64/obse64_loader.exe"
+                ],
+                "modPaths": [
+                    "OblivionRemastered/Content/Dev/ObvData/Data/OBSE"
+                ]
+            },
+            {
                 "name": "UE4SS",
                 "binaries": [
                     "OblivionRemastered/Binaries/Win64/ue4ss/UE4SS.dll",
                     "OblivionRemastered/Binaries/WinGDK/ue4ss/UE4SS.dll"
                 ],
                 "modPaths": [
-                    "OblivionRemastered/Binaries/Win64/Mods/Scripts",
-                    "OblivionRemastered/Binaries/WinGDK/Mods/Scripts"
+                    "OblivionRemastered/Binaries/Win64/ue4ss/Mods",
+                    "OblivionRemastered/Binaries/WinGDK/ue4ss/Mods"
                 ]
             }
         ],

@@ -162,6 +162,7 @@ export namespace AppMessage {
         id: `${Prefix}:loadExternalProfile`;
         data: {
             profilePath?: string;
+            directImport?: boolean;
         };
         result?: AppProfile;
     }

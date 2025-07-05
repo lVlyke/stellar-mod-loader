@@ -57,6 +57,10 @@ To install Stellar, simply download the latest release from the [releases page](
 >   * [**Profile path overrides**](#profile-path-overrides)
 >   * [**Steam compat symlinks (Linux)**](#linux-steam-compat-symlinks)
 >   * [**Profile locking**](#profile-locking)
+>   * [**External profiles**](#add-external-profiles)
+>   * [**Import profiles**](#import-profiles)
+>   * [**Export profiles**](#export-profiles)
+>   * [**Delete profiles**](#delete-profiles)
 > * [**Base profiles**](#base-profiles)
 > * **Mods**
 >   * [**Adding mods**](#add-some-mods)
@@ -195,6 +199,22 @@ Profiles can be locked/unlocked by clicking the "Lock Profile" button at the top
 ### Creating additional profiles
 
 You can create additional profiles at any time by pressing the **Create Profile** button above the **Mod List** section or by selecting **Profile > Add New Profile** from the the menu bar.
+
+### Add external profiles
+
+External profiles can be added to SML from **Profile > Add External Profile**. An external profile will remain in the same directory it was added from, allowing for profiles to be used from any location.
+
+### Import profiles
+
+Existing profiles can be imported into SML from **Profile > Import Profile**.
+
+### Export profiles
+
+You can export a profile from **Profile > Export Profile**. Exported profiles will be removed from SML after successful export. A backup of the profile will be written to `<OS temp dir>/SML` before export.
+
+### Delete profiles
+
+You can delete a profile from **Profile > Delete Profile**. **This cannot be undone**.
 
 **Tip:** You can change the app theme at any time under **File > Preferences**.
 
