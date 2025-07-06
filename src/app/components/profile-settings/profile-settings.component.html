@@ -210,7 +210,7 @@
         </mat-checkbox>
     </div>
 
-    <!-- Save Manegement -->
+    <!-- Save Management -->
     @if (!baseProfileMode) {
         <div class="checkbox-field">
             <mat-checkbox name="manageSaveFiles"
@@ -218,6 +218,18 @@
                           [ngModel]="manageSavesSupported ? initialProfile.manageSaveFiles : false">
                 Manage Save Files
                 <mat-icon class="tooltip-icon" matTooltip="Manage save games so they are part of the profile and only active if the profile is active.">help</mat-icon>
+            </mat-checkbox>
+        </div>
+    }
+
+    <!-- Path case normalization -->
+    @if (!baseProfileMode) {
+        <div class="checkbox-field">
+            <mat-checkbox name="normalizePathCasing"
+                          [disabled]="!profileForm.enabled"
+                          [ngModel]="createMode ? initialProfile.normalizePathCasing ?? normalizePathCasingRecommended : initialProfile.normalizePathCasing">
+                Normalize mod file paths
+                &nbsp;<mat-icon matTooltip="Normalizes capitalization of mod files during deployment">help</mat-icon>
             </mat-checkbox>
         </div>
     }

@@ -8,7 +8,6 @@ export interface AppData {
     theme: AppTheme;
     gameDb: GameDatabase;
     pluginsEnabled: boolean;
-    normalizePathCasing: boolean;
     verifyProfileOnStart: boolean;
     checkLatestVersionOnStart?: boolean;
     modListColumns?: string[];
@@ -16,6 +15,9 @@ export interface AppData {
     steamCompatDataRoot?: string;
     logPanelEnabled?: boolean;
     customGameDb?: GameDatabase;
+
+    /** @deprecated */
+    normalizePathCasing?: boolean;
 }
 
 export namespace AppData {

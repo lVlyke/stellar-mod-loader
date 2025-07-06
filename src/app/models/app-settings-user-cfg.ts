@@ -4,11 +4,13 @@ import { GameDatabase } from "./game-database";
 export interface AppSettingsUserCfg {
     activeProfile?: string | AppProfile.Description;
     pluginsEnabled: boolean;
-    normalizePathCasing: boolean;
     modListColumns?: string[];
     verifyProfileOnStart: boolean;
     checkLatestVersionOnStart?: boolean;
     steamCompatDataRoot?: string;
     logPanelEnabled?: boolean;
     customGameDb?: GameDatabase;
+
+    /** @deprecated */
+    normalizePathCasing?: boolean;
 }

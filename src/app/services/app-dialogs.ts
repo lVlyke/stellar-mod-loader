@@ -127,15 +127,6 @@ export class AppDialogs {
         });
     }
 
-    public showNormalizePathCaseRecommendedDialog(): Observable<boolean> {
-        return this.showDefault(
-            "Mod path normalization is not currently enabled but is recommended to prevent mod issues on Linux. Would you like to enable it now?",
-            [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION],
-            undefined,
-            { disposeOnBackdropClick: true }
-        );
-    }
-
     public showAddCustomGameActionDialog(gameAction?: GameAction): Observable<GameAction | undefined> {
         const injectionTokens: OverlayHelpers.InjetorTokens = [];
         if (gameAction) {

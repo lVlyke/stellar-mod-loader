@@ -303,10 +303,6 @@ export class AppStateBehaviorManager {
                         concatMap((warning) => {
                             switch (warning) {
                                 case "symlinksDisabled": return this.dialogs.showSymlinkWarningDialog();
-                                case "normalizePathCaseRecommended": return this.dialogs.showNormalizePathCaseRecommendedDialog().pipe(
-                                    filterTrue(),
-                                    switchMap(() => this.store.dispatch(new AppActions.setNormalizePathCasing(true)))
-                                )
                                 default: return of(undefined);
                             }
                         }),

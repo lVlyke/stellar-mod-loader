@@ -22,7 +22,6 @@ export namespace AppActions {
     export type ActiveProfileAction = BasicAction<AppData, "activeProfile">;
     export type DeployInProgressAction = BasicAction<AppData, "deployInProgress">;
     export type PluginsEnabledAction = BasicAction<AppData, "pluginsEnabled">;
-    export type NormalizePathCasingAction = BasicAction<AppData, "normalizePathCasing">;
     export type VerifyProfileOnStartAction = BasicAction<AppData, "verifyProfileOnStart">;
     export type GameDbAction = BasicAction<AppData, "gameDb">;
     export type ModListColumnsAction = BasicAction<AppData, "modListColumns">;
@@ -30,7 +29,6 @@ export namespace AppActions {
     export const updateActiveProfile = createUpdateAction("activeProfile");
     export const setDeployInProgress = createUpdateAction("deployInProgress");
     export const setPluginsEnabled = createUpdateAction("pluginsEnabled");
-    export const setNormalizePathCasing = createUpdateAction("normalizePathCasing");
     export const setVerifyProfileOnStart = createUpdateAction("verifyProfileOnStart");
     export const updateGameDb = createUpdateAction("gameDb");
     export const updateModListColumns = createUpdateAction("modListColumns");

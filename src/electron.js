@@ -101,6 +101,7 @@ class ElectronLoader {
     static /** @type {string} */ PROFILE_BACKUPS_CONFIG_DIR = "config";
     static /** @type {string} */ PROFILE_MODS_STAGING_DIR = "_tmp";
     static /** @type {string} */ PROFILE_LINK_SUPPORT_TEST_FILE = ".sml_link_test";
+    static /** @type {string} */ PROFILE_PATH_CASE_NORMALIZATION_TEST_FILE = path.join(".sml_pcn_test", "pcn");
     static /** @type {string} */ DEPLOY_EXT_BACKUP_DIR = ".sml.bak";
     static /** @type {string} */ STEAM_DEFAULT_COMPAT_DATA_ROOT = "~/.local/share/Steam/steamapps/compatdata";
     static /** @type {string} */ STEAM_COMPAT_STEAMUSER_DIR = "pfx/drive_c/users/steamuser";
@@ -676,7 +677,8 @@ class ElectronLoader {
                 activeGameAction: VERIFY_SUCCESS, // TODO
                 rootModSections: VERIFY_SUCCESS, // TODO
                 modSections: VERIFY_SUCCESS, // TODO
-                calculateModOverwriteFiles: VERIFY_SUCCESS
+                calculateModOverwriteFiles: VERIFY_SUCCESS,
+                normalizePathCasing: VERIFY_SUCCESS
             };
 
             function hasVerificationError(result) {
@@ -698,11 +700,9 @@ class ElectronLoader {
         ) => {
             const settings = this.loadSettings();
             const symlinksDisabled = !this.#checkLinkSupported(".", ["."], true, "file");
-            const normalizePathCaseRecommended = !settings.normalizePathCasing && process.platform !== "win32";
 
             return {
-                symlinksDisabled,
-                normalizePathCaseRecommended
+                symlinksDisabled
             };
         });
 
@@ -1085,9 +1085,9 @@ class ElectronLoader {
         });
 
         ipcMain.handle("profile:deploy", async (_event, /** @type {import("./app/models/app-message").AppMessageData<"profile:deploy">} */ {
-            profile, deployPlugins, normalizePathCasing
+            profile, deployPlugins
         }) => {
-                return this.deployProfile(profile, deployPlugins, normalizePathCasing);
+                return this.deployProfile(profile, deployPlugins);
         });
 
         ipcMain.handle("profile:undeploy", async (
@@ -1207,6 +1207,40 @@ class ElectronLoader {
                 symlinkType,
                 checkBaseProfile
             );
+        });
+
+        ipcMain.handle("profile:normalizePathCasingRecommended", (
+            _event,
+            /** @type {import("./app/models/app-message").AppMessageData<"profile:normalizePathCasingRecommended">} */ { profile }
+        ) => {
+            if (!profile.gameInstallation?.modDir) {
+                return false;
+            }
+
+            if (!fs.existsSync(profile.gameInstallation.modDir)) {
+                return false;
+            }
+
+            const testFilePathLower = path.join(
+                profile.gameInstallation.modDir,
+                ElectronLoader.PROFILE_PATH_CASE_NORMALIZATION_TEST_FILE.toLowerCase()
+            );
+
+            const testFilePathUpper = path.join(
+                profile.gameInstallation.modDir,
+                ElectronLoader.PROFILE_PATH_CASE_NORMALIZATION_TEST_FILE.toUpperCase()
+            );
+
+            try {
+                fs.createFileSync(testFilePathLower);
+
+                // Check if directory is case-sensitive
+                return !fs.existsSync(testFilePathUpper);
+            } catch (e) {
+                return false;
+            } finally {
+                fs.removeSync(testFilePathLower);
+            }
         });
 
         ipcMain.handle("profile:steamCompatSymlinksSupported", (
@@ -1886,6 +1920,13 @@ class ElectronLoader {
 
             if ("gameBinaryPath" in profile) {
                 delete profile.gameBinaryPath;
+            }
+        }
+
+        // BC: <0.14.0
+        {
+            if (this.loadSettings()?.normalizePathCasing) {
+                profile.normalizePathCasing = true;
             }
         }
 
@@ -3236,8 +3277,7 @@ class ElectronLoader {
 
     /** @returns {Promise<string[]>} */
     async deployGameResources(
-        /** @type {AppProfile} */ profile,
-        /** @type {boolean} */ normalizePathCasing
+        /** @type {AppProfile} */ profile
     ) {
         const profileModFiles = [];
         const gameDetails = this.#getGameDetails(profile.gameId);
@@ -3246,7 +3286,7 @@ class ElectronLoader {
             Object.entries(gameDetails.resources.mods).forEach(([resourceSrc, resourceDest]) => {
                 const srcFilePath = path.join(ElectronLoader.GAME_RESOURCES_DIR, resourceSrc);
 
-                if (normalizePathCasing) {
+                if (profile.normalizePathCasing) {
                     // TODO - Apply normalization rules to `resourceDest`
                 }
 
@@ -3374,7 +3414,7 @@ class ElectronLoader {
             const appSettings = this.loadSettings();
 
             try {
-                await this.deployProfile(profile, appSettings.pluginsEnabled, appSettings.normalizePathCasing);
+                await this.deployProfile(profile, appSettings.pluginsEnabled);
             } catch (err) {
                 log.error("Failed to launch profile", profileName, err);
                 return false;
@@ -3389,8 +3429,7 @@ class ElectronLoader {
     /** @returns {Promise<string[]>} */
     async deployMods(
         /** @type {AppProfile} */ profile,
-        /** @type {boolean} */ root,
-        /** @type {boolean} */ normalizePathCasing
+        /** @type {boolean} */ root
     ) {
         const profileModFiles = [];
         const relModDir = this.#expandPath(root ? profile.gameInstallation.rootDir : profile.gameInstallation.modDir);
@@ -3403,7 +3442,7 @@ class ElectronLoader {
 
         // Build Map of all existing data subdirs for path normalization
         /** @type {Map<string, string>} */ const existingDataSubdirs = new Map();
-        if (normalizePathCasing) {
+        if (profile.normalizePathCasing) {
             (await fs.readdir(gameModDir, { recursive: true })).forEach((existingModFile) => {
                 if (fs.lstatSync(path.join(gameModDir, /** @type {string} */ (existingModFile))).isDirectory()) {
                     existingDataSubdirs.set(/** @type {string} */ (existingModFile).toLowerCase(), existingModFile);
@@ -3426,7 +3465,7 @@ class ElectronLoader {
                     const srcFilePath = path.resolve(path.join(modDirPath, modFile.toString()));
 
                     // If file path normalization is enabled, apply to all files inside Data subdirectories (i.e. textures/, meshes/)
-                    if (normalizePathCasing && modFile.includes(path.sep)) {
+                    if (profile.normalizePathCasing && modFile.includes(path.sep)) {
                         // Convert file paths to lowercase
                         // If this file is a plugin, preserve the plugin name's casing
                         if (gamePluginFormats.some(pluginFormat => modFile.endsWith(pluginFormat))) {
@@ -3682,8 +3721,7 @@ class ElectronLoader {
     /** @returns {Promise<void>} */
     async deployProfile(
         /** @type {AppProfile} */ profile,
-        /** @type {boolean} */ deployPlugins,
-        /** @type {boolean} */ normalizePathCasing
+        /** @type {boolean} */ deployPlugins
     ) {
         /** @type {string[]} */
         const profileModFiles = [];
@@ -3700,8 +3738,8 @@ class ElectronLoader {
             log.info("Deploying profile", profile.name);
 
             // Deploy mods
-            profileModFiles.push(... await this.deployMods(profile, true, normalizePathCasing));
-            profileModFiles.push(... await this.deployMods(profile, false, normalizePathCasing));
+            profileModFiles.push(... await this.deployMods(profile, true));
+            profileModFiles.push(... await this.deployMods(profile, false));
 
             if (deployPlugins && !!profile.gameInstallation.pluginListPath && profile.plugins.length > 0) {
                 // Write plugin list
@@ -3721,7 +3759,7 @@ class ElectronLoader {
             }
 
             // Write game resources
-            profileModFiles.push(... await this.deployGameResources(profile, normalizePathCasing));
+            profileModFiles.push(... await this.deployGameResources(profile));
 
             // Process deployed files
             profileModFiles.push(... await this.processDeployedFiles(profile, profileModFiles));

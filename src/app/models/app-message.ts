@@ -561,7 +561,6 @@ export namespace AppMessage {
         data: {
             profile: AppProfile;
             deployPlugins: boolean;
-            normalizePathCasing: boolean;
         };
     }
 
@@ -728,6 +727,14 @@ export namespace AppMessage {
         result: boolean | undefined;
     }
 
+    export interface NormalizePathCasingRecommended extends Base {
+        id: `${ProfileMessage.Prefix}:normalizePathCasingRecommended`;
+        data: {
+            profile: AppProfile;
+        };
+        result: boolean;
+    }
+
     export interface SteamCompatSymlinksSupported extends Base {
         id: `${ProfileMessage.Prefix}:steamCompatSymlinksSupported`;
         data: {
@@ -796,6 +803,7 @@ export namespace AppMessage {
                                | UpdateConfigFile
                                | DeleteSaveFile
                                | ProfileDirLinkSupported
+                               | NormalizePathCasingRecommended
                                | SteamCompatSymlinksSupported
                                | ResolveGameBinaryVersion
                                | ToggleLockState;
@@ -886,6 +894,7 @@ export namespace AppMessage {
         "profile:updateConfigFile",
         "profile:deleteSaveFile",
         "profile:dirLinkSupported",
+        "profile:normalizePathCasingRecommended",
         "profile:steamCompatSymlinksSupported",
         "profile:resolveGameBinaryVersion",
         "profile:toggleLockState"

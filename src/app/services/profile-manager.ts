@@ -299,13 +299,13 @@ export class ProfileManager {
                         "manageSteamCompatSymlinks",
                         "modLinkMode",
                         "configLinkMode",
-                        "steamCustomGameId"
+                        "steamCustomGameId",
+                        "normalizePathCasing"
                     ]),
     
                     // Monitor these app settings:
                     pick<AppData, keyof AppData>(appState, [
                         "pluginsEnabled",
-                        "normalizePathCasing",
                         "steamCompatDataRoot"
                     ])
                 ])),
@@ -1466,8 +1466,7 @@ export class ProfileManager {
                                     switchMap(() => this.store.dispatch(new AppActions.setDeployInProgress(true))),
                                     switchMap(() => ElectronUtils.invoke("profile:deploy", {
                                         profile: activeProfile,
-                                        deployPlugins: appState.pluginsEnabled,
-                                        normalizePathCasing: appState.normalizePathCasing
+                                        deployPlugins: appState.pluginsEnabled
                                     })),
                                     catchError(() => {
                                         // TODO - Show error in dialog

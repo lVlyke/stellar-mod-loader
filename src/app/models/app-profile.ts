@@ -39,6 +39,7 @@ export interface AppProfile extends AppBaseProfile {
     defaultGameActions: GameAction[];
     customGameActions?: GameAction[];
     activeGameAction?: GameAction;
+    normalizePathCasing?: boolean;
 }
 
 export type AppProfileModList = AppProfile.ModList;

@@ -151,6 +151,9 @@ export class AppProfileSettingsComponent extends BaseComponent {
     @DeclareState("manageSteamCompatSymlinksSupported")
     protected _manageSteamCompatSymlinksSupported = false;
 
+    @DeclareState("normalizePathCasingRecommended")
+    protected _normalizePathCasingRecommended = false;
+
     @DeclareState("currentGameDetails")
     protected _currentGameDetails: GameDetails = GameDetails.empty();
 
@@ -278,6 +281,13 @@ export class AppProfileSettingsComponent extends BaseComponent {
             }))
         ).subscribe(managedSavesSupported => this._manageSavesSupported = !!managedSavesSupported);
 
+        // Check if path case normalization is recommended
+        this.formModel$.pipe(
+            switchMap(formModel => formModel.gameInstallation?.modDir ? ElectronUtils.invoke("profile:normalizePathCasingRecommended", {
+                profile: formModel as AppProfile
+            }) : of(false))
+        ).subscribe(normalizePathCasingRecommended => this._normalizePathCasingRecommended = normalizePathCasingRecommended);
+
         // Check if Steam compat symlinks are supported
         this.formModel$.pipe(
             switchMap(formModel => formModel.steamCustomGameId ? ElectronUtils.invoke("profile:steamCompatSymlinksSupported", {
@@ -402,6 +412,10 @@ export class AppProfileSettingsComponent extends BaseComponent {
 
     public get manageSteamCompatSymlinksSupported(): boolean {
         return this._manageSteamCompatSymlinksSupported;
+    }
+
+    public get normalizePathCasingRecommended(): boolean {
+        return this._normalizePathCasingRecommended;
     }
 
     public get currentGameDetails(): GameDetails {

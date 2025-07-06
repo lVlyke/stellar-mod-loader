@@ -17,7 +17,6 @@ import { GameDetails } from "../models/game-details";
         theme: AppTheme.Dark,
         gameDb: {} as GameDatabase,
         pluginsEnabled: true,
-        normalizePathCasing: false,
         verifyProfileOnStart: true
     },
     children: [ActiveProfileState] // TODO - NGXS child states are deprecated
@@ -161,11 +160,6 @@ export class AppState {
 
     @Action(AppActions.setPluginsEnabled)
     public setPluginsEnabled(context: AppState.Context, state: AppActions.PluginsEnabledAction): void {
-        context.patchState(cloneDeep(state));
-    }
-
-    @Action(AppActions.setNormalizePathCasing)
-    public setNormalizePathCasing(context: AppState.Context, state: AppActions.NormalizePathCasingAction): void {
         context.patchState(cloneDeep(state));
     }
 
