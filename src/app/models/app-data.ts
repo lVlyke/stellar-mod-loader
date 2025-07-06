@@ -10,6 +10,7 @@ export interface AppData {
     pluginsEnabled: boolean;
     normalizePathCasing: boolean;
     verifyProfileOnStart: boolean;
+    checkLatestVersionOnStart?: boolean;
     modListColumns?: string[];
     deployInProgress?: boolean;
     steamCompatDataRoot?: string;

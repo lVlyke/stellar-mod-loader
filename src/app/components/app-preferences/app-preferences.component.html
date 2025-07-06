@@ -1,9 +1,17 @@
 <form #preferencesForm="ngForm" id="preferences-form" (ngSubmit)="onFormSubmit$.next(preferencesForm)">
     @if (!!formModel) {
         <span>
+            <mat-checkbox name="checkLatestVersionOnStart"
+                          [ngModel]="formModel.checkLatestVersionOnStart ?? true"
+                          (ngModelChange)="formModel.checkLatestVersionOnStart = $event">
+                Check for app updates on startup
+            </mat-checkbox>
+        </span>
+
+        <span>
             <mat-checkbox name="normalizePathCasing"
                           [(ngModel)]="formModel.normalizePathCasing">
-                Normalize mod file path
+                Normalize mod file paths
                 &nbsp;<mat-icon matTooltip="Recommended for Linux">help</mat-icon>
             </mat-checkbox>
         </span>

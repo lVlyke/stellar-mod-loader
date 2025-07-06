@@ -106,7 +106,11 @@ export class AppState {
         }
 
         if (settings.verifyProfileOnStart !== undefined) {
-            state.verifyProfileOnStart = settings.verifyProfileOnStart
+            state.verifyProfileOnStart = settings.verifyProfileOnStart;
+        }
+
+        if (settings.checkLatestVersionOnStart !== undefined) {
+            state.checkLatestVersionOnStart = settings.checkLatestVersionOnStart;
         }
 
         if (settings.steamCompatDataRoot !== undefined) {

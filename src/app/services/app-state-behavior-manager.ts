@@ -1,6 +1,7 @@
+import { last } from "es-toolkit";
 import { Injectable } from "@angular/core";
 import { Store } from "@ngxs/store";
-import { EMPTY, from, Observable, of, throwError } from "rxjs";
+import { combineLatest, EMPTY, from, Observable, of, throwError } from "rxjs";
 import { catchError, concatMap, distinctUntilChanged, filter, map, skip, switchMap, take, toArray } from "rxjs/operators";
 import { AppMessage } from "../models/app-message";
 import { AppActions, AppState } from "../state";
@@ -44,6 +45,12 @@ export class AppStateBehaviorManager {
         this.appState$ = store.select(AppState.get);
         this.isDeployInProgress$ = store.select(AppState.isDeployInProgress);
 
+        // Check for app update on start if enabled
+        this.loadSettings().pipe(
+            filter((appSettings) => appSettings?.checkLatestVersionOnStart !== false),
+            switchMap(() => this.checkLatestVersion())
+        ).subscribe();
+
         // Save app settings to disk on changes
         this.appState$.pipe(
             filterDefined(),
@@ -54,10 +61,18 @@ export class AppStateBehaviorManager {
             ))
         ).subscribe();
 
-        // Listen for log messages from the main process
+        // Listen for messages from the main process:
+
         messageHandler.messages$.pipe(
             filter(message => message.id === "app:log"),
         ).subscribe(({ data }) => log[data.level](data.text));
+
+        messageHandler.messages$.pipe(
+            filter((message) => message.id === "app:checkLatestVersion"),
+            switchMap(() => this.checkLatestVersion().pipe(
+                catchError((err) => (log.error("Failed to check for updates: ", err), EMPTY))
+            ))
+        ).subscribe();
 
         messageHandler.messages$.pipe(
             filter(message => message.id === "app:showPreferences"),
@@ -131,6 +146,44 @@ export class AppStateBehaviorManager {
 
     public getAppInfo(): Observable<AppInfo> {
         return ElectronUtils.invoke("app:getInfo", {});
+    }
+
+    public getLatestVersion(): Observable<string | undefined> {
+        return ElectronUtils.invoke("app:resolveResourceUrl", { resource: "latest_release" }).pipe(
+            switchMap((latestVersionUrl) => {
+                if (!latestVersionUrl) {
+                    return of(undefined);
+                }
+
+                return fetch(latestVersionUrl);
+            }),
+            catchError((err) => {
+                log.error("Failed to get latest app version: ", err);
+                return of(undefined);
+            }),
+            // Get the latest version number from the last part of the response URL and drop the `v` prefix
+            map((response) => response ? last(response.url.split("/"))?.substring(1) : undefined)
+        );
+    }
+
+    public checkLatestVersion(): Observable<unknown> {
+        return runOnce(combineLatest([
+            this.getAppInfo(),
+            this.getLatestVersion()
+        ]).pipe(
+            switchMap(([appInfo, latestVersion]) => {
+                if (latestVersion !== undefined) {
+                    if (LangUtils.compareVersions(latestVersion, appInfo.appVersion) === 1) {
+                        log.info(`A new version of ${appInfo.appShortName} is available: `, latestVersion);
+                        return this.dialogs.showAppVersionUpdateNotice(appInfo, latestVersion);
+                    } else {
+                        log.info("App is up to date.");
+                    }
+                }
+                
+                return EMPTY;
+            })
+        ));
     }
 
     public setPluginsEnabled(pluginsEnabled: boolean): Observable<void> {
@@ -347,6 +400,7 @@ export class AppStateBehaviorManager {
             normalizePathCasing: appData.normalizePathCasing,
             modListColumns: appData.modListColumns,
             verifyProfileOnStart: appData.verifyProfileOnStart,
+            checkLatestVersionOnStart: appData.checkLatestVersionOnStart,
             steamCompatDataRoot: appData.steamCompatDataRoot,
             logPanelEnabled: appData.logPanelEnabled,
             customGameDb: appData.customGameDb

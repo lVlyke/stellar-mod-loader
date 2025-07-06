@@ -1,0 +1,17 @@
+<mat-card>
+     <mat-card-header>
+        <mat-card-title>Update Available</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+        A new version of {{aboutData.appShortName}} ({{latestVersion}}) is available.
+
+        <app-external-url variant="default" color="accent" resource="latest_release">
+            Download latest version
+        </app-external-url>
+    </mat-card-content>
+
+    <mat-card-actions>
+        <app-dialog-actions [actions]="actions" (actionSelected)="actionSelected$.emit($event)" />
+    </mat-card-actions>
+</mat-card>

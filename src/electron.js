@@ -80,6 +80,7 @@ class ElectronLoader {
     static /** @type {Record<AppResource, string>} */ APP_RESOURCES = {
         "readme_offline": `file://${process.cwd()}/README.md`,
         "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/${ElectronLoader.APP_VERSION}/README.md`,
+        "latest_release": `${ElectronLoader.APP_PACKAGE.repository}/releases/latest`,
         "license": `file://${process.cwd()}/LICENSE`,
         "homepage": ElectronLoader.APP_PACKAGE.repository,
         "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
@@ -1403,6 +1404,10 @@ class ElectronLoader {
                     {
                         label: "View Project Homepage",
                         click: () => shell.openExternal(ElectronLoader.APP_RESOURCES["homepage"])
+                    },
+                    {
+                        label: "Check for Updates",
+                        click: () => this.mainWindow.webContents.send("app:checkLatestVersion")
                     },
                     {
                         type: "separator"

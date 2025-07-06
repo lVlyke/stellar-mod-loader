@@ -51,6 +51,12 @@ export namespace AppMessage {
         result: AppInfo;
     }
 
+    export interface CheckLatestVersion extends Base {
+        id: `${Prefix}:checkLatestVersion`;
+        data: {};
+        result?: string;
+    }
+
     export interface SyncUiState extends Base {
         id: `${Prefix}:syncUiState`;
         data: {
@@ -272,6 +278,7 @@ export namespace AppMessage {
 
     export type AppMessage = Log
                            | GetInfo
+                           | CheckLatestVersion
                            | SyncUiState
                            | ChooseDirectory
                            | ChooseFilePath
@@ -798,6 +805,7 @@ export namespace AppMessage {
     export const record: Array<_AppMessage["id"]> = [
         "app:log",
         "app:getInfo",
+        "app:checkLatestVersion",
         "app:syncUiState",
         "app:chooseDirectory",
         "app:chooseFilePath",

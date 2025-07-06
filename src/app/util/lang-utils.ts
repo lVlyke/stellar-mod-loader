@@ -24,4 +24,20 @@ export namespace LangUtils {
             .toLowerCase()
             .replace(/[/\\]/g, sep);
     }
+
+    export function compareVersions(a: string, b: string): number {
+        if (a.startsWith(b + "-")) {
+            return -1;
+        }
+
+        if (b.startsWith(a + "-")) {
+            return 1;
+        }
+
+        return a.localeCompare(b, undefined, {
+            numeric: true,
+            caseFirst: "upper",
+            sensitivity: "case"
+        });
+    }
 }

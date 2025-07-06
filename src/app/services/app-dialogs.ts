@@ -11,6 +11,12 @@ import { AppSymlinkWarningDialog } from "../modals/symlink-warning-dialog";
 import { AppCustomGameActionDialog, GAME_ACTION_TOKEN } from "../modals/custom-game-action-dialog";
 import { ModSection } from "../models/mod-section";
 import { AppModSectionDialog, MOD_SECTION_TOKEN } from "../modals/mod-section-dialog";
+import {
+    APP_INFO_TOKEN,
+    APP_LATEST_VERSION_TOKEN,
+    AppVersionUpdateNoticeComponent
+} from "../modals/app-version-update-notice";
+import { AppInfo } from "../models/app-info";
 
 @Injectable({ providedIn: "root" })
 export class AppDialogs {
@@ -37,6 +43,22 @@ export class AppDialogs {
     ): Observable<true> {
         return this.dialogManager.createNotice(prompt, action, config).pipe(
             map(() => true)
+        );
+    }
+
+    public showAppVersionUpdateNotice(appInfo: AppInfo, latestVersion: string): Observable<unknown> {
+        return this.dialogManager.create(AppVersionUpdateNoticeComponent, [
+                DialogManager.OK_ACTION_PRIMARY
+            ], {
+                maxWidth: "35%",
+                panelClass: "mat-app-background",
+                hasBackdrop: true,
+                disposeOnBackdropClick: true
+            },
+            [
+                [APP_INFO_TOKEN, appInfo],
+                [APP_LATEST_VERSION_TOKEN, latestVersion]
+            ]
         );
     }
 

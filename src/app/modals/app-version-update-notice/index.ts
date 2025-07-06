@@ -1,0 +1,1 @@
+export * from "./app-version-update-notice.component";
