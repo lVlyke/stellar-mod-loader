@@ -138,7 +138,7 @@ export class AppProfileActionsComponent extends BaseComponent {
         this.isDeployInProgress$ = store.select(AppState.isDeployInProgress);
 
         combineLatest(stateRef.getAll("profile", "gameDb")).subscribe(([profile, gameDb]) => {
-            this.gameDetails = profile ? gameDb[profile.gameId] : gameDb[GameId.UNKNOWN];
+            this.gameDetails = (profile ? gameDb[profile.gameId] : undefined) ?? gameDb[GameId.UNKNOWN];
             this.gameConfigFiles = this.gameDetails.gameConfigFiles;
         });
     }

@@ -429,9 +429,9 @@
             @let backupFileEntries = "profile:readPluginBackups" | appSendElectronMsg$:{ profile: activeProfile! } | async;
 
             <app-profile-backup-list [backupFileEntries]="backupFileEntries"
-                                     (backupSelect)="importProfilePluginBackup($event.filePath); importConfigBackupMenuRef?.close()"
-                                     (backupDelete)="deleteProfilePluginBackup($event.filePath); importConfigBackupMenuRef?.close()"
-                                     (exploreBackups)="profileManager.showProfilePluginBackupsInFileExplorer(); importConfigBackupMenuRef?.close()"/>
+                                     (backupSelect)="importProfilePluginBackup($event.filePath); importPluginBackupMenuRef?.close()"
+                                     (backupDelete)="deleteProfilePluginBackup($event.filePath); importPluginBackupMenuRef?.close()"
+                                     (exploreBackups)="profileManager.showProfilePluginBackupsInFileExplorer(); importPluginBackupMenuRef?.close()"/>
         </mat-card-content>
     </mat-card>
 </ng-template>

@@ -563,7 +563,9 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
     }
 
     protected setModFilePrefix(prefix?: string): void {
-        this.importRequest = Object.assign(this.importRequest, { modFilePrefix: prefix });
+        this.importRequest = Object.assign(this.importRequest, {
+            modFilePrefix: prefix ? prefix.replace(/[/\\]/g, this.importRequest.filePathSeparator) : undefined
+        });
     }
 
     protected expandToRoot(node: FileTreeNode | undefined): void {

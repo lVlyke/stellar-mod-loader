@@ -7,6 +7,7 @@ import { AppMessageHandler } from "./app-message-handler";
 import {
     catchError,
     concatMap,
+    defaultIfEmpty,
     distinctUntilChanged,
     filter,
     finalize,
@@ -193,19 +194,10 @@ export class ProfileManager {
 
                         return of(null);
                     }),
-                    // Fall back to try loading first profile in list
                     switchMap((profile) => {
-                        if (!profile && profileList?.length > 0) {
-                            return this.loadProfile(profileList[0]);
-                        }
-
-                        return of(profile);
-                    }),
-                    // Fall back to creating a new profile
-                    switchMap((profile) => {
+                        // Fall back to try loading first profile in list
                         if (!profile) {
-                            this.appManager.saveSettings();
-                            return this.showProfileWizard();
+                            return this.loadFirstValidProfile();
                         }
 
                         return of(profile);
@@ -266,9 +258,9 @@ export class ProfileManager {
             map(profile => pick<AppProfile, keyof AppProfile>(profile, ["customGameActions", "defaultGameActions"])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             withLatestFrom(this.activeGameAction$),
-            filter(([profile, activeGameAction]) => !activeGameAction || !profile.customGameActions?.find(action => {
+            filter(([profile, activeGameAction]) => !!profile.defaultGameActions && (!activeGameAction || !profile.customGameActions?.find(action => {
                 return LangUtils.isEqual(activeGameAction, action);
-            })),
+            }))),
             switchMap(([profile]) => this.setActiveGameAction(profile.defaultGameActions[0] ?? this.LAUNCH_GAME_ACTION))
         ).subscribe();
 
@@ -364,6 +356,8 @@ export class ProfileManager {
             gameId: profile.gameId
         }).pipe(
             switchMap((profile) => {
+                // TODO - Warn user profile is invalid if !profile
+                
                 if (profile && setActive) {
                     this.setActiveProfile(profile, verify);
                 }
@@ -371,6 +365,36 @@ export class ProfileManager {
                 return of(profile);
             })
         ));
+    }
+
+    public loadFirstValidProfile(showProfileWizardIfNone = true): Observable<AppProfile | undefined> {
+        return this.appState$.pipe(
+            take(1),
+            // Try to load any profile from the list and stop on first successful load
+            switchMap(({ profiles }) => {
+                if (profiles.length === 0) {
+                    return of(undefined);
+                } else {
+                    return from(profiles).pipe(
+                        concatMap((profile) => this.loadProfile(profile, false, false)),
+                        filterDefined(),
+                        take(1),
+                        defaultIfEmpty(undefined)
+                    );
+                }
+            }),
+            switchMap((loadedProfile) => {
+                // Show the new profile wizard if no profile could be loaded
+                if (!loadedProfile && showProfileWizardIfNone) {
+                    return this.showProfileWizard().pipe(
+                        defaultIfEmpty(undefined)
+                    );
+                }
+
+                return of(loadedProfile);
+            }),
+            switchMap((loadedProfile) => this.setActiveProfile(loadedProfile, false))
+        );
     }
 
     public saveProfile(profile: AppProfile): Observable<any> {
@@ -685,9 +709,12 @@ export class ProfileManager {
     }
 
     public exportProfile(profile: AppProfile): Observable<any> {
+        const loadingIndicator = this.appManager.showLoadingIndicator("Exporting Profile...");
+
         return runOnce(ElectronUtils.invoke("app:exportProfile", { profile }).pipe(
             filterDefined(),
-            switchMap(() => this.removeProfile(profile))
+            switchMap(() => this.removeProfile(profile)),
+            finalize(() => loadingIndicator.close())
         ));
     }
 
@@ -706,7 +733,7 @@ export class ProfileManager {
 
         return runOnce(ElectronUtils.invoke("app:deleteProfile", { profile }).pipe(
             switchMap(() => this.removeProfile(profile)),
-            tap(() => loadingIndicator.close()),
+            finalize(() => loadingIndicator.close()),
         ));
     }
 
@@ -721,8 +748,11 @@ export class ProfileManager {
     }
 
     public importProfileFromUser(directImport: boolean = false): Observable<AppProfile | undefined> {
+        const loadingIndicator = this.appManager.showLoadingIndicator("Importing Profile...");
+
         // Load the external profile
         return runOnce(ElectronUtils.invoke("app:loadExternalProfile", { directImport }).pipe(
+            tap(() => loadingIndicator.close()),
             switchMap((profile) => {
                 if (profile) {
                     const profileName = last(profile.name.split(/[\\/]/)) ?? "Imported Profile";
@@ -786,8 +816,10 @@ export class ProfileManager {
         ));
     }
 
-    public setActiveProfile(profile: AppProfile, verify: boolean = true): Observable<AppProfile> {
-        log.info(`Switching to profile ${profile.name}`);
+    public setActiveProfile(profile: AppProfile | undefined, verify: boolean = true): Observable<AppProfile | undefined> {
+        if (!!profile) {
+            log.info(`Switching to profile ${profile.name}`);
+        }
 
         return runOnce(this.store.dispatch(new AppActions.updateActiveProfile(profile)).pipe(
             verify ? switchMap(() => this.verifyActiveProfile({ showSuccessMessage: false })) : map(() => true),
@@ -807,7 +839,7 @@ export class ProfileManager {
             verifyProfile?: boolean,
             remedy?: keyof AppProfile | keyof GameInstallation | false
         } = { createMode: !profile }
-    ): Observable<AppProfile> {
+    ): Observable<AppProfile | undefined> {
         profile ??= AppProfile.create("New Profile");
 
         const modContextMenuRef = this.overlayHelpers.createFullScreen(AppProfileSettingsModal, {
@@ -1537,16 +1569,7 @@ export class ProfileManager {
                 // If the deleted profile was active, switch to the first profile in the list
                 // If no other profile exists, show the create profile modal
                 if (activeProfile === profile) {
-                    return this.appState$.pipe(
-                        take(1),
-                        switchMap(({ profiles }) => {
-                            if (profiles.length > 0) {
-                                return this.loadProfile(profiles[0], true);
-                            } else {
-                                return this.showProfileWizard();
-                            }
-                        })
-                    );
+                    return this.loadFirstValidProfile();
                 } else {
                     return of(true);
                 }

@@ -9,7 +9,7 @@
                 <span matLine class="backup-file-item-line">
                     <span>{{ backupFileEntry | appProfileBackupName }}</span>
 
-                    <button mat-icon-button (click)="backupDelete$.emit(backupFileEntry); $event.preventDefault()">
+                    <button mat-icon-button (click)="backupDelete$.emit(backupFileEntry); $event.stopPropagation()">
                         <mat-icon color="warn">delete</mat-icon>
                     </button>
                 </span>

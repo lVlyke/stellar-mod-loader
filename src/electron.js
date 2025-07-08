@@ -101,7 +101,7 @@ class ElectronLoader {
     static /** @type {string} */ PROFILE_BACKUPS_CONFIG_DIR = "config";
     static /** @type {string} */ PROFILE_MODS_STAGING_DIR = "_tmp";
     static /** @type {string} */ PROFILE_LINK_SUPPORT_TEST_FILE = ".sml_link_test";
-    static /** @type {string} */ PROFILE_PATH_CASE_NORMALIZATION_TEST_FILE = path.join(".sml_pcn_test", "pcn");
+    static /** @type {string} */ PROFILE_PATH_CASE_NORMALIZATION_TEST_FILE = ".sml_pcn_test";
     static /** @type {string} */ DEPLOY_EXT_BACKUP_DIR = ".sml.bak";
     static /** @type {string} */ STEAM_DEFAULT_COMPAT_DATA_ROOT = "~/.local/share/Steam/steamapps/compatdata";
     static /** @type {string} */ STEAM_COMPAT_STEAMUSER_DIR = "pfx/drive_c/users/steamuser";

@@ -6,7 +6,7 @@ import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatDividerModule } from "@angular/material/divider";
 import { Observable } from "rxjs";
-import { share, switchMap } from "rxjs/operators";
+import { delay, share, switchMap } from "rxjs/operators";
 import { BaseComponent } from "../../core/base-component";
 import { filterDefined } from "../../core/operators";
 import { AppProfile } from "../../models/app-profile";
@@ -65,6 +65,7 @@ export class AppProfileSettingsModal extends BaseComponent {
 
         this.onFormSubmit$ = profileSettingsComponent$.pipe(
             switchMap(profileSettingsComponent => profileSettingsComponent.onFormSubmit$),
+            this.managedSource(),
             share()
         );
 
@@ -72,6 +73,8 @@ export class AppProfileSettingsModal extends BaseComponent {
             switchMap(profileSettingsComponent => profileSettingsComponent.formModel$)
         );
 
-        this.onFormSubmit$.subscribe(() => overlayRef.close());
+        this.onFormSubmit$.pipe(
+            delay(0)
+        ).subscribe(() => overlayRef.close());
     }
 }
