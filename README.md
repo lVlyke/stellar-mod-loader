@@ -42,7 +42,9 @@ Many other games are supported with **[custom game support](#custom-games)**.
 
 To install Stellar, simply download the latest release from the [releases page](https://github.com/lVlyke/stellar-mod-loader/releases) and extract the archive to a folder of your choice.
 
-**Note:** [7-Zip](https://www.7-zip.org/) is required to be installed in order to add mods that use RAR archives.
+[7-Zip](https://www.7-zip.org/) is required to be installed in order to add mods that use RAR archives.
+
+**Note:** If you are using Ubuntu or a related Linux distribution, you will also need to run the included `install-apparmor-profile.sh` script in order to create an AppArmor profile for Stellar. See [this Ubuntu blog post](https://ubuntu.com/blog/ubuntu-23-10-restricted-unprivileged-user-namespaces) for more information.
 
 # Using Stellar
 
@@ -518,6 +520,10 @@ To enable symlinks in Windows, you can either A) enable Windows Developer Mode b
 ### The app sits on the "Verifying Profile..." loading screen for a long time during startup
 
 This can happen when very large profiles are activated. If profile verification is taking too long, you can disable verification on app startup via the menu bar under **File > Preferences**.
+
+### **(Linux)** Stellar won't run with error "The SUID sandbox helper binary was found, but is not configured correctly."
+
+If you are using Ubuntu or a related distribution, you will need to run the included `install-apparmor-profile.sh` script in order to create an AppArmor profile for Stellar. See [this Ubuntu blog post](https://ubuntu.com/blog/ubuntu-23-10-restricted-unprivileged-user-namespaces) for more information.
 
 ### **(Linux)** Some mods are not loading/strange behavior when loading some mods
 

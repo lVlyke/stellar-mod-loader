@@ -24,7 +24,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start": "npm run serve",
-    "electron-win32-install": "npm remove electron && npm install && export npm_config_platform=win32 && npm install --save-dev electron@^35.0.0 && unset npm_config_platform"
+    "electron-win32-install": "npm remove electron && npm install && export npm_config_platform=win32 && npm install --save-dev electron@^37.2.0 && unset npm_config_platform"
   },
   "private": true,
   "dependencies": {
@@ -44,7 +44,7 @@
     "@ngxs/store": "^19.0.0",
     "7zip-bin": "^5.2.0",
     "detect-file-encoding-and-language": "^2.4.0",
-    "electron-log": "^5.3.1",
+    "electron-log": "^5.4.1",
     "es-toolkit": "^1.33.0",
     "fs-extra": "^11.3.0",
     "mime-types": "^2.1.35",
@@ -61,7 +61,7 @@
     "@angular-devkit/build-angular": "^19.2.0",
     "@angular/cli": "~19.2.0",
     "@angular/compiler-cli": "^19.2.0",
-    "@electron/packager": "^18.3.5",
+    "@electron/packager": "^18.3.6",
     "@ngxs/devtools-plugin": "^19.0.0",
     "@types/fs-extra": "^11.0.4",
     "@types/jasmine": "~5.1.7",
@@ -70,7 +70,7 @@
     "@types/win-version-info": "^3.1.3",
     "@types/xml2js": "^0.4.14",
     "chokidar": "^4.0.3",
-    "electron": "^35.0.0",
+    "electron": "^37.2.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
