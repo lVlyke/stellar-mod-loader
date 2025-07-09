@@ -71,12 +71,21 @@ export class ActiveProfileState {
     @Action(ActiveProfileActions.DeleteMod)
     public deleteMod(context: ActiveProfileState.Context, { root, name }: ActiveProfileActions.DeleteMod): void {
         const state = cloneDeep(context.getState()!);
+        const modList = root ? state.rootMods : state.mods;
+        const modSections = root ? state.rootModSections : state.modSections;
+        const modIndex = RelativeOrderedMap.indexOf(modList, name);
 
-        if (root) {
-            RelativeOrderedMap.erase(state.rootMods, name);
-        } else {
-            RelativeOrderedMap.erase(state.mods, name);
+        // Adjust any Section indicies as needed
+        if (!!modSections && modIndex !== undefined) {
+            for (const modSection of modSections) {
+                if (modSection.modIndexBefore !== undefined && modSection.modIndexBefore >= modIndex) {
+                    --modSection.modIndexBefore;
+                }
+            }
         }
+
+        // Remove the mod
+        RelativeOrderedMap.erase(modList, name);
 
         context.setState(state);
     }
