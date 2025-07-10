@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, provideAppInitializer, inject } from "@angular/core";
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { AsyncState, ComponentState } from "@lithiumjs/angular";
 import { Store } from "@ngxs/store";
 import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
-import { NgxMaterialThemingModule } from "@lithiumjs/ngx-material-theming";
+import { ThemeContainer } from "@lithiumjs/ngx-material-theming";
 import { Observable } from "rxjs";
 import { BaseComponent } from "./core/base-component";
 import { AppState } from "./state";
@@ -16,7 +16,8 @@ import { AppTheme } from "./models/app-theme";
     imports: [
         RouterModule,
         MatIconModule,
-        NgxMaterialThemingModule
+        
+        ThemeContainer
     ],
     providers: [
         ComponentState.create(AppComponent)

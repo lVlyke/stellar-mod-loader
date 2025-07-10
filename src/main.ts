@@ -1,4 +1,4 @@
-import { enableProdMode, inject, provideAppInitializer } from "@angular/core";
+import { enableProdMode, inject, provideAppInitializer, provideZonelessChangeDetection } from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { provideRouter } from "@angular/router";
@@ -20,6 +20,7 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
     providers: [
+        provideZonelessChangeDetection(),
         provideAnimations(),
         provideStore(
             appStates,

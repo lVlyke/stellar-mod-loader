@@ -6,10 +6,10 @@
     #{$selector} {
 
         mat-tree.file-tree {
-            background: var(--mdc-filled-text-field-container-color);
+            background: var(--mat-form-field-filled-container-color);
             border-width: 1px;
             border-style: solid;
-            border-color: var(--mdc-filled-text-field-active-indicator-color);
+            border-color: var(--mat-form-field-filled-active-indicator-color);
         }
     }
 }

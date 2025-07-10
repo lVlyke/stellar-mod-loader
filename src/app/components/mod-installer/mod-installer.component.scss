@@ -90,7 +90,7 @@
         app-value-checkbox {
 
             & + mat-label[disabled] {
-                color: var(--mdc-filled-text-field-disabled-label-text-color);
+                color: var(--mat-form-field-filled-disabled-label-text-color);
             }
         }
     }

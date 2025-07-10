@@ -8,7 +8,7 @@ import {
     ConnectedPosition,
     GlobalPositionStrategy
 } from "@angular/cdk/overlay";
-import { ComponentPortal, ComponentType, Portal, TemplatePortal, PortalInjector } from "@angular/cdk/portal";
+import { ComponentPortal, ComponentType, Portal, TemplatePortal } from "@angular/cdk/portal";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { Observable, of } from "rxjs";
 import { delay, tap, skip } from "rxjs/operators";
@@ -247,7 +247,13 @@ export class OverlayHelpers {
             view instanceof Portal ? view : new ComponentPortal(
                 view,
                 undefined,
-                injectionTokens ? new PortalInjector(config.injector, new WeakMap(injectionTokens)) : config.injector
+                injectionTokens ? Injector.create({
+                    parent: config.injector,
+                    providers: injectionTokens.map(([injectionToken, data]) => ({
+                        provide: injectionToken,
+                        useValue: data
+                    }))
+                }) : config.injector
             ));
         const helpersRef = this.createHelpersRef<T>(overlayRef, viewRef);
 
