@@ -3,7 +3,7 @@ import type electron from "electron";
 
 declare global {
     interface Window {
-        // Exposed in `electron-preload.js`:
+        // Exposed in `electron/preload.js`:
         appMessenger: {
             on: (channel: string, func: any) => void;
             invoke: <T = any>(channel: string, ...args: any[]) => Promise<T>;

@@ -15,15 +15,10 @@ const RELEASE_MODE = process.argv.includes("--release");
 
     if (RELEASE_MODE || !fs.existsSync(BUILD_DIR)) {
         execSync(
-            `node ./scripts/build.js ${RELEASE_MODE ? "--release" : ""}`,
+            `node ./scripts/build.cjs ${RELEASE_MODE ? "--release" : ""}`,
             { stdio: "inherit" }
         );
     }
-    
-    execSync(
-        "node ./scripts/copy-electron-deps.js",
-        { stdio: "inherit" }
-    );
 
     // Clear out dir while doing prework
     await clearPkgDirTask;

@@ -42,18 +42,6 @@ export interface AppProfile extends AppBaseProfile {
     normalizePathCasing?: boolean;
 }
 
-export type AppProfileModList = AppProfile.ModList;
-export type AppProfileForm = AppProfile.Form;
-export type AppProfileCollectedVerificationResult = AppProfile.CollectedVerificationResult;
-export type AppProfileVerificationResult = AppProfile.VerificationResult;
-export type AppProfileVerificationResults = AppProfile.VerificationResults;
-export type AppProfileBackupEntry = AppProfile.BackupEntry;
-export type AppProfileModOrderBackupEntry = AppProfile.ModOrderBackupEntry;
-export type AppProfileModOrderBackup = AppProfile.ModOrderBackup;
-export type AppProfileDescription = AppProfile.Description;
-export type AppProfileExternalFiles = AppProfile.ExternalFiles;
-export type AppProfileSave = AppProfile.Save;
-
 export namespace AppProfile {
 
     export type ModList = RelativeOrderedMap.List<string, ModProfileRef>;

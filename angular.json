@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "stellar-mod-loader": {
+    "browser": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -18,7 +18,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "dist",
+              "base": "dist/browser",
               "browser": ""
             },
             "index": "src/index.html",
@@ -71,10 +71,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "stellar-mod-loader:build:production"
+              "buildTarget": "browser:build:production"
             },
             "development": {
-              "buildTarget": "stellar-mod-loader:build:development"
+              "buildTarget": "browser:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -82,7 +82,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "stellar-mod-loader:build"
+            "buildTarget": "browser:build"
           }
         },
         "test": {
@@ -103,6 +103,105 @@
             "styles": [
               "src/styles.scss"
             ],
+            "scripts": []
+          }
+        }
+      }
+    },
+    
+    "electron": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "",
+      "sourceRoot": "src/electron",
+      "prefix": "electron",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": {
+              "base": "dist/electron",
+              "browser": ""
+            },
+            "polyfills": [],
+            "tsConfig": "tsconfig.electron.json",
+            "externalDependencies": [
+              "electron",
+              "assert",
+              "child_process",
+              "constants",
+              "events",
+              "fs",
+              "fs/promises",
+              "http",
+              "https",
+              "os",
+              "path",
+              "stream",
+              "string_decoder",
+              "timers",
+              "url",
+              "util",
+              "utils"
+            ],
+            "assets": [],
+            "styles": [],
+            "scripts": ["src/electron/preload.js"],
+            "browser": "src/electron/main.ts"
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "3mb",
+                  "maximumError": "5mb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "none"
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "electron:build:production"
+            },
+            "development": {
+              "buildTarget": "electron:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n",
+          "options": {
+            "buildTarget": "electron:build"
+          }
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "tsconfig.spec.json",
+            "assets": [],
+            "styles": [],
             "scripts": []
           }
         }

@@ -28,7 +28,7 @@
 
             <div class="content">
                 @for (dep of aboutData.depsInfo | keyvalue; track dep.key) {
-                    <div>{{ dep.key }}</div>
+                    <div>{{ dep.value.repository }}</div>
                 }
             </div>
         </details>
