@@ -10,7 +10,11 @@ const ASSETS = {
     "package.json": "package.json",
     "game-db.json": "game-db.json",
     "game-db.schema.json": "game-db.schema.json",
-    "README.md": "README.md"
+    "README.md": "README.md",
+
+    // Electron unpackaged deps:
+    "node_modules/node-gyp-build": "electron/node_modules/node-gyp-build",
+    "node_modules/win-version-info": "electron/node_modules/win-version-info"
 };
 
 fs.mkdirSync(BUILD_DIR, { recursive: true })

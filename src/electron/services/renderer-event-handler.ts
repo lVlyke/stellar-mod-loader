@@ -6,10 +6,10 @@ import type Electron from "electron";
 import * as log from "electron-log/main";
 import * as mime from "mime-types";
 import * as Seven from "node-7z";
-import { default as winVersionInfo } from "win-version-info";
 
 const path = require("path") as typeof import("path");
 const fs = require("fs-extra") as typeof import("fs-extra");
+const winVersionInfo = require("win-version-info") as typeof import("win-version-info");
 const { ipcMain, dialog, shell } = require("electron") as typeof Electron;
 
 import type { ElectronApp } from "../app";
