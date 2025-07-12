@@ -1,0 +1,1 @@
+export * from "./app-7zip-notice.component";

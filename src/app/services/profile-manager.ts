@@ -172,12 +172,15 @@ export class ProfileManager {
         
         // Load required data at app start
         forkJoin([
+            this.appManager.check7ZipInstallation(),
             this.appManager.loadSettings(),
             this.appManager.updateGameDatabase(),
             this.appManager.loadProfileList()
         ]).pipe(
+            // Ensure 7-Zip is installed
+            filter(([_7ZipInstalled]) => _7ZipInstalled),
             // Set initial active profile state
-            switchMap(([settings, _gameDb, profileList]) => {
+            switchMap(([, settings, _gameDb]) => {
                 return of(settings?.activeProfile).pipe(
                     // First try loading profile from settings
                     switchMap((profileDesc) => {

@@ -8,11 +8,6 @@ const RELEASE_MODE = process.argv.includes("--release");
 fs.rmSync(BUILD_DIR, { recursive: true, force: true })
 
 execSync(
-    "node ./scripts/fix-7zip-bin-permissions.cjs",
-    { stdio: "inherit" }
-);
-
-execSync(
     `npx ng build electron --configuration ${RELEASE_MODE ? "production" : "development"}`,
     { stdio: "inherit" }
 );

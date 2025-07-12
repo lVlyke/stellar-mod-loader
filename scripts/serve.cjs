@@ -73,11 +73,6 @@ function updateAppDeployment() {
 }
 
 (function main() {
-    execSync(
-        "node ./scripts/fix-7zip-bin-permissions.cjs",
-        { stdio: "inherit" }
-    );
-
     const buildElectronTask = buildProject("electron");
     const buildBrowserTask = buildProject("browser");
 

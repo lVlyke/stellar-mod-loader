@@ -17,6 +17,7 @@ import {
     AppVersionUpdateNoticeComponent
 } from "../modals/app-version-update-notice";
 import { AppInfo } from "../models/app-info";
+import { App7ZipNoticeComponent } from "../modals/app-7zip-notice";
 
 @Injectable({ providedIn: "root" })
 export class AppDialogs {
@@ -59,6 +60,23 @@ export class AppDialogs {
                 [APP_INFO_TOKEN, appInfo],
                 [APP_LATEST_VERSION_TOKEN, latestVersion]
             ]
+        );
+    }
+
+    public show7ZipNotice(): Observable<boolean> {
+        const RETRY_ACTION = { label: "Retry", primary: true };
+        const EXIT_ACTION = { label: "Exit" };
+
+        return this.dialogManager.create(App7ZipNoticeComponent, [
+                RETRY_ACTION, EXIT_ACTION
+            ], {
+                maxWidth: "35%",
+                panelClass: "mat-app-background",
+                hasBackdrop: true,
+                disposeOnBackdropClick: false
+            }
+        ).pipe(
+            map(result => result === RETRY_ACTION)
         );
     }
 

@@ -1,5 +1,4 @@
 import * as log from "electron-log/main";
-import * as sevenBin from "7zip-bin";
 import * as which from "which";
 
 const fs = require("fs-extra") as typeof import("fs-extra");
@@ -26,7 +25,7 @@ export namespace BinUtils {
             _7zBinaryPath = _7zBinaries.reduce((_7zBinaryPath, _7zBinaryPathGuess) => {
                 try {
                     const which7zBinaryPath = which.sync(_7zBinaryPathGuess);
-                    _7zBinaryPath = (Array.isArray(which7zBinaryPath)
+                    _7zBinaryPath ||= (Array.isArray(which7zBinaryPath)
                         ? which7zBinaryPath[0]
                         : which7zBinaryPath
                     ) ?? undefined;
@@ -36,17 +35,12 @@ export namespace BinUtils {
             }, _7zBinaryPath);
         }
 
-        if (!_7zBinaryPath) {
-            // Fall back to bundled 7-Zip binary if it's not found on system
-            // TODO - Warn user about opening RARs if 7-Zip not installed on machine
-            _7zBinaryPath = sevenBin.path7za;
-
-            log.warn("7-Zip binary was not found on this machine. Falling back to bundled binary.");
-            log.warn("NOTE: RAR archives can not be read using the bundled binary. Install 7-Zip to read RAR archives.");
+        if (_7zBinaryPath) {
+            log.debug("Found 7-Zip binary: ", _7zBinaryPath);
         } else {
-            log.info("Found 7-Zip binary: ", _7zBinaryPath);
+            throw new Error("7-Zip is not installed or could not be found on PATH.");
         }
 
-        return _7zBinaryPath!;
+        return _7zBinaryPath;
     }
 }

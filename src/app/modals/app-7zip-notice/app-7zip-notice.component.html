@@ -1,0 +1,13 @@
+<mat-card>
+    <mat-card-content>
+        7-Zip must be installed to use Stellar.
+
+        <app-external-url variant="default" color="accent" resource="7zip_home">
+            7-Zip homepage
+        </app-external-url>
+    </mat-card-content>
+
+    <mat-card-actions>
+        <app-dialog-actions [actions]="actions" (actionSelected)="actionSelected$.emit($event)" />
+    </mat-card-actions>
+</mat-card>

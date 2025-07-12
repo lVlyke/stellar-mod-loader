@@ -122,6 +122,10 @@ export class ElectronApp {
         this.mainWindow!.webContents.send("app:showSupportInfo", this.appDataManager.getAppAboutInfo());
     }
 
+    public exit(): void {
+        app.quit();
+    }
+
     private initWindow(): void {
         // Create the browser window
         this._mainWindow = new BrowserWindow({

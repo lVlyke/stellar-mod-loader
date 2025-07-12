@@ -40,11 +40,13 @@ Many other games are supported with **[custom game support](#custom-games)**.
 
 # Installation
 
+> [!IMPORTANT]
+> [7-Zip](https://www.7-zip.org/) must be installed to use Stellar.
+
 To install Stellar, simply download the latest release from the [releases page](https://github.com/lVlyke/stellar-mod-loader/releases) and extract the archive to a folder of your choice.
 
-[7-Zip](https://www.7-zip.org/) is required to be installed in order to add mods that use RAR archives.
-
-**Note:** If you are using Ubuntu or a related Linux distribution, you will also need to run the included `install-apparmor-profile.sh` script in order to create an AppArmor profile for Stellar. See [this Ubuntu blog post](https://ubuntu.com/blog/ubuntu-23-10-restricted-unprivileged-user-namespaces) for more information.
+> [!NOTE]
+> If you are using Ubuntu or an Ubuntu-based Linux distribution, you will need to run the included `install-apparmor-profile.sh` script in order to create an AppArmor profile for Stellar. See [this Ubuntu blog post](https://ubuntu.com/blog/ubuntu-23-10-restricted-unprivileged-user-namespaces) for more information.
 
 # Using Stellar
 

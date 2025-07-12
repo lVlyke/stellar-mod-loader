@@ -42,7 +42,6 @@
     "@lithiumjs/ngx-material-theming": "^1.0.0",
     "@lithiumjs/ngx-virtual-scroll": "^0.3.4",
     "@ngxs/store": "^20.0.2",
-    "7zip-bin": "^5.2.0",
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-log": "^5.4.1",
     "es-toolkit": "^1.39.7",

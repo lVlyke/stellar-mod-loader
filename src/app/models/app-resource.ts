@@ -4,4 +4,5 @@ export type AppResource = "readme_online"
                         | "license"
                         | "homepage"
                         | "issues"
-                        | "paypal_donation";
+                        | "paypal_donation"
+                        | "7zip_home";

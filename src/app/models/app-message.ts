@@ -39,6 +39,10 @@ export namespace AppMessage {
 
     // App messages:
 
+    export interface Exit extends Base {
+        id: `${Prefix}:exit`;
+    }
+
     export interface Log extends Base {
         id: `${Prefix}:log`;
         data: LogEntry;
@@ -90,6 +94,11 @@ export namespace AppMessage {
             dirname?: boolean;
         };
         result?: string;
+    }
+
+    export interface Verify7ZipExists extends Base {
+        id: `${Prefix}:verify7ZipExists`;
+        result: boolean;
     }
 
     export interface OpenFile extends Base {
@@ -276,13 +285,15 @@ export namespace AppMessage {
         result: AppWarnings;
     }
 
-    export type AppMessage = Log
+    export type AppMessage = Exit
+                           | Log
                            | GetInfo
                            | CheckLatestVersion
                            | SyncUiState
                            | ChooseDirectory
                            | ChooseFilePath
                            | VerifyPathExists
+                           | Verify7ZipExists
                            | OpenFile
                            | LoadProfileList
                            | LoadSettings
@@ -811,6 +822,7 @@ export namespace AppMessage {
     // Message record:
 
     export const record: Array<_AppMessage["id"]> = [
+        "app:exit",
         "app:log",
         "app:getInfo",
         "app:checkLatestVersion",
@@ -818,6 +830,7 @@ export namespace AppMessage {
         "app:chooseDirectory",
         "app:chooseFilePath",
         "app:verifyPathExists",
+        "app:verify7ZipExists",
         "app:openFile",
         "app:loadProfileList",
         "app:loadSettings",

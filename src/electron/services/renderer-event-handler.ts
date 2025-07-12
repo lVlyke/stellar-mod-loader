@@ -27,6 +27,13 @@ export class RendererEventHandler {
     constructor(
         private readonly app: ElectronApp
     ) {
+        ipcMain.handle("app:exit", (
+            _event: Electron.IpcMainInvokeEvent,
+            _data: AppMessageData<"app:exit">
+        ) => {
+            app.exit();
+        });
+
         ipcMain.handle("app:getInfo", (
             _event: Electron.IpcMainInvokeEvent,
             {}: AppMessageData<"app:getInfo">
@@ -127,6 +134,18 @@ export class RendererEventHandler {
         ) => {
             const paths = Array.isArray(data.path) ? data.path : [data.path]
             return PathUtils.firstValidPath(paths, data.dirname ? (curPath: string) => path.dirname(curPath) : undefined);
+        });
+
+        ipcMain.handle("app:verify7ZipExists", async (
+            _event: Electron.IpcMainInvokeEvent,
+            _data: AppMessageData<"app:verify7ZipExists">
+        ) => {
+            try {
+                BinUtils.resolve7zBinaryPath();
+                return true;
+            } catch (_err) {
+                return false;
+            }
         });
 
         ipcMain.handle("app:openFile", async (

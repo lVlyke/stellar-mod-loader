@@ -39,7 +39,8 @@ export namespace AppConstants {
         "license": `file://${process.cwd()}/LICENSE`,
         "homepage": APP_PACKAGE.repository,
         "issues": `${APP_PACKAGE.repository}/issues`,
-        "paypal_donation": "https://paypal.me/lVlyke"
+        "paypal_donation": "https://paypal.me/lVlyke",
+        "7zip_home": "https://www.7-zip.org/"
     };
     export const APP_TMP_DIR = path.resolve(path.join(os.tmpdir(), "SML"));
     export const GAME_SCHEMA_VERSION = 1.1;

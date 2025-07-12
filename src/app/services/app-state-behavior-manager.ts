@@ -186,6 +186,21 @@ export class AppStateBehaviorManager {
         ));
     }
 
+    public check7ZipInstallation(): Observable<boolean> {
+        return runOnce(ElectronUtils.invoke("app:verify7ZipExists", {}).pipe(
+            switchMap((result) => {
+                if (result) {
+                    return of(true);
+                } else {
+                    return this.dialogs.show7ZipNotice().pipe(
+                        switchMap((result) => result ? this.check7ZipInstallation() : ElectronUtils.invoke("app:exit", {})),
+                        map((result) => !!result)
+                    );
+                }
+            })
+        ));
+    }
+
     public setPluginsEnabled(pluginsEnabled: boolean): Observable<void> {
         return this.store.dispatch(new AppActions.setPluginsEnabled(pluginsEnabled));
     }
