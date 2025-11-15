@@ -1,10 +1,31 @@
 <mat-card>
+    @let formValid = (gameActionForm.statusChanges | async) === 'VALID';
+
     <mat-card-header>
         <mat-card-title>Game Action</mat-card-title>
+
+        <div class="game-action-actions">
+            @if (formValid && gameAction.actionType === GameActionType.SCRIPT) {
+                <button mat-icon-button
+                        matTooltip="Create Steam shortcut"
+                        color="primary"
+                        (click)="addActionToSteamLibrary()">
+                    <mat-icon>launch</mat-icon>
+                </button>
+            }
+
+            @if (dialogConfig.gameActionIndex !== null && dialogConfig.gameActionIndex !== undefined) {
+                <button mat-icon-button
+                        matTooltip="Delete"
+                        (click)="removeAction()">
+                    <mat-icon color="warn">delete</mat-icon>
+                </button>
+            }
+        </div>
     </mat-card-header>
     
     <mat-card-content>
-        <form id="gameActionForm">
+        <form #gameActionForm="ngForm" id="gameActionForm">
             <mat-form-field>
                 <mat-label>Name</mat-label>
                 <input matInput
@@ -15,17 +36,94 @@
             </mat-form-field>
 
             <mat-form-field>
-                <mat-label>Action</mat-label>
+                <mat-label>Action Type</mat-label>
+                <mat-select name="gameActionType"
+                            [(ngModel)]="gameAction.actionType"
+                            [required]="true">
+                    <mat-option [value]="GameActionType.SCRIPT">
+                        Command
+                    </mat-option>
+
+                    <mat-option [value]="GameActionType.STEAM_APP">
+                        Steam App
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>
+                    @switch (gameAction.actionType)
+                    {
+                        @case (GameActionType.SCRIPT) {
+                            Command
+                        }
+
+                        @case (GameActionType.STEAM_APP) {
+                            Steam App ID
+                        }
+                    }
+                </mat-label>
                 <input matInput
                     type="text"
-                    name="gameActionScript"
-                    [(ngModel)]="gameAction.actionScript"
+                    name="gameActionData"
+                    [(ngModel)]="gameAction.actionData"
                     [required]="true">
             </mat-form-field>
+
+            @if (gameAction.actionType === GameActionType.SCRIPT) {
+                <details class="environment-editor" [open]="true">
+                    <summary>Environment Variables</summary>
+                    @let envVars = (gameAction.environment ?? []).concat(PLACEHOLDER_ENV_VAR);
+
+                    @for (envVar of envVars; track $index) {
+                        @let isPlaceholder = envVar === PLACEHOLDER_ENV_VAR;
+
+                        <div class="env-var">
+                            <mat-checkbox class="env-var-state"
+                                          name="gameActionEnvironment[{{$index}}].enabled"
+                                          [disabled]="isPlaceholder"
+                                          [ngModel]="envVar.enabled"
+                                          (ngModelChange)="updateEnvironmentVariableState(envVar, $event)" />
+
+                            <mat-form-field class="env-var-key" [attr.subscript]="false">
+                                @if (!isPlaceholder) {
+                                    <mat-label>Key</mat-label>
+                                }
+
+                                <input matInput
+                                    type="text"
+                                    name="gameActionEnvironment[{{$index}}].key"
+                                    [required]="true"
+                                    [placeholder]="isPlaceholder ? 'Key' : ''"
+                                    [ngModel]="envVar.key"
+                                    [ngModelOptions]="{ standalone: isPlaceholder }"
+                                    (ngModelChange)="updateEnvironmentVariableKey(envVar, $event)">
+                            </mat-form-field>
+
+                            <span class="equals-icon">&equals;</span>
+
+                            <mat-form-field class="env-var-value" [attr.subscript]="false">
+                                @if (!isPlaceholder) {
+                                    <mat-label>Value</mat-label>
+                                }
+                                
+                                <input matInput
+                                    type="text"
+                                    name="gameActionEnvironment[{{$index}}].value"
+                                    [placeholder]="isPlaceholder ? 'Value' : ''"
+                                    [ngModel]="envVar.value"
+                                    [ngModelOptions]="{ standalone: isPlaceholder }"
+                                    (ngModelChange)="updateEnvironmentVariableValue(envVar, $event)">
+                            </mat-form-field>
+                        </div>
+                    }
+                </details>
+            }
         </form>
     </mat-card-content>
 
     <mat-card-actions>
-        <app-dialog-actions [actions]="actions" (actionSelected)="actionSelected$.emit($event)" />
+        <app-dialog-actions [actions]="formValid ? dialogConfig.actions : negativeActions"
+                            (actionSelected)="actionSelected$.emit($event)" />
     </mat-card-actions>
 </mat-card>

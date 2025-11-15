@@ -40,7 +40,7 @@
                     (click)="profileManager.runGameAction(); $event.stopPropagation()">
                 <mat-icon color="accent">play_circle</mat-icon>
 
-                {{ profile.activeGameAction.name }}
+                {{ profile.activeGameAction | appGameActionDisplayName }}
             </button>
         }
     </span>
@@ -126,7 +126,7 @@
                         (click)="profileManager.runGameAction()">
                     <mat-icon color="accent">play_circle</mat-icon>
 
-                    {{ profile.activeGameAction.name }}
+                    {{ profile.activeGameAction | appGameActionDisplayName }}
                 </button>
                 <button id="game-action-menu-button"
                         class="mat-elevation-z3"
@@ -196,11 +196,15 @@
             <mat-action-list>
                 <!-- Default actions -->
                 @for (gameAction of profile.defaultGameActions; track $index) {
-                    <button mat-list-item class="game-action" (click)="profileManager.setActiveGameAction(gameAction); gameActionsMenuRef?.close()">
-                        <mat-icon matListIcon color="accent">play_circle</mat-icon>
+                    @if (isDefaultActionVisible(gameAction)) {
+                        <button mat-list-item
+                                class="game-action"
+                                (click)="profileManager.setActiveGameAction(gameAction); gameActionsMenuRef?.close()">
+                            <mat-icon matListIcon color="accent">play_circle</mat-icon>
 
-                        <span class="game-action-name">{{ gameAction.name }}</span>
-                    </button>
+                            <span class="game-action-name">{{ gameAction | appGameActionDisplayName }}</span>
+                        </button>
+                    }
                 }
 
                 <!-- Custom actions -->
@@ -208,18 +212,12 @@
                     <button mat-list-item class="game-action" (click)="profileManager.setActiveGameAction(gameAction); gameActionsMenuRef?.close()">
                         <mat-icon matListIcon color="accent">play_circle</mat-icon>
 
-                        <span class="game-action-name">{{ gameAction.name }}</span>
+                        <span class="game-action-name">{{ gameAction | appGameActionDisplayName }}</span>
 
                         <button mat-icon-button
                                 matTooltip="Edit"
                                 (click)="editCustomGameActionByIndex($index, gameAction); gameActionsMenuRef?.close(); $event.stopPropagation()">
-                            <mat-icon color="primary">edit</mat-icon>
-                        </button>
-
-                        <button mat-icon-button
-                                matTooltip="Delete"
-                                (click)="removeCustomGameActionByIndex($index); gameActionsMenuRef?.close(); $event.stopPropagation()">
-                            <mat-icon color="warn">delete</mat-icon>
+                            <mat-icon color="primary">settings</mat-icon>
                         </button>
                     </button>
                 }

@@ -49,6 +49,7 @@
     "mime-types": "^3.0.1",
     "node-7z": "^3.0.0",
     "rxjs": "~7.8.2",
+    "steam-binary-vdf": "^0.1.0",
     "tslib": "^2.3.0",
     "which": "^5.0.0",
     "win-version-info": "^6.0.1",

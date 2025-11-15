@@ -273,7 +273,7 @@ export class AppGameManagerComponent extends BaseComponent {
             withLatestFrom(this.appManager.getAppInfo()),
             switchMap(([[gameId, gameDetails], appInfo]) => (() => {
                 if (gameDetails.schemaVersion !== appInfo.gameSchemaVersion) {
-                    return this.appDialogs.showDefault(
+                    return this.appDialogs.showNotice(
                         `This game definition is from a different version of ${appInfo.appShortName}. Some values may not be imported correctly.`
                     );
                 } else {
@@ -287,10 +287,11 @@ export class AppGameManagerComponent extends BaseComponent {
     }
 
     public deleteCustomGame(gameId: GameId): Observable<unknown> {
-        return runOnce(this.appDialogs.showDefault("Are you sure you want to delete this mod?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
+        return runOnce(this.appDialogs.showDefault({
+            title: "Delete Game",
+            prompt: "Are you sure you want to delete this game?",
+            actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.appManager.deleteCustomGame(gameId))
         ));

@@ -4,8 +4,6 @@ import {
     Component,
     EventEmitter,
     Inject,
-    InjectionToken,
-    Optional,
     Output
 } from "@angular/core";
 import { ComponentState } from "@lithiumjs/angular";
@@ -14,10 +12,15 @@ import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { BaseComponent } from "../../core/base-component";
-import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../services/dialog-manager.types";
+import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
 
-export const MOD_CUR_NAME_TOKEN = new InjectionToken<string>("MOD_CUR_NAME");
+export namespace AppModRenameDialog {
+
+    export interface Config extends DialogConfig {
+        modCurName: string;
+    }
+}
 
 @Component({
     templateUrl: "./mod-rename-dialog.component.html",
@@ -43,9 +46,12 @@ export class AppModRenameDialog extends BaseComponent implements DialogComponent
 
     constructor(
         cdRef: ChangeDetectorRef,
-        @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
-        @Inject(MOD_CUR_NAME_TOKEN) @Optional() public modName: string = ""
+        @Inject(DIALOG_CONFIG_TOKEN) public readonly dialogConfig: AppModRenameDialog.Config
     ) {
         super({ cdRef });
+    }
+
+    public get modName(): string {
+        return this.dialogConfig.modCurName;
     }
 }

@@ -8,6 +8,6 @@
     </mat-card-content>
 
     <mat-card-actions>
-        <app-dialog-actions [actions]="actions" (actionSelected)="actionSelected$.emit($event)" />
+        <app-dialog-actions [actions]="dialogConfig.actions" (actionSelected)="actionSelected$.emit($event)" />
     </mat-card-actions>
 </mat-card>

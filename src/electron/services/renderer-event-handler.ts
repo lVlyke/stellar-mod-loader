@@ -34,6 +34,13 @@ export class RendererEventHandler {
             app.exit();
         });
 
+        ipcMain.handle("app:getPlatform", (
+            _event: Electron.IpcMainInvokeEvent,
+            {}: AppMessageData<"app:getPlatform">
+        ) => {
+            return process.platform;
+        });
+
         ipcMain.handle("app:getInfo", (
             _event: Electron.IpcMainInvokeEvent,
             {}: AppMessageData<"app:getInfo">
@@ -618,6 +625,13 @@ export class RendererEventHandler {
             return PathUtils.checkLinkSupported(targetPath, destPaths, symlink, symlinkType);
         });
 
+        ipcMain.handle("app:getActiveSteamUserIds", (
+            _event: Electron.IpcMainInvokeEvent,
+            {}: AppMessageData<"app:getActiveSteamUserIds">
+        ) => {
+            return SteamUtils.getActiveSteamUserIds();
+        });
+
         ipcMain.handle("profile:resolvePath", async (
             _event: Electron.IpcMainInvokeEvent,
             { profile, pathKeys }: AppMessageData<"profile:resolvePath">
@@ -1041,6 +1055,13 @@ export class RendererEventHandler {
             this.profileDataManager.runGameAction(profile, gameAction);
         });
 
+        ipcMain.handle("profile:addGameActionToSteam", async (
+            _event: Electron.IpcMainInvokeEvent,
+            { profile, steamUserId, gameAction, protonCompatDataRoot }: AppMessageData<"profile:addGameActionToSteam">
+        ) => {
+            return this.profileDataManager.addGameActionToSteam(profile, steamUserId, gameAction, protonCompatDataRoot);
+        });
+
         ipcMain.handle("profile:resolveDefaultGameActions", async (
             _event: Electron.IpcMainInvokeEvent,
             { profile }: AppMessageData<"profile:resolveDefaultGameActions">
@@ -1131,6 +1152,17 @@ export class RendererEventHandler {
             } finally {
                 fs.removeSync(testFilePathLower);
             }
+        });
+
+        ipcMain.handle("profile:resolveGameSteamCompatRoot", (
+            _event: Electron.IpcMainInvokeEvent,
+            { profile }: AppMessageData<"profile:resolveGameSteamCompatRoot">
+        ) => {
+            if (!profile.gameInstallation) {
+                return undefined;
+            }
+
+            return SteamUtils.getSteamCompatRoot(profile.gameInstallation);
         });
 
         ipcMain.handle("profile:steamCompatSymlinksSupported", (

@@ -15,6 +15,7 @@ export interface AppData {
     steamCompatDataRoot?: string;
     logPanelEnabled?: boolean;
     customGameDb?: GameDatabase;
+    lastSteamUserId?: string;
 
     /** @deprecated */
     normalizePathCasing?: boolean;

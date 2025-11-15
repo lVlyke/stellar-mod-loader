@@ -83,6 +83,11 @@ export class AppState {
         return state.modListColumns;
     }
 
+    @Selector()
+    public static getLastSteamUserId(state: AppData): string | undefined {
+        return state.lastSteamUserId;
+    }
+
     @Action(AppActions.UpdateSettings)
     public updateSettings(context: AppState.Context, { settings }: AppActions.UpdateSettings): void {
         context.patchState(settings);
@@ -122,6 +127,10 @@ export class AppState {
 
         if (settings.customGameDb !== undefined) {
             state.customGameDb = settings.customGameDb;
+        }
+
+        if (settings.lastSteamUserId !== undefined) {
+            state.lastSteamUserId = settings.lastSteamUserId;
         }
 
         context.setState(state);
@@ -185,6 +194,11 @@ export class AppState {
                 [gameId]: gameDetails
             })
         }));
+    }
+
+    @Action(AppActions.updateLastSteamUserId)
+    public updateLastSteamUserId(context: AppState.Context, state: AppActions.LastSteamUserIdAction): void {
+        context.patchState(cloneDeep(state));
     }
 
     @Action(AppActions.DeleteCustomGame)

@@ -25,6 +25,7 @@ export namespace AppActions {
     export type VerifyProfileOnStartAction = BasicAction<AppData, "verifyProfileOnStart">;
     export type GameDbAction = BasicAction<AppData, "gameDb">;
     export type ModListColumnsAction = BasicAction<AppData, "modListColumns">;
+    export type LastSteamUserIdAction = BasicAction<AppData, "lastSteamUserId">;
 
     export const updateActiveProfile = createUpdateAction("activeProfile");
     export const setDeployInProgress = createUpdateAction("deployInProgress");
@@ -32,6 +33,7 @@ export namespace AppActions {
     export const setVerifyProfileOnStart = createUpdateAction("verifyProfileOnStart");
     export const updateGameDb = createUpdateAction("gameDb");
     export const updateModListColumns = createUpdateAction("modListColumns");
+    export const updateLastSteamUserId = createUpdateAction("lastSteamUserId");
 
     export class UpdateSettings {
         public static readonly type = `[app] update settings`;

@@ -1,0 +1,1 @@
+export type AppPlatform = "win32" | "linux";

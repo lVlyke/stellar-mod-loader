@@ -4,22 +4,25 @@ import {
     Component,
     EventEmitter,
     Inject,
-    InjectionToken,
     LOCALE_ID,
-    Optional,
     Output
 } from "@angular/core";
-import { ComponentState } from "@lithiumjs/angular";
+import { ComponentState, DeclareState } from "@lithiumjs/angular";
 import { formatDate } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { BaseComponent } from "../../core/base-component";
-import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../services/dialog-manager.types";
+import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
 
-export const BACKUP_NAME_TOKEN = new InjectionToken<string>("BACKUP_NAME_TOKEN");
+export namespace AppProfileBackupNameDialog {
+
+    export interface Config extends DialogConfig {
+        backupName?: string;
+    }
+}
 
 @Component({
     templateUrl: "./profile-backup-name-dialog.component.html",
@@ -43,15 +46,17 @@ export class AppProfileBackupNameDialog extends BaseComponent implements DialogC
     @Output("actionSelected")
     public readonly actionSelected$ = new EventEmitter<DialogAction>();
 
+    @DeclareState()
+    protected _backupName: string;
+
     constructor(
         cdRef: ChangeDetectorRef,
         @Inject(LOCALE_ID) private readonly locale: string,
-        @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
-        @Inject(BACKUP_NAME_TOKEN) @Optional() protected _backupName: string
+        @Inject(DIALOG_CONFIG_TOKEN) public readonly dialogConfig: AppProfileBackupNameDialog.Config
     ) {
         super({ cdRef });
 
-        this._backupName ??= this.defaultName;
+        this._backupName = dialogConfig.backupName ?? this.defaultName;
     }
 
     public get backupName(): string {

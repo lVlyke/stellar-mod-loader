@@ -61,10 +61,10 @@ export class AppGameManagerModal extends BaseComponent {
         return runOnce(this.appGameManagerComponent.hasUnsavedChanges().pipe(
             switchMap((hasUnsavedChanges) => {
                 if (hasUnsavedChanges) {
-                    return runOnce(this.appDialogs.showDefault("Discard unsaved changes?", [
-                        DialogManager.OK_ACTION,
-                        DialogManager.CANCEL_ACTION_PRIMARY
-                    ]).pipe(
+                    return runOnce(this.appDialogs.showDefault({
+                        prompt: "Discard unsaved changes?",
+                        actions: [DialogManager.OK_ACTION, DialogManager.CANCEL_ACTION_PRIMARY]
+                    }).pipe(
                         filterTrue(),
                         tap(() => this.overlayRef.close())
                     ));

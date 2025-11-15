@@ -16,3 +16,4 @@ export * from "./profile-save-files.pipe";
 export * from "./is-full-profile.pipe";
 export * from "./profle-backup-name.pipe";
 export * from "./invalid-or-touched-model.pipe";
+export * from "./game-action-display-name.pipe";

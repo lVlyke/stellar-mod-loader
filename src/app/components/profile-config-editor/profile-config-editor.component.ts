@@ -107,10 +107,10 @@ export class AppProfileConfigEditorComponent extends BaseComponent {
     }
 
     protected deleteConfigFile(fileName: string): Observable<unknown> {
-        return runOnce(this.dialogs.showDefault("Are you sure you want to delete this config file?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
+        return runOnce(this.dialogs.showDefault({
+            prompt: "Are you sure you want to delete this config file?",
+            actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.profileManager.deleteProfileConfigFile(fileName))
         ));

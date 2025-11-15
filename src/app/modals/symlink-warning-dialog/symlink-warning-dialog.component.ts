@@ -3,7 +3,7 @@ import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { Observable } from "rxjs";
 import { AsyncState, ComponentState } from "@lithiumjs/angular";
-import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../services/dialog-manager.types";
+import { DIALOG_CONFIG_TOKEN, DialogAction, DialogComponent, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
 import { AppInfo } from "../../models/app-info";
 import { AppStateBehaviorManager } from "../../services/app-state-behavior-manager";
@@ -32,7 +32,7 @@ export class AppSymlinkWarningDialog extends BaseComponent implements DialogComp
     public readonly appInfo!: AppInfo;
 
     constructor(
-        @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
+        @Inject(DIALOG_CONFIG_TOKEN) public readonly dialogConfig: DialogConfig,
         cdRef: ChangeDetectorRef,
         appManager: AppStateBehaviorManager
     ) {

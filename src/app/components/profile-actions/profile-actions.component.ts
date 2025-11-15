@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild } from "@angular/core";
-import { NgTemplateOutlet, AsyncPipe, KeyValuePipe } from "@angular/common";
+import { NgTemplateOutlet, AsyncPipe } from "@angular/common";
 import { CdkPortal } from "@angular/cdk/portal";
 import { MatButton, MatIconButton } from "@angular/material/button";
 import { MatTooltip } from "@angular/material/tooltip";
@@ -7,6 +7,7 @@ import { MatIcon } from "@angular/material/icon";
 import { MatCard, MatCardContent } from "@angular/material/card";
 import { MatActionList, MatListItem } from "@angular/material/list";
 import { Observable, combineLatest } from "rxjs";
+import { switchMap } from "rxjs/operators";
 import { AsyncState, ComponentState, ComponentStateRef, DeclareState } from "@lithiumjs/angular";
 import { Store } from "@ngxs/store";
 import { AppState } from "../../state";
@@ -15,17 +16,17 @@ import { GameDetails } from "../../models/game-details";
 import { GameDatabase } from "../../models/game-database";
 import { GameId } from "../../models/game-id";
 import { AppProfile } from "../../models/app-profile";
-import { filterDefined, filterTrue } from "../../core/operators";
+import { filterDefined } from "../../core/operators";
 import { ProfileManager } from "../../services/profile-manager";
 import { ActiveProfileState } from "../../state/active-profile/active-profile.state";
 import { OverlayHelpers, OverlayHelpersRef } from "../../services/overlay-helpers";
 import { GameAction } from "../../models/game-action";
-import { DialogManager } from "../../services/dialog-manager";
 import { AppDialogs } from "../../services/app-dialogs";
 import { AppProfileActiveModCountPipe } from "../../pipes/profile-active-mod-count.pipe";
 import { AppSendElectronMsgPipe } from "../../pipes/send-electron-msg.pipe";
 import { AppGameConfigFilesFoundPipe } from "../../pipes/game-config-files-found.pipe";
 import { GameInstallation } from "../../models/game-installation";
+import { AppGameActionDisplayNamePipe } from "../../pipes/game-action-display-name.pipe";
 
 @Component({
     selector: "app-profile-actions",
@@ -34,7 +35,6 @@ import { GameInstallation } from "../../models/game-installation";
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         AsyncPipe,
-        //KeyValuePipe,
         NgTemplateOutlet,
         CdkPortal,
 
@@ -45,12 +45,12 @@ import { GameInstallation } from "../../models/game-installation";
         MatCardContent,
         MatActionList,
         MatListItem,
-        //MatLine,
         MatIconButton,
 
         AppProfileActiveModCountPipe,
         AppSendElectronMsgPipe,
-        AppGameConfigFilesFoundPipe
+        AppGameConfigFilesFoundPipe,
+        AppGameActionDisplayNamePipe
     ],
     providers: [ComponentState.create(AppProfileActionsComponent)],
     host: {
@@ -190,23 +190,25 @@ export class AppProfileActionsComponent extends BaseComponent {
     }
 
     protected addCustomGameAction(): void {
-        this.dialogs.showAddCustomGameActionDialog().pipe(
+        this.dialogs.showAddCustomGameActionDialog(this.profile).pipe(
             filterDefined()
         ).subscribe(gameAction => this.profileManager.addCustomGameAction(gameAction));
     }
 
     protected editCustomGameActionByIndex(index: number, gameAction: GameAction): void {
-        this.dialogs.showAddCustomGameActionDialog({ ...gameAction }).pipe(
-            filterDefined()
-        ).subscribe(gameAction => this.profileManager.editCustomGameActionByIndex(index, gameAction));
+        // Show edit dialog
+        this.dialogs.showAddCustomGameActionDialog(this.profile, gameAction, index).pipe(
+            filterDefined(),
+            // Finalize edits
+            switchMap(gameAction => this.profileManager.editCustomGameActionByIndex(index, gameAction).pipe(
+                // Set action as active
+                switchMap(() => this.profileManager.setActiveGameAction(gameAction))
+            ))
+        ).subscribe();
     }
 
-    protected removeCustomGameActionByIndex(index: number): void {
-        this.dialogs.showDefault("Are you sure you want to delete this action?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
-            filterTrue()
-        ).subscribe(() => this.profileManager.removeCustomGameActionByIndex(index));
+    protected isDefaultActionVisible(action: GameAction): boolean {
+        // Hide default actions with same name as custom actions
+        return !this.profile.customGameActions?.some(customAction => customAction.name === action.name);
     }
 }

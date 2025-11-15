@@ -494,10 +494,10 @@ export class AppProfileSettingsComponent extends BaseComponent {
             })).pipe(
                 map(configData => !configData.some(Boolean)),
                 filterTrue(),
-                switchMap(() => this.appDialogs.showDefault(
-                    "No config files exist for this profile. Do you want to create them now?",
-                    [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION]
-                )),
+                switchMap(() => this.appDialogs.showDefault({
+                    prompt: "No config files exist for this profile. Do you want to create them now?",
+                    actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION]
+                })),
                 filterTrue(),
                 switchMap(() => {
                     // Write default config files

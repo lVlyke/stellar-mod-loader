@@ -132,6 +132,7 @@ export class AppModsOverviewPage extends BasePage {
     public readonly activeProfilePlugins?: GamePluginProfileRef[];
 
     @ViewChild("currentProfileSelect")
+    @DeclareState()
     public readonly currentProfileSelect!: MatSelect;
 
     @ViewChild("addModMenu", { read: CdkPortal, static: true })
@@ -274,10 +275,11 @@ export class AppModsOverviewPage extends BasePage {
 
     protected checkConfigRedeployment(): Observable<unknown> {
         if (this.isProfileDeployed && !this.activeProfile?.configLinkMode) {
-            return runOnce(this.dialogs.showDefault("Config files have been changed or reloaded. Do you want to deploy these changes now?", [
-                DialogManager.YES_ACTION_PRIMARY,
-                DialogManager.NO_ACTION
-            ], DialogManager.POSITIVE_ACTIONS, { disposeOnBackdropClick: true }).pipe(
+            return runOnce(this.dialogs.showDefault({
+                prompt: "Config files have been changed or reloaded. Do you want to deploy these changes now?",
+                actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION],
+                disposeOnBackdropClick: true
+            }).pipe(
                 filterTrue(),
                 switchMap(() => this.profileManager.refreshDeployedMods())
             ));
@@ -393,30 +395,30 @@ export class AppModsOverviewPage extends BasePage {
     }
 
     protected importProfileModOrderBackup(backupPath: string): Observable<unknown> {
-        return runOnce(this.dialogs.showDefault("Are you sure you want to restore this mod order backup?", [
-            DialogManager.YES_ACTION_PRIMARY,
-            DialogManager.NO_ACTION
-        ], DialogManager.POSITIVE_ACTIONS).pipe(
+        return runOnce(this.dialogs.showDefault({
+            prompt: "Are you sure you want to restore this mod order backup?",
+            actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.profileManager.importProfileModOrderBackup(this.activeProfile!, backupPath))
         ));
     }
 
     protected importProfilePluginBackup(backupPath: string): Observable<unknown> {
-        return runOnce(this.dialogs.showDefault("Are you sure you want to restore this plugin order backup?", [
-            DialogManager.YES_ACTION_PRIMARY,
-            DialogManager.NO_ACTION
-        ], DialogManager.POSITIVE_ACTIONS).pipe(
+        return runOnce(this.dialogs.showDefault({
+            prompt: "Are you sure you want to restore this plugin order backup?",
+            actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.profileManager.importProfilePluginBackup(this.activeProfile!, backupPath))
         ));
     }
 
     protected importProfileConfigBackup(backupPath: string): Observable<unknown> {
-        return runOnce(this.dialogs.showDefault("Are you sure you want to restore this config backup?", [
-            DialogManager.YES_ACTION_PRIMARY,
-            DialogManager.NO_ACTION
-        ], DialogManager.POSITIVE_ACTIONS).pipe(
+        return runOnce(this.dialogs.showDefault({
+            prompt: "Are you sure you want to restore this config backup?",
+            actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.profileManager.importProfileConfigBackup(this.activeProfile!, backupPath))
         ));

@@ -109,10 +109,11 @@ export class AppModActionsComponent extends BaseComponent {
     }
 
     protected deleteMod(): void {
-        this.appDialogs.showDefault("Are you sure you want to delete this mod?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
+        this.appDialogs.showDefault({
+            title: "Delete Mod",
+            prompt: `Are you sure you want to delete ${this.modName}?`,
+            actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+        }).pipe(
             filterTrue()
         ).subscribe(() => this.profileManager.deleteMod(this.root, this.modName));
 

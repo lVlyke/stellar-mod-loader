@@ -54,6 +54,22 @@ export namespace PathUtils {
         return filePath;
     }
 
+    export function serializeEnvironmentVariables(envVars: [string, string][], platform = process.platform): string {
+        switch (platform) {
+            case "linux": {
+                return envVars.reduce((serialized, [envVarKey, envVarVal]) => {
+                    return `${serialized}${envVarKey}=${envVarVal} `;
+                }, "");
+            }
+            case "win32": {
+                return envVars.reduce((serialized, [envVarKey, envVarVal]) => {
+                    return `${serialized} set ${envVarKey}=${envVarVal};`;
+                }, "");
+            }
+            default: throw new Error("serializeEnvironmentVariables: Unknown platform");
+        }
+    }
+
     export function asFileName(text: string): string {
         return text.replace(/[*?"<>|:./\\]/g, "_");
     }

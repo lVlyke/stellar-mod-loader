@@ -1,6 +1,6 @@
 import { clone, pick, isNil, omit, last } from "es-toolkit";
 import { find, size } from "es-toolkit/compat";
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Store } from "@ngxs/store";
 import { AppMessageHandler } from "./app-message-handler";
@@ -21,7 +21,7 @@ import {
     toArray,
     withLatestFrom
 } from "rxjs/operators";
-import { EMPTY, Observable, asyncScheduler, combineLatest, concat, forkJoin, from, fromEvent, merge, of, throwError } from "rxjs";
+import { EMPTY, Observable, Subject, asyncScheduler, combineLatest, concat, forkJoin, from, fromEvent, merge, of, throwError } from "rxjs";
 import { filterDefined, filterTrue, runOnce } from "../core/operators";
 import { ElectronUtils } from "../util/electron-utils";
 import { AppBaseProfile, AppProfile } from "../models/app-profile";
@@ -37,14 +37,14 @@ import { LangUtils } from "../util/lang-utils";
 import { AppModImportOptionsModal } from "../modals/mod-import-options";
 import { AppModInstallerModal } from "../modals/mod-installer";
 import { GameId } from "../models/game-id";
-import { ModImportRequest } from "../models/mod-import-status";
+import { ModImportRequest, ModImportResult } from "../models/mod-import-status";
 import { DialogManager } from "./dialog-manager";
 import { DialogAction } from "./dialog-manager.types";
 import { AppStateBehaviorManager } from "./app-state-behavior-manager";
 import { moveItemInArray } from "@angular/cdk/drag-drop";
 import { GamePluginProfileRef } from "../models/game-plugin-profile-ref";
 import { GameDetails } from "../models/game-details";
-import { GameAction } from "../models/game-action";
+import { GameAction, GameActionType } from "../models/game-action";
 import { NgForm } from "@angular/forms";
 import { ProfileUtils } from "../util/profile-utils";
 import { AppMessage } from "../models/app-message";
@@ -54,15 +54,18 @@ import { RelativeOrderedMap } from "../util/relative-ordered-map";
 import { ModSection } from "../models/mod-section";
 import { GameInstallation } from "../models/game-installation";
 import { ModOverwriteFiles } from "../models/mod-overwrite-files";
+import { AppAddGameActionToSteamDialog } from "../modals/add-game-action-to-steam-dialog";
 
 @Injectable({ providedIn: "root" })
-export class ProfileManager {
+export class ProfileManager implements OnDestroy {
 
     public readonly LAUNCH_GAME_ACTION: GameAction = {
         name: "Start Game",
-        actionScript: "${gameDetails.gameBinary[0]}"
+        actionType: GameActionType.SCRIPT,
+        actionData: "${gameDetails.gameBinary[0]}"
     }
 
+    public readonly onModImportComplete$ = new Subject<[ModImportRequest, ModImportResult]>();
     public readonly appState$: Observable<AppData>;
     public readonly activeProfile$: Observable<AppProfile | undefined>;
     public readonly activeGameDetails$: Observable<GameDetails | undefined>;
@@ -249,7 +252,7 @@ export class ProfileManager {
         // Monitor root mod changes for new/removed mods and update the default actions list
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["rootMods", "externalFilesCache"])),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["mods", "rootMods", "externalFilesCache"])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             switchMap(() => this.getAvailableDefaultGameActions()),
             switchMap(defaultActions => this.store.dispatch(new ActiveProfileActions.UpdateDefaultGameActions(defaultActions)))
@@ -337,6 +340,10 @@ export class ProfileManager {
             event.preventDefault();
             event.stopPropagation();
         });
+    }
+
+    public ngOnDestroy(): void {
+        this.onModImportComplete$.complete();
     }
 
     public updateActiveModDeployment(deploy: boolean): Observable<any> {
@@ -722,10 +729,10 @@ export class ProfileManager {
     }
 
     public exportProfileFromUser(profile: AppProfile): Observable<any> {
-        return runOnce(this.dialogs.showDefault("Are you sure you want to export this profile?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
+        return runOnce(this.dialogs.showDefault({
+            prompt: "Are you sure you want to export this profile?",
+            actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.exportProfile(profile))
         ));
@@ -741,10 +748,10 @@ export class ProfileManager {
     }
 
     public deleteProfileFromUser(profile: AppProfile): Observable<any> {
-        return runOnce(this.dialogs.showDefault("Are you sure you want to delete this profile?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
+        return runOnce(this.dialogs.showDefault({
+            prompt: "Are you sure you want to delete this profile?",
+            actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.deleteProfile(profile))
         ));
@@ -775,7 +782,7 @@ export class ProfileManager {
                 }
             }),
             catchError(() => {
-                this.dialogManager.createNotice("Failed to import profile. See app.log for more information.");
+                this.dialogs.showNotice("Failed to import profile. See app.log for more information.");
                 return of(undefined)
             })
         ));
@@ -813,7 +820,7 @@ export class ProfileManager {
                 }
             }),
             catchError(() => {
-                this.dialogManager.createNotice("Failed to copy profile. See app.log for more information.");
+                this.dialogs.showNotice("Failed to copy profile. See app.log for more information.");
                 return of(undefined)
             })
         ));
@@ -896,7 +903,7 @@ export class ProfileManager {
                     return of(undefined);
                 } else if (importRequest.importStatus === "FAILED") {
                     // TODO - Show error
-                    return this.dialogManager.createNotice("Failed to add mod.").pipe(
+                    return this.dialogs.showError("Failed to add mod.").pipe(
                         switchMap(() => throwError(() => "Failed to add mod."))
                     );
                 }
@@ -932,11 +939,11 @@ export class ProfileManager {
                 // Check if this mod already exists in the active profile
                 if (!!existingMod && importRequest.importStatus !== "CANCELED") {
                     if (!!existingMod.baseProfile) {
-                        return this.dialogManager.createNotice(
-                            `"${importRequest.modName}" already exists in base profile "${existingMod.baseProfile}". Please choose a different mod name.`,
-                            DialogManager.OK_ACTION_PRIMARY,
-                            { disposeOnBackdropClick: false }
-                        ).pipe(
+                        return this.dialogManager.createNotice({
+                            prompt: `"${importRequest.modName}" already exists in base profile "${existingMod.baseProfile}". Please choose a different mod name.`,
+                            actions: [DialogManager.OK_ACTION_PRIMARY],
+                            disposeOnBackdropClick: false
+                        }).pipe(
                             map(() => {
                                 importRequest.importStatus = "RESTART";
                                 return importRequest;
@@ -960,14 +967,18 @@ export class ProfileManager {
                         };
 
                         // Determine which merge strategy to use
-                        return this.dialogManager.createDefault(
-                            `"${importRequest.modName}" already exists. Choose a method of resolving file conflicts.`, [
+                        return this.dialogManager.createDefault({
+                            title: "Mod Conflict",
+                            prompt: `"${importRequest.modName}" already exists. Choose a method of resolving file conflicts.`,
+                            actions: [
                                 ACTION_REPLACE,
                                 ACTION_OVERWRITE,
                                 ACTION_ADD,
                                 DialogManager.CANCEL_ACTION_PRIMARY
-                            ], { width: "auto", maxWidth: "50vw" }
-                        ).pipe(
+                            ],
+                            width: "auto",
+                            maxWidth: "50vw"
+                        }).pipe(
                             switchMap((result) => {
                                 switch (result) {
                                     case ACTION_REPLACE: {
@@ -1011,6 +1022,7 @@ export class ProfileManager {
                         switchMap((importResult) => {
                             if (!!importResult) {
                                 return this.store.dispatch(new ActiveProfileActions.AddMod(importResult.root, importResult.modName, importResult.modRef)).pipe(
+                                    tap(() => this.onModImportComplete$.next([importRequest, importResult])),
                                     map(() => importResult.modRef)
                                 );
                             } else {
@@ -1053,7 +1065,7 @@ export class ProfileManager {
             switchMap((activeProfile) => {
                 const newMod = this.findMod(activeProfile!, root, modNewName);
                 if (!!newMod) {
-                    return this.dialogManager.createNotice(`Cannot rename mod to "${modNewName}". A mod with this name already exists.`);
+                    return this.dialogs.showError(`Cannot rename mod to "${modNewName}". A mod with this name already exists.`);
                 } else {
                     const curMod = this.findMod(activeProfile!, root, modCurName);
                     const modHasError = curMod ? this.modHasError(curMod) : false;
@@ -1149,7 +1161,7 @@ export class ProfileManager {
                 if (newSection) {
                     const existingSection = this.findModSection(activeProfile!, root, newSection.name);
                     if (existingSection && section?.name !== newSection.name) {
-                        return this.dialogManager.createNotice(`Section named "${newSection.name}" already exists.`);
+                        return this.dialogs.showError(`Section named "${newSection.name}" already exists.`);
                     } else {
                         return this.store.dispatch(new ActiveProfileActions.UpdateModSection(root, newSection, section));
                     }
@@ -1173,7 +1185,9 @@ export class ProfileManager {
                     : undefined;
 
                 if (!!baseSection) {
-                    return this.dialogManager.createNotice(`Cannot delete mod section "${section.name}". This section is inherited from base profile "${activeProfile!.baseProfile!.name}".`);
+                    return this.dialogs.showError(
+                        `Cannot delete mod section "${section.name}". This section is inherited from base profile "${activeProfile!.baseProfile!.name}".`
+                    );
                 } else {
                     return this.store.dispatch(new ActiveProfileActions.DeleteModSection(root, section));
                 }
@@ -1202,7 +1216,6 @@ export class ProfileManager {
             profile
         });
     }
-
     public isUsingScriptExtender(scriptExtender: GameDetails.ScriptExtender, profile: AppProfile): Observable<boolean> {
         // First check if script extender exists in external root dir files
         let usingScriptExtender = !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
@@ -1364,16 +1377,132 @@ export class ProfileManager {
                     : this.LAUNCH_GAME_ACTION;
                 const resolvedGameAction = gameAction ?? activeGameAction ?? defaultAction;
 
-                return ElectronUtils.invoke("profile:runGameAction", {
-                    profile: activeProfile!,
-                    gameAction: resolvedGameAction
-                });
+                if (resolvedGameAction.requiresSteam && resolvedGameAction.actionType !== GameActionType.STEAM_APP) {
+                    return this.dialogs.showDefault({
+                        prompt: "This action must be launched via Steam. Add it to your Steam library?",
+                        actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION],
+                        title: resolvedGameAction.name
+                    }).pipe(
+                        filterTrue(),
+                        switchMap(() => this.addGameActionToSteamFromUser(activeProfile!, resolvedGameAction, undefined, true))
+                    );
+                } else {
+                    return ElectronUtils.invoke("profile:runGameAction", {
+                        profile: activeProfile!,
+                        gameAction: resolvedGameAction
+                    });
+                }
             }),
             catchError((error) => {
-                this.dialogManager.createNotice(`Failed to run game action: ${error.toString()}`);
+                this.dialogs.showNotice(`Failed to run game action: ${error.toString()}`);
                 return of(undefined);
             })
         ));
+    }
+
+    public addGameActionToSteam(
+        profile: AppProfile,
+        steamUserId: string,
+        gameAction: GameAction,
+        protonCompatDataRoot?: string
+    ): Observable<string> {
+        return runOnce(ElectronUtils.invoke("profile:addGameActionToSteam", {
+            profile,
+            steamUserId,
+            gameAction,
+            protonCompatDataRoot
+        }));
+    }
+
+    public addGameActionToSteamFromUser(
+        profile: AppProfile,
+        gameAction: GameAction,
+        gameActionIndex?: number | null,
+        useGameCompatRootDefault?: boolean
+    ): Observable<unknown> {
+        return this.dialogManager.create<AppAddGameActionToSteamDialog, AppAddGameActionToSteamDialog.Config>(
+            AppAddGameActionToSteamDialog, {
+                actions: [DialogManager.ADD_ACTION_PRIMARY, DialogManager.CANCEL_ACTION],
+                gameAction,
+                gameActionIndex,
+                profile,
+                useGameCompatRootDefault,
+                hasBackdrop: true,
+                disposeOnBackdropClick: true,
+                maxWidth: "35%",
+                panelClass: "mat-app-background",
+                withModalInstance: true
+            }
+        ).pipe(
+            filter((result) => result.action === DialogManager.ADD_ACTION_PRIMARY),
+            map((result) => ({
+                steamUserId: result.modalInstance.steamUserId,
+                chosenGameCompatRoot: result.modalInstance.chosenGameCompatRoot,
+                deleteAction: result.modalInstance.deleteAction
+            })),
+            // Update last Steam user ID
+            switchMap((result) => this.appManager.updateLastSteamUserId(result.steamUserId).pipe(
+                map(() => result)
+            )),
+            // Add shortcut to Steam
+            switchMap((result) => this.addGameActionToSteam(
+                profile,
+                result.steamUserId,
+                gameAction,
+                result.chosenGameCompatRoot 
+            ).pipe(
+                catchError(() => {
+                    this.dialogs.showError("Failed to add Steam app shortcut.");
+                    return EMPTY;
+                }),
+                // Inform user they need to restart Steam
+                switchMap((steamAppId) => {
+                    const restartNotice = `Shortcut "${gameAction.name}" has been added to your Steam library. Restart Steam to view the shortcut.`;
+                    const protonNotice = "<br><br><strong>NOTE:</strong> This program requires Proton. You may to have to enable it by right-clicking the shortcut in Steam and going to Properties > Compatibility."
+                    return this.dialogs.showNotice(
+                        `${restartNotice}${gameAction.requiresSteam ? protonNotice : ""}`,
+                        DialogManager.OK_ACTION_PRIMARY
+                    ).pipe(map(() => steamAppId));
+                }),
+                switchMap((steamAppId) => {
+                    return this.dialogs.showDefault({
+                        prompt: "Do you want to create a Stellar action to launch this Steam shortcut?",
+                        actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION]
+                    }).pipe(
+                        // Evaluate needed action changes:
+                        switchMap((createNewAction) => {
+                            const deleteExistingAction = result.deleteAction && gameActionIndex !== null && gameActionIndex !== undefined;
+                            if (createNewAction) {
+                                const steamAction = {
+                                    name: gameAction.name,
+                                    actionType: GameActionType.STEAM_APP,
+                                    actionData: steamAppId
+                                };
+                                let createAction$: Observable<unknown>;
+
+                                if (deleteExistingAction) {
+                                    // Replace existing action with new action to launch Steam shortcut
+                                    createAction$ = this.editCustomGameActionByIndex(gameActionIndex, steamAction);
+                                } else {
+                                    // Add new action to launch Steam shortcut
+                                    createAction$ = this.addCustomGameAction(steamAction);
+                                }
+
+                                // Make the new action active
+                                return createAction$.pipe(
+                                    switchMap(() => this.setActiveGameAction(steamAction))
+                                );
+                            } else if (deleteExistingAction) {
+                                // Remove the existing action
+                                return this.removeCustomGameActionByIndex(gameActionIndex);
+                            } else {
+                                return EMPTY;
+                            }
+                        })
+                    )
+                })
+            ))
+        );
     }
 
     public getAvailableDefaultGameActions(): Observable<GameAction[]> {
@@ -1388,6 +1517,10 @@ export class ProfileManager {
             take(1),
             switchMap(profile => ElectronUtils.invoke("profile:resolveGameBinaryVersion", { profile: profile! }))
         );
+    }
+
+    public resolveGameSteamCompatRoot(profile: AppProfile): Observable<string | undefined> {
+        return ElectronUtils.invoke("profile:resolveGameSteamCompatRoot", { profile: profile! });
     }
 
     public showModInFileExplorer(modName: string, modRef: ModProfileRef): Observable<unknown> {
@@ -1472,6 +1605,33 @@ export class ProfileManager {
         ));
     }
 
+    public isModScriptExtender(
+        modImport: ModImportRequest,
+        gameDetails: GameDetails
+    ): [GameDetails.ScriptExtender, string] | undefined {
+        // Normalize mod file paths
+        const normalizedModPaths = modImport.modFilePaths.map(({ filePath }) => {
+            return LangUtils.normalizeFilePath(filePath, "/");
+        });
+        
+        // Check if this mod contains any binaries from known script extenders
+        let foundBinary = "";
+        const matchingScriptExtender = gameDetails!.scriptExtenders!.find((scriptExtender) => normalizedModPaths.some((filePath) => {
+            return scriptExtender!.binaries.find((binary) => {
+                binary = LangUtils.normalizeFilePath(binary, "/");
+                const matches = filePath.endsWith(binary) || binary.endsWith(filePath);
+
+                if (matches) {
+                    foundBinary = binary;
+                }
+
+                return matches;
+            });
+        }));
+
+        return matchingScriptExtender ? [matchingScriptExtender, foundBinary] : undefined;
+    }
+
     private deployActiveMods(): Observable<boolean> {
         // First make sure the active profile is verified before deployment
         return runOnce(this.verifyActiveProfile({
@@ -1490,10 +1650,13 @@ export class ProfileManager {
                                 return ElectronUtils.invoke("profile:findDeployedProfile", { refProfile: activeProfile }).pipe(
                                     switchMap((deployedProfileName) => {
                                         if (deployedProfileName && deployedProfileName !== activeProfile.name) {
-                                            return this.dialogs.showDefault(`Mods for profile "${deployedProfileName}" will be deactivated. Continue?`, [
-                                                DialogManager.YES_ACTION_PRIMARY,
-                                                DialogManager.NO_ACTION,
-                                            ]).pipe(switchMap(userContinue => userContinue ? of(activeProfile) : EMPTY));
+                                            return this.dialogs.showDefault({
+                                                prompt: `Mods for profile "${deployedProfileName}" will be deactivated. Continue?`,
+                                                actions: [
+                                                    DialogManager.YES_ACTION_PRIMARY,
+                                                    DialogManager.NO_ACTION,
+                                                ]
+                                            }).pipe(switchMap(userContinue => userContinue ? of(activeProfile) : EMPTY));
                                         } else {
                                             return of(activeProfile);
                                         }
@@ -1505,7 +1668,7 @@ export class ProfileManager {
                                     })),
                                     catchError(() => {
                                         // TODO - Show error in dialog
-                                        return this.dialogs.showNotice("Mod deployment failed. Check app.log file for more information.").pipe(
+                                        return this.dialogs.showError("Mod deployment failed. Check app.log file for more information.").pipe(
                                             switchMap(() => this.store.dispatch(new AppActions.setDeployInProgress(false))),
                                             map(() => false)
                                         );
@@ -1544,7 +1707,7 @@ export class ProfileManager {
                         switchMap(() => ElectronUtils.invoke("profile:undeploy", { profile: activeProfile })),
                         catchError(() => {
                             // TODO - Show error in dialog
-                            return this.dialogs.showNotice("Mod undeployment failed. Check app.log file for more information.").pipe(
+                            return this.dialogs.showError("Mod undeployment failed. Check app.log file for more information.").pipe(
                                 switchMap(() => this.store.dispatch(new AppActions.setDeployInProgress(false))),
                                 map(() => false)
                             );

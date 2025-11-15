@@ -1,0 +1,71 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>Create Steam Library Shortcut</mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+        <form>
+            <mat-form-field>
+                <mat-label>Name</mat-label>
+                <input matInput
+                    type="text"
+                    name="name"
+                    [required]="true"
+                    [readonly]="true"
+                    [disabled]="true"
+                    [ngModel]="dialogConfig.gameAction.name">
+            </mat-form-field>
+
+            @let userIdHelpText = "Your Steam User ID. You can find this on the Account Details page on Steam (below the account name).";
+            @if (activeSteamUserIds && activeSteamUserIds.length > 0) {
+                <mat-form-field>
+                    <mat-label>Steam User ID</mat-label>
+                    <mat-select name="steamUserId"
+                                [required]="true"
+                                [ngModel]="lastSteamUserId ?? activeSteamUserIds[0]">
+                        @for (steamUserId of activeSteamUserIds; track $index) {
+                            <mat-option [value]="steamUserId">
+                                {{steamUserId}}
+                            </mat-option>
+                        }
+                    </mat-select>
+                    <mat-icon matSuffix class="tooltip-icon" [matTooltip]="userIdHelpText">
+                        help
+                    </mat-icon>
+                </mat-form-field>
+            } @else {
+                <mat-form-field>
+                    <mat-label>Steam User ID</mat-label>
+                    <input matInput
+                           name="steamUserId"
+                           [required]="true"
+                           [ngModel]="lastSteamUserId">
+                    <mat-icon matSuffix class="tooltip-icon" [matTooltip]="userIdHelpText">
+                        help
+                    </mat-icon>
+                </mat-form-field>
+            }
+
+            <mat-checkbox name="useGameCompatRoot"
+                          [attr.app-hidden]="!(isLinux$ | async)"
+                          [disabled]="!gameCompatRoot"
+                          [ngModel]="!!dialogConfig.useGameCompatRootDefault">
+                @let gameTitle = dialogConfig.profile.gameId | appGameTitle:gameDb;
+
+                Use {{gameTitle}}'s Proton Prefix
+                <mat-icon class="tooltip-icon" matTooltip="Set STEAM_COMPAT_DATA_PATH to the game's compat data path (Proton only)">help</mat-icon>
+            </mat-checkbox>
+
+            @if (dialogConfig.gameActionIndex !== null && dialogConfig.gameActionIndex !== undefined) {
+                <mat-checkbox name="deleteAction"
+                            [ngModel]="false">
+                    Delete action from Stellar
+                </mat-checkbox>
+            }
+        </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+        <app-dialog-actions [actions]="dialogConfig.actions" (actionSelected)="actionSelected$.emit($event)" />
+    </mat-card-actions>
+</mat-card>

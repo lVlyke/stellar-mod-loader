@@ -15,11 +15,15 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { BaseComponent } from "../../core/base-component";
-import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../services/dialog-manager.types";
+import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
+export namespace AppProfileFolderMoveDialog {
 
-export const OLD_PATH_TOKEN = new InjectionToken<string>("OLD_PATH");
-export const NEW_PATH_TOKEN = new InjectionToken<string>("NEW_PATH");
+    export interface Config extends DialogConfig {
+        oldPath: string;
+        newPath: string;
+    }
+}
 
 @Component({
     templateUrl: "./profile-folder-move-dialog.component.html",
@@ -49,9 +53,7 @@ export class AppProfileFolderMoveDialog extends BaseComponent implements DialogC
 
     constructor(
         cdRef: ChangeDetectorRef,
-        @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
-        @Inject(OLD_PATH_TOKEN) protected readonly oldPath: string,
-        @Inject(NEW_PATH_TOKEN) protected readonly newPath: string,
+        @Inject(DIALOG_CONFIG_TOKEN) public readonly dialogConfig: AppProfileFolderMoveDialog.Config,
     ) {
         super({ cdRef });
     }

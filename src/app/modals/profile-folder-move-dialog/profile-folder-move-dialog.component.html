@@ -4,7 +4,7 @@
     </mat-card-header>
     
     <mat-card-content>
-        <div>Do you want to move files from "{{ oldPath }}" to "{{ newPath }}"?</div>
+        <div>Do you want to move files from "{{ dialogConfig.oldPath }}" to "{{ dialogConfig.newPath }}"?</div>
 
         <form id="folderMoveForm">
             <mat-checkbox name="overwrite" [(ngModel)]="overwrite">
@@ -18,6 +18,6 @@
     </mat-card-content>
 
     <mat-card-actions>
-        <app-dialog-actions [actions]="actions" (actionSelected)="actionSelected$.emit($event)" />
+        <app-dialog-actions [actions]="dialogConfig.actions" (actionSelected)="actionSelected$.emit($event)" />
     </mat-card-actions>
 </mat-card>

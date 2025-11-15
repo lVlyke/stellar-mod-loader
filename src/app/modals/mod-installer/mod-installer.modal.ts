@@ -66,10 +66,10 @@ export class AppModInstallerModal extends BaseComponent {
                 if (Object.keys(this.importRequest.modFilePathMapFilter ?? {}).length > 0) {
                     return of(form);
                 } else {
-                    return appDialogs.showDefault("No files are active for this mod. Do you want to install it anyway?", [
-                        DialogManager.YES_ACTION,
-                        DialogManager.NO_ACTION_PRIMARY
-                    ]).pipe(switchMap(continueInstall => continueInstall ? of(form) : EMPTY));
+                    return appDialogs.showDefault({
+                        prompt: "No files are active for this mod. Do you want to install it anyway?",
+                        actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+                    }).pipe(switchMap(continueInstall => continueInstall ? of(form) : EMPTY));
                 }
             })
         ).subscribe((form) => {

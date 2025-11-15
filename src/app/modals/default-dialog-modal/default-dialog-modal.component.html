@@ -1,7 +1,13 @@
 <mat-card>
-    <mat-card-content [innerHTML]="renderedPrompt ?? prompt" />
+    @if (dialogConfig.title) {
+        <mat-card-header>
+            <mat-card-title>{{dialogConfig.title}}</mat-card-title>
+        </mat-card-header>
+    }
+
+    <mat-card-content [innerHTML]="renderedPrompt ?? dialogConfig.prompt ?? ''" />
 
     <mat-card-actions>
-        <app-dialog-actions [actions]="actions" (actionSelected)="actionSelected$.emit($event)" />
+        <app-dialog-actions [actions]="dialogConfig.actions" (actionSelected)="actionSelected$.emit($event)" />
     </mat-card-actions>
 </mat-card>

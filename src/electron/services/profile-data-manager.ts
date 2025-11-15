@@ -17,6 +17,7 @@ import type { ElectronApp } from "../app";
 import type { AppDataManager } from "./app-data-manager";
 import { AppConstants } from "../constants";
 import { PathUtils, SymlinkType } from "../util/path-utils";
+import { SteamUtils } from "../util/steam-utils";
 
 export class ProfileDataManager {
 
@@ -242,6 +243,26 @@ export class ProfileDataManager {
         {
             if (this.appDataManager.loadSettings()?.normalizePathCasing) {
                 profile.normalizePathCasing = true;
+            }
+        }
+
+        // BC: <0.14.0
+        {
+            const actionSources = [
+                profile.defaultGameActions,
+                profile.customGameActions ?? [],
+                profile.activeGameAction ? [profile.activeGameAction] : []
+            ];
+
+            for (const gameActionSource of actionSources) {
+                for (const gameAction of gameActionSource) {
+                    // Convert `actionScript` to new `GameAction` format
+                    if (gameAction.actionScript !== undefined) {
+                        gameAction.actionType = "script";
+                        gameAction.actionData = gameAction.actionScript;
+                        delete gameAction.actionScript;
+                    }
+                }
             }
         }
 
@@ -782,10 +803,20 @@ export class ProfileDataManager {
     }
 
     public resolveDefaultGameActions(profile: AppProfile): GameAction[] {
+        if (!profile.gameInstallation) {
+            return [];
+        }
+
         const gameDetails = this.appDataManager.getGameDetails(profile.gameId);
+        const modsToSearch = profile.rootMods;
+        const gameRootDir = path.resolve(profile.gameInstallation.rootDir);
+
+        if (path.resolve(profile.gameInstallation.modDir) === gameRootDir) {
+            modsToSearch.push(...profile.mods);
+        }
 
         // Find available game binaries and add them as actions
-        return gameDetails?.gameBinary.reverse().reduce((gameActions, gameBinary) => {
+        return gameDetails?.gameBinary.slice().reverse().reduce((gameActions, gameBinary) => {
             let binaryExists = !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
                 return externalFile.endsWith(gameBinary);
             });
@@ -802,10 +833,23 @@ export class ProfileDataManager {
             });
     
             if (binaryExists) {
-                gameActions.push({
-                    name: `Start ${path.parse(gameBinary).name}`,
-                    actionScript: gameBinary
-                });
+                if (profile.gameInstallation.steamId && gameBinary === gameDetails.gameBinary[0]) {
+                    gameActions.push({
+                        name: `Start ${path.parse(gameBinary).name}`,
+                        actionType: "steam_app",
+                        actionData: profile.gameInstallation.steamId[0]
+                    });
+                } else {
+                    // Check if this binary requires Proton to run on Linux
+                    const needsProton = process.platform === "linux" && gameBinary.toLowerCase().endsWith(".exe");
+
+                    gameActions.push({
+                        name: `Start ${path.parse(gameBinary).name}`,
+                        actionType: "script",
+                        actionData: path.join(gameRootDir, gameBinary),
+                        requiresSteam: needsProton
+                    });
+                }
             }
 
             return gameActions;
@@ -951,20 +995,134 @@ export class ProfileDataManager {
 
     public runGameAction(profile: AppProfile, gameAction: GameAction): boolean {
         const gameDetails = this.appDataManager.getGameDetails(profile.gameId);
-        // Substitute variables for profile
-        const gameActionCmd = template(gameAction.actionScript)({ ...profile, gameDetails });
+
+        // Create action command string:
+        let gameActionCmd: string;
+        switch (gameAction.actionType) {
+            case "script": {
+                // Substitute variables for profile
+                gameActionCmd = template(gameAction.actionData)({ ...profile, gameDetails });
+            } break;
+            case "steam_app": {
+                // Launch the game using the given Steam App ID
+                gameActionCmd = `"${SteamUtils.getSteamBinaryPath()}" steam://launch/${gameAction.actionData}`;
+            } break;
+            default: throw new Error("Unknown GameActionType.");
+        }
+        
+        // Apply environment variables:
+        let envDict: Record<string, string | undefined> = { ...process.env };
+        if (gameAction.environment) {
+            envDict = gameAction.environment
+                .filter(envVar => envVar.enabled)
+                .reduce<Record<string, string | undefined>>(
+                    (envDict, envVar) => (envDict[envVar.key] = envVar.value, envDict),
+                    envDict
+                );
+        }
 
         log.info("Running game action: ", gameActionCmd);
         
         // Run the action
         try {
-            exec(gameActionCmd, { cwd: profile.gameInstallation.rootDir });
+            exec(gameActionCmd, {
+                cwd: profile.gameInstallation.rootDir,
+                env: envDict
+            });
         } catch(error) {
             log.error(error);
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * @returns The 64-bit game ID of the shortcut
+     */
+    public addGameActionToSteam(
+        profile: AppProfile,
+        steamUserId: string,
+        gameAction: GameAction,
+        protonCompatDataRoot?: string
+    ): string {
+        const steamUserShortcutsDb = SteamUtils.loadUserShortcuts(steamUserId);
+
+        if (!steamUserShortcutsDb) {
+            throw new Error(`Unable to find shortcuts for Steam ID: ${steamUserId}`);
+        }
+
+        const steamUserShortcuts = steamUserShortcutsDb["shortcuts"];
+
+        // Find next shortcut index:
+        const shortcutIndices = Object.keys(steamUserShortcuts);
+        const shortcutIndex = shortcutIndices.length === 0 ? 0 : (shortcutIndices.reduce((maxIndex, curIndexKey) => {
+            const curIndex = Number.parseInt(curIndexKey);
+            return curIndex > maxIndex ? curIndex : maxIndex;
+        }, 0) + 1);
+
+        // Generate unique `appid`:
+        const appIds = Object.values(steamUserShortcuts).map(shortcutEntry => shortcutEntry.appid);
+        let appId: number;
+        do {
+            appId = SteamUtils.generateAppShortcutId();
+        } while (appIds.includes(appId));
+
+        // Compute the launch option environment variable
+        let launchOptions = "";
+
+        if (protonCompatDataRoot !== undefined) {
+            launchOptions += PathUtils.serializeEnvironmentVariables([
+                ["STEAM_COMPAT_DATA_PATH", protonCompatDataRoot],
+            ], "linux"); 
+        }
+
+        if (gameAction.environment) {
+            launchOptions += PathUtils.serializeEnvironmentVariables(gameAction.environment
+                .filter(envVar => envVar.enabled)
+                .map(envVar => [envVar.key, envVar.value]),
+                "linux"
+            );
+        }
+
+        if (launchOptions.length > 0) {
+            launchOptions += " %command% ";
+        }
+
+        // Compute working directory:
+        const unquotedActionData = gameAction.actionData.replace(/["']+/g, "");
+        let workingDir = path.dirname(unquotedActionData);
+    
+        if (!path.isAbsolute(workingDir)) {
+            workingDir = path.join(profile.gameInstallation.rootDir, workingDir);
+        }
+
+        // Create Steam shortcut from `gameAction`:
+        steamUserShortcuts[shortcutIndex.toString()] = {
+            appid: appId,
+            AppName: gameAction.name,
+            Exe: `"${path.join(workingDir, path.basename(unquotedActionData))}"`,
+            StartDir: `"${workingDir}"`,
+            icon: "",
+            ShortcutPath: "",
+            LaunchOptions: launchOptions,
+            IsHidden: 0,
+            AllowDesktopConfig: 1,
+            AllowOverlay: 1,
+            OpenVR: 0,
+            Devkit: 0,
+            DevkitGameID: "",
+            DevkitOverrideAppID: 0,
+            LastPlayTime: 0,
+            FlatpakAppID: "",
+            sortas: "",
+            tags: {}
+        };
+
+        // Save the new shortcut
+        SteamUtils.updateUserShortcuts(steamUserId, steamUserShortcutsDb);
+
+        return SteamUtils.resolveGameId64(appId.toString());
     }
 
     /** 

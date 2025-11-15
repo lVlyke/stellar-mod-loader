@@ -7,7 +7,7 @@
         }
     </div>
 
-    @for (error of errors; track error) {
+    @for (error of errors; track $index) {
         <div matColor="warn" class="verification-error">
             {{ error }}
         </div>

@@ -23,7 +23,7 @@ export class AppDialogActionsComponent extends BaseComponent {
     public readonly actionSelected$ = new EventEmitter<DialogAction>();
 
     @Input()
-    public actions: DialogAction[] = [];
+    public actions: DialogAction[] | undefined = [];
 
     constructor(cdRef: ChangeDetectorRef) {
         super({ cdRef });

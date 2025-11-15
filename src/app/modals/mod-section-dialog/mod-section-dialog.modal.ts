@@ -7,11 +7,16 @@ import { MatInputModule } from "@angular/material/input";
 import { MatIconModule } from "@angular/material/icon";
 import { MatSelectModule } from "@angular/material/select";
 import { BaseComponent } from "../../core/base-component";
-import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../services/dialog-manager.types";
+import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
 import { ModSection } from "../../models/mod-section";
 
-export const MOD_SECTION_TOKEN = new InjectionToken<ModSection>("MOD_SECTION");
+export namespace AppModSectionDialog {
+
+    export interface Config extends DialogConfig {
+        section?: ModSection;
+    }
+}
 
 @Component({
     templateUrl: "./mod-section-dialog.modal.html",
@@ -59,12 +64,11 @@ export class AppModSectionDialog extends BaseComponent implements DialogComponen
 
     constructor(
         cdRef: ChangeDetectorRef,
-        @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
-        @Inject(MOD_SECTION_TOKEN) @Optional() modSection: ModSection | undefined
+        @Inject(DIALOG_CONFIG_TOKEN) public readonly dialogConfig: AppModSectionDialog.Config
     ) {
         super({ cdRef });
 
-        this.modSection = modSection ?? this.modSection;
+        this.modSection = dialogConfig.section ?? this.modSection;
     }
 
     private static DEFAULT_SECTION(): ModSection {

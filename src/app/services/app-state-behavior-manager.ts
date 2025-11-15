@@ -27,6 +27,7 @@ import { ExportedGameDetails, GameDetails } from "../models/game-details";
 import { GameId } from "../models/game-id";
 import { AppInfo } from "../models/app-info";
 import { AppSupportInfoModal, APP_SUPPORT_INFO_TOKEN } from "../modals/app-support-info";
+import { AppPlatform } from "../models/app-platform";
 
 @Injectable({ providedIn: "root" })
 export class AppStateBehaviorManager {
@@ -142,6 +143,10 @@ export class AppStateBehaviorManager {
                 };
             })
         );
+    }
+
+    public getPlatform(): Observable<AppPlatform> {
+        return ElectronUtils.invoke("app:getPlatform", {});
     }
 
     public getAppInfo(): Observable<AppInfo> {
@@ -275,7 +280,7 @@ export class AppStateBehaviorManager {
                     );
                 } else {
                     const errorText = "Unable to open game database file.";
-                    this.dialogs.showNotice(errorText).subscribe();
+                    this.dialogs.showError(errorText).subscribe();
                     return throwError(() => errorText);
                 }
             })
@@ -300,6 +305,18 @@ export class AppStateBehaviorManager {
 
     public readGame(): Observable<[GameId, ExportedGameDetails] | undefined> {
         return ElectronUtils.invoke("app:readGame", {});
+    }
+
+    public getActiveSteamUserIds(): Observable<string[]> {
+        return ElectronUtils.invoke("app:getActiveSteamUserIds", {});
+    }
+
+    public updateLastSteamUserId(steamUserId: string): Observable<unknown> {
+        if (steamUserId.length > 0) {
+            return runOnce(this.store.dispatch(new AppActions.updateLastSteamUserId(steamUserId)));
+        }
+
+        return of(steamUserId);
     }
 
     public showAppWarnings(): Observable<unknown> {
@@ -414,7 +431,8 @@ export class AppStateBehaviorManager {
             checkLatestVersionOnStart: appData.checkLatestVersionOnStart,
             steamCompatDataRoot: appData.steamCompatDataRoot,
             logPanelEnabled: appData.logPanelEnabled,
-            customGameDb: appData.customGameDb
+            customGameDb: appData.customGameDb,
+            lastSteamUserId: appData.lastSteamUserId
         };
     }
 }

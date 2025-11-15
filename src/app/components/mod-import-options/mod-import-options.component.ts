@@ -405,9 +405,9 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
                     if (usingScriptExtender) {
                         return EMPTY;
                     } else {
-                        return dialogManager.createDefault(
-                            `This mod requires the script extender ${scriptExtender!.name}, but the active profile does not appear to be set up to use it. \n\nAre you sure you want to continue?`
-                        );
+                        return dialogManager.createDefault({
+                            prompt: `This mod requires the script extender ${scriptExtender!.name}, but the active profile does not appear to be set up to use it. \n\nAre you sure you want to continue?`
+                        });
                     }
                 })
             )),
@@ -435,10 +435,10 @@ export class AppModImportOptionsComponent extends BaseComponent implements Contr
                         tooltip: "Ignore warning (NOTE: This mod will likely not work correctly!)"
                     };
                     
-                    return dialogManager.createDefault(
-                        `This mod has plugins, but plugins are not currently enabled.`,
-                        [ACTION_ENABLE_PLUGINS, DialogManager.CANCEL_ACTION_ACCENT, ACTION_IGNORE]
-                    ).pipe(
+                    return dialogManager.createDefault({
+                        prompt: `This mod has plugins, but plugins are not currently enabled.`,
+                        actions: [ACTION_ENABLE_PLUGINS, DialogManager.CANCEL_ACTION_ACCENT, ACTION_IGNORE]
+                    }).pipe(
                         tap((action) => {
                             switch (action) {
                                 case ACTION_ENABLE_PLUGINS: {

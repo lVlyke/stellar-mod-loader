@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Output } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { ComponentState } from "@lithiumjs/angular";
-import { DialogAction, DialogComponent, DIALOG_ACTIONS_TOKEN } from "../../services/dialog-manager.types";
+import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
 import { BaseComponent } from "../../core/base-component";
 import { AppExternalUrlComponent } from "../../components/external-url";
@@ -24,7 +24,7 @@ export class App7ZipNoticeComponent extends BaseComponent implements DialogCompo
     public readonly actionSelected$ = new EventEmitter<DialogAction>();
 
     constructor(
-        @Inject(DIALOG_ACTIONS_TOKEN) public readonly actions: DialogAction[],
+        @Inject(DIALOG_CONFIG_TOKEN) public readonly dialogConfig: DialogConfig,
         cdRef: ChangeDetectorRef
     ) {
         super({ cdRef });

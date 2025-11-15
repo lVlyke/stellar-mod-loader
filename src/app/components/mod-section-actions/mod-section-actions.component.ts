@@ -59,10 +59,10 @@ export class AppModSectionActionsComponent extends BaseComponent {
     }
 
     protected deleteSection(): Observable<unknown> {
-        return runOnce(this.appDialogs.showDefault("Are you sure you want to delete this section?", [
-            DialogManager.YES_ACTION,
-            DialogManager.NO_ACTION_PRIMARY
-        ]).pipe(
+        return runOnce(this.appDialogs.showDefault({
+            prompt: "Are you sure you want to delete this section?",
+            actions: [DialogManager.YES_ACTION, DialogManager.NO_ACTION_PRIMARY]
+        }).pipe(
             filterTrue(),
             switchMap(() => this.profileManager.deleteModSection(this.root, this.section)),
             tap(() => this.actionSelect$.emit())

@@ -185,11 +185,10 @@ export class AppModInstallerComponent extends BaseComponent {
                 log.info("FOMOD installer dependency check failed: ", importRequest.installer!.config?.moduleDependencies);
 
                 // TODO - Show missing deps
-                return appDialogs.showDefault(
-                    "Mod is missing required dependencies.",
-                    [ignoreAction, DialogManager.CANCEL_ACTION_PRIMARY],
-                    DialogManager.NEGATIVE_ACTIONS
-                ).pipe(
+                return appDialogs.showDefault({
+                    prompt: "Mod is missing required dependencies.",
+                    actions: [ignoreAction, DialogManager.CANCEL_ACTION_PRIMARY],
+                }, DialogManager.NEGATIVE_ACTIONS).pipe(
                     tap((userCancelled) => {
                         if (userCancelled) {
                             importRequest.importStatus = "CANCELED";

@@ -1,7 +1,14 @@
 import { EventEmitter, InjectionToken } from "@angular/core";
+import { OverlayHelpersConfig } from "./overlay-helpers";
 
-export const DIALOG_ACTIONS_TOKEN = new InjectionToken<DialogAction>("DIALOG_ACTIONS");
-export const DEFAULT_DIALOG_PROMPT_TOKEN = new InjectionToken<string>("DEFAULT_DIALOG_PROMPT");
+export interface DialogConfig extends OverlayHelpersConfig {
+    actions?: DialogAction[];
+    prompt?: string;
+    title?: string;
+    withModalInstance?: boolean;
+}
+
+export const DIALOG_CONFIG_TOKEN = new InjectionToken<DialogConfig>("DIALOG_CONFIG");
 
 export interface DialogAction {
     label: string;

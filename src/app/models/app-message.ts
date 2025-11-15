@@ -15,6 +15,7 @@ import { GameInstallation } from "./game-installation";
 import { AppWarnings } from "./app-warnings";
 import { ExportedGameDetails, GameDetails } from "./game-details";
 import { ModOverwriteFiles } from "./mod-overwrite-files";
+import { AppPlatform } from "./app-platform";
 
 export type AppMessage
     = AppMessage.AppMessage
@@ -47,6 +48,12 @@ export namespace AppMessage {
         id: `${Prefix}:log`;
         data: LogEntry;
         result: LogEntry;
+    }
+
+    export interface GetPlatform extends Base {
+        id: `${Prefix}:getPlatform`;
+        data: {};
+        result: AppPlatform;
     }
 
     export interface GetInfo extends Base {
@@ -285,8 +292,15 @@ export namespace AppMessage {
         result: AppWarnings;
     }
 
+    export interface GetActiveSteamUserIds extends Base {
+        id: `${Prefix}:getActiveSteamUserIds`;
+        data: {};
+        result: string[];
+    }
+
     export type AppMessage = Exit
                            | Log
+                           | GetPlatform
                            | GetInfo
                            | CheckLatestVersion
                            | SyncUiState
@@ -320,7 +334,8 @@ export namespace AppMessage {
                            | ToggleLogPanel
                            | CheckLinkSupported
                            | ResolveResourceUrl
-                           | QueryWarnings;
+                           | QueryWarnings
+                           | GetActiveSteamUserIds;
 
     // Profile messages:
 
@@ -664,6 +679,17 @@ export namespace AppMessage {
         };
     }
 
+    export interface AddGameActionToSteam extends Base {
+        id: `${ProfileMessage.Prefix}:addGameActionToSteam`;
+        data: {
+            profile: AppProfile;
+            steamUserId: string;
+            gameAction: GameAction;
+            protonCompatDataRoot?: string;
+        };
+        result: string;
+    }
+
     export interface ResolveDefaultGameActions extends Base {
         id: `${ProfileMessage.Prefix}:resolveDefaultGameActions`;
         data: {
@@ -746,6 +772,14 @@ export namespace AppMessage {
         result: boolean;
     }
 
+    export interface ResolveGameSteamCompatRoot extends Base {
+        id: `${ProfileMessage.Prefix}:resolveGameSteamCompatRoot`;
+        data: {
+            profile: AppProfile;
+        };
+        result: string | undefined;
+    }
+
     export interface SteamCompatSymlinksSupported extends Base {
         id: `${ProfileMessage.Prefix}:steamCompatSymlinksSupported`;
         data: {
@@ -806,6 +840,7 @@ export namespace AppMessage {
                                | ShowProfilePluginBackupsInFileExplorer
                                | ShowProfileConfigBackupsInFileExplorer
                                | RunGameAction
+                               | AddGameActionToSteam
                                | ResolveDefaultGameActions
                                | OpenProfileConfigFile
                                | DeleteProfileConfigFile
@@ -815,6 +850,7 @@ export namespace AppMessage {
                                | DeleteSaveFile
                                | ProfileDirLinkSupported
                                | NormalizePathCasingRecommended
+                               | ResolveGameSteamCompatRoot
                                | SteamCompatSymlinksSupported
                                | ResolveGameBinaryVersion
                                | ToggleLockState;
@@ -824,6 +860,7 @@ export namespace AppMessage {
     export const record: Array<_AppMessage["id"]> = [
         "app:exit",
         "app:log",
+        "app:getPlatform",
         "app:getInfo",
         "app:checkLatestVersion",
         "app:syncUiState",
@@ -858,6 +895,7 @@ export namespace AppMessage {
         "app:checkLinkSupported",
         "app:resolveResourceUrl",
         "app:queryWarnings",
+        "app:getActiveSteamUserIds",
 
         "profile:resolvePath",
         "profile:moveFolder",
@@ -899,6 +937,7 @@ export namespace AppMessage {
         "profile:showProfilePluginBackupsInFileExplorer",
         "profile:showProfileConfigBackupsInFileExplorer",
         "profile:runGameAction",
+        "profile:addGameActionToSteam",
         "profile:resolveDefaultGameActions",
         "profile:openProfileConfigFile",
         "profile:deleteProfileConfigFile",
@@ -908,6 +947,7 @@ export namespace AppMessage {
         "profile:deleteSaveFile",
         "profile:dirLinkSupported",
         "profile:normalizePathCasingRecommended",
+        "profile:resolveGameSteamCompatRoot",
         "profile:steamCompatSymlinksSupported",
         "profile:resolveGameBinaryVersion",
         "profile:toggleLockState"

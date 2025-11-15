@@ -1,23 +1,20 @@
 import { Injectable } from "@angular/core";
 import { map, Observable } from "rxjs";
 import { OverlayHelpers } from "./overlay-helpers";
-import { DialogConfig, DialogManager } from "./dialog-manager";
-import { DialogAction } from "./dialog-manager.types";
+import { DialogManager } from "./dialog-manager";
+import { DialogConfig, DialogAction } from "./dialog-manager.types";
 import { GameAction } from "../models/game-action";
-import { AppModRenameDialog, MOD_CUR_NAME_TOKEN } from "../modals/mod-rename-dialog";
+import { AppModRenameDialog } from "../modals/mod-rename-dialog";
 import { AppProfileBackupNameDialog } from "../modals/profile-backup-name-dialog";
-import { AppProfileFolderMoveDialog, NEW_PATH_TOKEN, OLD_PATH_TOKEN } from "../modals/profile-folder-move-dialog";
+import { AppProfileFolderMoveDialog } from "../modals/profile-folder-move-dialog";
 import { AppSymlinkWarningDialog } from "../modals/symlink-warning-dialog";
-import { AppCustomGameActionDialog, GAME_ACTION_TOKEN } from "../modals/custom-game-action-dialog";
+import { AppCustomGameActionDialog } from "../modals/custom-game-action-dialog";
 import { ModSection } from "../models/mod-section";
-import { AppModSectionDialog, MOD_SECTION_TOKEN } from "../modals/mod-section-dialog";
-import {
-    APP_INFO_TOKEN,
-    APP_LATEST_VERSION_TOKEN,
-    AppVersionUpdateNoticeComponent
-} from "../modals/app-version-update-notice";
+import { AppModSectionDialog } from "../modals/mod-section-dialog";
+import { AppVersionUpdateNoticeComponent } from "../modals/app-version-update-notice";
 import { AppInfo } from "../models/app-info";
 import { App7ZipNoticeComponent } from "../modals/app-7zip-notice";
+import { AppProfile } from "../models/app-profile";
 
 @Injectable({ providedIn: "root" })
 export class AppDialogs {
@@ -27,39 +24,50 @@ export class AppDialogs {
     ) {}
 
     public showDefault(
-        prompt: string,
-        actions: DialogAction[] = DialogManager.DEFAULT_ACTIONS,
-        actionMatch: DialogAction[] = DialogManager.POSITIVE_ACTIONS,
-        config?: DialogConfig
+        config: DialogConfig,
+        actionMatch: DialogAction[] = DialogManager.POSITIVE_ACTIONS
     ): Observable<boolean> {
-        return this.dialogManager.createDefault(prompt, actions, config).pipe(
+        return this.dialogManager.createDefault(config).pipe(
             map(result => actionMatch.includes(result))
         );
     }
 
     public showNotice(
-        prompt: string,
-        action: DialogAction = DialogManager.OK_ACTION,
-        config?: DialogConfig
+        notice: string,
+        action: DialogAction = DialogManager.OK_ACTION
     ): Observable<true> {
-        return this.dialogManager.createNotice(prompt, action, config).pipe(
+        return this.dialogManager.createNotice({
+            prompt: notice,
+            actions: [action]
+        }).pipe(
             map(() => true)
         );
     }
 
-    public showAppVersionUpdateNotice(appInfo: AppInfo, latestVersion: string): Observable<unknown> {
-        return this.dialogManager.create(AppVersionUpdateNoticeComponent, [
-                DialogManager.OK_ACTION_PRIMARY
-            ], {
+    public showError(
+        error: string,
+        action: DialogAction = DialogManager.OK_ACTION
+    ): Observable<true> {
+        return this.dialogManager.createNotice({
+            title: "Error",
+            prompt: error,
+            actions: [action]
+        }).pipe(
+            map(() => true)
+        );
+    }
+
+    public showAppVersionUpdateNotice(appInfo: AppInfo, appLatestVersion: string): Observable<DialogAction> {
+        return this.dialogManager.create<AppVersionUpdateNoticeComponent, AppVersionUpdateNoticeComponent.Config>(
+            AppVersionUpdateNoticeComponent, {
+                actions: [DialogManager.OK_ACTION_PRIMARY],
+                appInfo,
+                appLatestVersion,
                 maxWidth: "35%",
                 panelClass: "mat-app-background",
                 hasBackdrop: true,
                 disposeOnBackdropClick: true
-            },
-            [
-                [APP_INFO_TOKEN, appInfo],
-                [APP_LATEST_VERSION_TOKEN, latestVersion]
-            ]
+            }
         );
     }
 
@@ -67,30 +75,25 @@ export class AppDialogs {
         const RETRY_ACTION = { label: "Retry", primary: true };
         const EXIT_ACTION = { label: "Exit" };
 
-        return this.dialogManager.create(App7ZipNoticeComponent, [
-                RETRY_ACTION, EXIT_ACTION
-            ], {
-                maxWidth: "35%",
-                panelClass: "mat-app-background",
-                hasBackdrop: true,
-                disposeOnBackdropClick: false
-            }
-        ).pipe(
+        return this.dialogManager.create(App7ZipNoticeComponent, {
+            actions: [RETRY_ACTION, EXIT_ACTION],
+            maxWidth: "35%",
+            panelClass: "mat-app-background",
+            hasBackdrop: true,
+            disposeOnBackdropClick: false
+        }).pipe(
             map(result => result === RETRY_ACTION)
         );
     }
 
     public showModRenameDialog(modCurName: string): Observable<string | undefined> {
-        return this.dialogManager.create(AppModRenameDialog, [
-                DialogManager.OK_ACTION_PRIMARY,
-                DialogManager.CANCEL_ACTION
-            ], {
-                withModalInstance: true,
-                maxWidth: "35%",
-                panelClass: "mat-app-background"
-            },
-            [[MOD_CUR_NAME_TOKEN, modCurName]]
-        ).pipe(
+        return this.dialogManager.create<AppModRenameDialog, AppModRenameDialog.Config>(AppModRenameDialog, {
+            modCurName,
+            actions: [DialogManager.OK_ACTION_PRIMARY, DialogManager.CANCEL_ACTION],
+            withModalInstance: true,
+            maxWidth: "35%",
+            panelClass: "mat-app-background"
+        }).pipe(
             map(result => result.action === DialogManager.OK_ACTION_PRIMARY
                 ? result.modalInstance.modName
                 : undefined
@@ -99,17 +102,17 @@ export class AppDialogs {
     }
 
     public showProfileBackupNameDialog(): Observable<string | undefined> {
-        return this.dialogManager.create(AppProfileBackupNameDialog, [
+        return this.dialogManager.create(AppProfileBackupNameDialog, {
+            actions: [
                 DialogManager.OK_ACTION_PRIMARY,
                 DialogManager.CANCEL_ACTION
-            ], {
-                hasBackdrop: true,
-                disposeOnBackdropClick: true,
-                withModalInstance: true,
-                maxWidth: "35%",
-                panelClass: "mat-app-background"
-            }
-        ).pipe(
+            ],
+            hasBackdrop: true,
+            disposeOnBackdropClick: true,
+            withModalInstance: true,
+            maxWidth: "35%",
+            panelClass: "mat-app-background"
+        }).pipe(
             map(result => result.action === DialogManager.OK_ACTION_PRIMARY
                 ? result.modalInstance.backupName
                 : undefined
@@ -121,13 +124,16 @@ export class AppDialogs {
         oldPath: string,
         newPath: string
     ): Observable<{ overwrite: boolean, destructive: boolean } | undefined> {
-        return this.dialogManager.create(AppProfileFolderMoveDialog,
-            [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION], {
+        return this.dialogManager.create<AppProfileFolderMoveDialog, AppProfileFolderMoveDialog.Config>(
+            AppProfileFolderMoveDialog, {
+                oldPath,
+                newPath,
+                actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION],
                 withModalInstance: true,
                 hasBackdrop: true,
                 maxWidth: "55%",
                 panelClass: "mat-app-background"
-            }, [[OLD_PATH_TOKEN, oldPath], [NEW_PATH_TOKEN, newPath]]
+            }
         ).pipe(
             map(result => result.action === DialogManager.YES_ACTION_PRIMARY ? {
                 overwrite: result.modalInstance.overwrite,
@@ -136,8 +142,9 @@ export class AppDialogs {
         );
     }
 
-    public showSymlinkWarningDialog(): Observable<unknown> {
-        return this.dialogManager.create(AppSymlinkWarningDialog, [DialogManager.OK_ACTION_PRIMARY], {
+    public showSymlinkWarningDialog(): Observable<DialogAction> {
+        return this.dialogManager.create(AppSymlinkWarningDialog, {
+            actions: [DialogManager.OK_ACTION_PRIMARY],
             hasBackdrop: true,
             disposeOnBackdropClick: true,
             maxWidth: "35%",
@@ -145,34 +152,39 @@ export class AppDialogs {
         });
     }
 
-    public showAddCustomGameActionDialog(gameAction?: GameAction): Observable<GameAction | undefined> {
-        const injectionTokens: OverlayHelpers.InjetorTokens = [];
-        if (gameAction) {
-            injectionTokens.push([GAME_ACTION_TOKEN, gameAction]);
-        }
-
-        return this.dialogManager.create(AppCustomGameActionDialog, [DialogManager.OK_ACTION_PRIMARY, DialogManager.CANCEL_ACTION], {
-            withModalInstance: true,
-            hasBackdrop: true,
-            maxWidth: "55%",
-            panelClass: "mat-app-background"
-        }, injectionTokens).pipe(
-            map(result => result.action === DialogManager.OK_ACTION_PRIMARY ? result.modalInstance.gameAction : undefined)
+    public showAddCustomGameActionDialog(
+        profile: AppProfile,
+        gameAction?: GameAction,
+        gameActionIndex?: number
+    ): Observable<GameAction | undefined> {
+        return this.dialogManager.create<AppCustomGameActionDialog, AppCustomGameActionDialog.Config>(
+            AppCustomGameActionDialog, {
+                profile,
+                gameAction,
+                gameActionIndex,
+                actions: [
+                    DialogManager.SAVE_ACTION_PRIMARY,
+                    DialogManager.CANCEL_ACTION
+                ],
+                withModalInstance: true,
+                hasBackdrop: true,
+                maxWidth: "70%",
+                panelClass: "mat-app-background"
+            }
+        ).pipe(
+            map(result => result.action === DialogManager.SAVE_ACTION_PRIMARY ? result.modalInstance.gameAction : undefined)
         );
     }
 
     public showAddModSectionDialog(section?: ModSection): Observable<ModSection | undefined> {
-        const injectionTokens: OverlayHelpers.InjetorTokens = [];
-        if (section) {
-            injectionTokens.push([MOD_SECTION_TOKEN, section]);
-        }
-
-        return this.dialogManager.create(AppModSectionDialog, [DialogManager.OK_ACTION_PRIMARY, DialogManager.CANCEL_ACTION], {
+        return this.dialogManager.create<AppModSectionDialog, AppModSectionDialog.Config>(AppModSectionDialog, {
+            section,
+            actions: [DialogManager.OK_ACTION_PRIMARY, DialogManager.CANCEL_ACTION],
             withModalInstance: true,
             hasBackdrop: true,
             maxWidth: "55%",
             panelClass: "mat-app-background"
-        }, injectionTokens).pipe(
+        }).pipe(
             map(result => result.action === DialogManager.OK_ACTION_PRIMARY ? result.modalInstance.modSection : undefined)
         );
     }

@@ -4,6 +4,12 @@
         height: 100%;
     }
 
+    mat-card-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
     mat-card-content {
         display: flex;
         justify-content: center;
@@ -15,8 +21,38 @@
             display: block;
             flex-grow: 1;
 
-            mat-form-field {
+            > mat-form-field {
                 display: block;
+            }
+
+            .tooltip-icon {
+                margin-left: 0.5rem;
+            }
+
+            .environment-editor {
+                margin-top: 0.5rem;
+
+                summary {
+                    margin-bottom: 0.5rem;
+                }
+            }
+
+            .env-var {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+
+                > .env-var-state {
+                    margin-right: 0.5rem;
+                }
+
+                > .equals-icon {
+                    margin: 0.5rem;
+                }
+
+                > .env-var-value {
+                    flex-grow: 1;
+                }
             }
         }
     }

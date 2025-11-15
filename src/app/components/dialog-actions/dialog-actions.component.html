@@ -1,9 +1,11 @@
-@for (action of actions; track $index) {
-    <button mat-raised-button
-            [color]="action.primary ? 'primary' : (action.accent ? 'accent' : (action.warn ? 'warn' : undefined))"
-            [matTooltip]="action.tooltip ?? ''"
-            [matTooltipDisabled]="!action.tooltip"
-            (click)="actionSelected$.emit(action)">
-        {{ action.label }}
-    </button>
+@if (actions) {
+    @for (action of actions; track $index) {
+        <button mat-raised-button
+                [color]="action.primary ? 'primary' : (action.accent ? 'accent' : (action.warn ? 'warn' : undefined))"
+                [matTooltip]="action.tooltip ?? ''"
+                [matTooltipDisabled]="!action.tooltip"
+                (click)="actionSelected$.emit(action)">
+            {{ action.label }}
+        </button>
+    }
 }
