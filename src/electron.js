@@ -79,7 +79,7 @@ class ElectronLoader {
     static /** @type {string} */ APP_VERSION = ElectronLoader.APP_PACKAGE.version;
     static /** @type {Record<AppResource, string>} */ APP_RESOURCES = {
         "readme_offline": `file://${process.cwd()}/README.md`,
-        "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/${ElectronLoader.APP_VERSION}/README.md`,
+        "readme_online": `${ElectronLoader.APP_PACKAGE.repository}/blob/v${ElectronLoader.APP_VERSION}/README.md`,
         "license": `file://${process.cwd()}/LICENSE`,
         "homepage": ElectronLoader.APP_PACKAGE.repository,
         "issues": `${ElectronLoader.APP_PACKAGE.repository}/issues`,
