@@ -34,7 +34,7 @@ export namespace AppConstants {
     export const APP_VERSION = APP_PACKAGE.version;
     export const APP_RESOURCES: Record<AppResource, string> = {
         "readme_offline": `file://${process.cwd()}/README.md`,
-        "readme_online": `${APP_PACKAGE.repository}/blob/${APP_VERSION}/README.md`,
+        "readme_online": `${APP_PACKAGE.repository}/blob/v${APP_VERSION}/README.md`,
         "latest_release": `${APP_PACKAGE.repository}/releases/latest`,
         "license": `file://${process.cwd()}/LICENSE`,
         "homepage": APP_PACKAGE.repository,
