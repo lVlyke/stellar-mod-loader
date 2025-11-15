@@ -995,6 +995,7 @@ export class ProfileDataManager {
 
     public runGameAction(profile: AppProfile, gameAction: GameAction): boolean {
         const gameDetails = this.appDataManager.getGameDetails(profile.gameId);
+        const appData = this.appDataManager.loadSettings();
 
         // Create action command string:
         let gameActionCmd: string;
@@ -1005,7 +1006,7 @@ export class ProfileDataManager {
             } break;
             case "steam_app": {
                 // Launch the game using the given Steam App ID
-                gameActionCmd = `"${SteamUtils.getSteamBinaryPath()}" steam://launch/${gameAction.actionData}`;
+                gameActionCmd = `"${SteamUtils.getSteamBinaryPath(appData.steamInstallationDir)}" steam://launch/${gameAction.actionData}`;
             } break;
             default: throw new Error("Unknown GameActionType.");
         }
@@ -1046,7 +1047,8 @@ export class ProfileDataManager {
         gameAction: GameAction,
         protonCompatDataRoot?: string
     ): string {
-        const steamUserShortcutsDb = SteamUtils.loadUserShortcuts(steamUserId);
+        const appSettings = this.appDataManager.loadSettings();
+        const steamUserShortcutsDb = SteamUtils.loadUserShortcuts(appSettings, steamUserId);
 
         if (!steamUserShortcutsDb) {
             throw new Error(`Unable to find shortcuts for Steam ID: ${steamUserId}`);
@@ -1120,7 +1122,7 @@ export class ProfileDataManager {
         };
 
         // Save the new shortcut
-        SteamUtils.updateUserShortcuts(steamUserId, steamUserShortcutsDb);
+        SteamUtils.updateUserShortcuts(appSettings, steamUserId, steamUserShortcutsDb);
 
         return SteamUtils.resolveGameId64(appId.toString());
     }

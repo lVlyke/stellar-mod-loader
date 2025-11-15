@@ -53,13 +53,13 @@ To install Stellar, simply download the latest release from the [releases page](
 > **Quick Links:**
 > * **Profiles**
 >   * [**Create a profile**](#create-a-profile)
+>   * [**Link mode**](#link-mode)
 >   * [**Manage config files**](#manage-configini-files)
 >   * [**Manage save files**](#manage-save-files)
->   * [**Link mode**](#link-mode)
+>   * [**Mod path case normalization (Linux)**](#normalize-mod-file-paths)
 >   * [**Archive invalidation**](#archive-invalidation)
 >   * [**Base profile**](#base-profile)
 >   * [**Profile path overrides**](#profile-path-overrides)
->   * [**Steam compat symlinks (Linux)**](#linux-steam-compat-symlinks)
 >   * [**Profile locking**](#profile-locking)
 >   * [**External profiles**](#add-external-profiles)
 >   * [**Import profiles**](#import-profiles)
@@ -88,9 +88,9 @@ To install Stellar, simply download the latest release from the [releases page](
 >   * [**Game manager**](#game-manager)
 >   * [**Custom games**](#custom-games)
 > * [**App settings**](#app-settings)
->   * [**Mod file path case normalization (Linux)**](#normalize-mod-file-path)
 > * [**Launching games**](#launch-the-game)
 >   * [**Custom actions**](#custom-actions)
+>   * [**Add actions to your Steam library**](#add-actions-to-your-steam-library)
 >   * [**Launch profile from CLI**](#launch-profile-from-cli)
 > * [**Troubleshooting**](#troubleshooting)
 >   * [**Common issues**](#common-issues)
@@ -124,7 +124,15 @@ The **Game Saves Directory** is the directory where the game's save files are lo
 
 The **Game Plugin List Path** is the location of the `plugins.txt` file for the game. For Bethesda games, this is located at `<User_Directory>/AppData/Local/<GameName>/plugins.txt`.
 
-**Steam ID** is the Steam ID for the game. This is only applicable if you're using a Steam version of the game. This is only required if you plan on enabling [Steam Compat Symlinks](#linux-steam-compat-symlinks) for Linux.
+**Steam ID** is the Steam ID for the game. This is only applicable if you're using a Steam version of the game.
+
+### Link mode
+
+When **Link Mode** is enabled, file links to the mod files will be used instead of copying the files when activating mods. This is significantly faster and uses less disk space. This setting is recommended to be enabled when possible.
+
+Link mode can also be separately enabled for config files and save files. To enable/disable link mode for config or save files, click the icon to the left of **Game Config Files Directory** or **Game Saves Directory**.
+
+**NOTE:** Link mode can only be enabled if the profile is located on the same disk/partition as the game itself.
 
 ### Manage Config/INI files
 
@@ -138,13 +146,11 @@ Upon first enabling the option, you will be prompted to copy the existing config
 
 If the **Manage Save Files** option is enabled, any created save games while this profile is deployed will be tied only to that profile. When enabled, you must also define the **Game Saves Directory**.
 
-### Link mode
+### Normalize mod file paths
 
-When **Link Mode** is enabled, file links to the mod files will be used instead of copying the files when activating mods. This is significantly faster and uses less disk space. This setting is recommended to be enabled when possible.
+Some mods may use different casing for their files/folders (i.e. `Interface` vs `interface`) and this can cause issues on case-sensitive file systems (often used on Linux). When this setting is enabled, Stellar will automatically convert all activated mod files and folders to the correct case to avoid this issue.
 
-Link mode can also be separately enabled for config files and save files. To enable/disable link mode for config or save files, click the icon to the left of **Game Config Files Directory** or **Game Saves Directory**.
-
-**NOTE:** Link mode can only be enabled if the profile is located on the same disk/partition as the game itself.
+It is recommended to enable this setting when using a case-sensitive file system.
 
 ### Archive invalidation
 
@@ -183,18 +189,6 @@ Overriding this path will allow you to store the profile's config files at an al
 #### Profile backups path
 
 Overriding this path will allow you to store the profile's backup files at an alternative location.
-
-### (Linux) Steam Compat Symlinks
-
-When running a script extender such as SFSE via Steam/Proton, Steam will automatically create a new virtual C drive for it that is different from the virtual C drive used for the game itself. This means that when you go to launch the script extender, your config/INI and save files will not be loaded, and instead new ones will be created on the new virtual C drive.
-
-To avoid having two separate copies of these files, symlinks can be created on the virtual C drive for the script extender that point to the correct directory on the original game's virtual C drive. This allows both virtual C drives to use the same directory for reading config and save files.
-
-Stellar can automate this behavior by enabling **Manage Steam Compat Symlinks** for the profile.
-
-You will first need to figure out the new virtual C drive directory for the script extender, which will normally be located in `~/.local/share/Steam/steamapps/compatdata`. You will see a number of directories in here with numerical IDs. One of these directories corresponds to the game ID that Steam assigned to the script extender. To determine which game ID is the correct one, you can look at the folder's "Date modified" timestamp to figure out which virtual drive directories were created recently. Assuming you added the script extender to Steam recently, the directory should have a Date modified field that matches when it was added to Steam.
-
-Once you have found the custom game ID, enter it as the **Custom Steam Game ID** for the profile. The necessary symlinks will now be created automatically when the profile is deployed.
 
 ### Profile locking
 
@@ -467,12 +461,6 @@ Once you have tested your game definition to make sure everything works as expec
 
 App settings can be changed via **File > Preferences** from the menu bar. The following settings are available:
 
-### Normalize mod file path
-
-Some mods may use different casing for their files/folders (i.e. `Interface` vs `interface`) and this can cause issues on case-sensitive file systems, which are often used on Linux. When this setting is enabled, Stellar will automatically convert all activated mod files and folders to the correct case to avoid this issue.
-
-It is recommended to enable the **Normalize mod file path** setting when using Linux with a case-sensitive file system.
-
 ### Verify active profile on app startup
 
 Whether or not the active profile should be verified upon starting Stellar. This is recommended to be enabled, but can be disabled if verification takes too long.
@@ -481,9 +469,9 @@ Whether or not the active profile should be verified upon starting Stellar. This
 
 Whether or not plugin management is enabled. Only disable this if you do not want plugins to be managed.
 
-### (Linux) Steam compat data root
+### Steam installation directory
 
-The path to Steam's compatdata directory. By default this is located at `~/.local/share/Steam/steamapps/compatdata`, but if it is located at a different location you can define it here. See [this section](#linux-steam-compat-symlinks) for more information.
+Your Steam installation directory. This only needs to be specified if Steam is installed in a non-standard location.
 
 ### App theme
 
@@ -493,9 +481,26 @@ The app theme to use.
 
 You can either click the **Start Game** button or simply launch the game directly through Steam, Game Pass, etc. The game should launch with your mods enabled!
 
+If you have added a mod with a known custom executable (like a script extender), you will see an additional action to launch that mod's executable.
+
+Some actions may require that you launch them directly from Steam (i.e. running a game through Proton on Linux). When you try to run these actions, Stellar will prompt you to automatically create a corresponding Steam library shortcut to run the mod's executable. Stellar can then create a new action to launch that Steam shortcut.
+
 ### Custom actions
 
-Additional actions can be added by clicking the dropdown arrow to the right of the **Start Game** button and clicking **New Action**. Set the **Name** for your action and the **Action** to perform. **Action** can be a program or script along with any needed options. You can now select this action by clicking the dropdown arrow.
+Additional actions can be added by clicking the dropdown arrow to the right of the launch action button (**Start Game**) and clicking **New Action**. There are two types of actions: **Commands** or **Steam Apps**.
+
+A Command Action can be any kind of program or script with arguments and environment variables.
+
+A Steam App Action can launch an app or shortcut using its Steam App ID. The App ID can be found by adding a desktop shortcut for the app in Steam and then inspecting the shortcut file. The shortcut will have an argument in the format of `steam://rungameid/13109217361204871168` where the App ID is the number at the end.
+
+After creating an action you can select it or other actions by clicking the dropdown arrow.
+
+### Add actions to your Steam library
+
+You can add custom actions directly to your Steam library. Click the dropdown arrow to the right of the launch action button and click the gear icon next to a custom action. Click the **Create Steam shortcut** button at the top right of the settings window to create a Steam library shortcut.
+
+> [!NOTE]
+> When creating a Steam shortcut on Linux for a script extender or other game tool, make sure the option to use the game's Proton prefix is enabled. You may need to enable Proton for the shortcut in Steam under the shortcut's Compatibility settings.
 
 ### Launch profile from CLI
 
@@ -533,7 +538,7 @@ This can be fixed by enabling **Normalize mod file path** for the app. See [this
 
 ### **(Linux)** Mods are not loading when using a script extender like SFSE
 
-This can be fixed by enabling **Manage Steam Compat Symlinks** for the profile. See [this section](#linux-steam-compat-symlinks) for more information.
+You must set the `STEAM_COMPAT_DATA_PATH` environment variable to use the game's Proton prefix. Stellar will do this automatically when creating Steam shortcuts.
 
 ### (Starfield) My mods are not loading
 

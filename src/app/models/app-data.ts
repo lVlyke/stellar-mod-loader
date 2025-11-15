@@ -12,13 +12,15 @@ export interface AppData {
     checkLatestVersionOnStart?: boolean;
     modListColumns?: string[];
     deployInProgress?: boolean;
-    steamCompatDataRoot?: string;
+    steamInstallationDir?: string;
     logPanelEnabled?: boolean;
     customGameDb?: GameDatabase;
     lastSteamUserId?: string;
 
     /** @deprecated */
     normalizePathCasing?: boolean;
+    /** @deprecated */
+    steamCompatDataRoot?: string;
 }
 
 export namespace AppData {

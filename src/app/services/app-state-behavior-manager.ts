@@ -429,6 +429,7 @@ export class AppStateBehaviorManager {
             modListColumns: appData.modListColumns,
             verifyProfileOnStart: appData.verifyProfileOnStart,
             checkLatestVersionOnStart: appData.checkLatestVersionOnStart,
+            steamInstallationDir: appData.steamInstallationDir,
             steamCompatDataRoot: appData.steamCompatDataRoot,
             logPanelEnabled: appData.logPanelEnabled,
             customGameDb: appData.customGameDb,

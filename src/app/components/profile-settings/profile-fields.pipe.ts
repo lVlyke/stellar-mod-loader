@@ -21,13 +21,14 @@ function STANDARD_FIELDS({
         steamId = profileModel.gameInstallation.steamId[0];
     }
 
-    return !!steamId ? [
+    // @deprecated - Only show if `manageSteamCompatSymlinks` is true
+    return (!!steamId && !!profileModel?.manageSteamCompatSymlinks) ? [
         {
             formId: "steamCustomGameId",
-            title: "Custom Steam Game ID",
+            title: "[DEPRECATED] Custom Steam Game ID",
             path: false,
-            required: !!profileModel?.manageSteamCompatSymlinks,
-            hint: "The ID of a custom Steam game entry (i.e. for script extenders)."
+            required: true,
+            hint: "[NOTE: Deprecated, not recommended] The ID of a custom Steam game entry (i.e. for script extenders)."
         }
     ] : [];
 }

@@ -40,11 +40,27 @@ export namespace SteamUtils {
     const APP_SHORTCUT_MIN_ID = 2000000000;
     const APP_SHORTCUT_ID_RANGE = 2000000000;
 
-    export function getSteamBinaryPath(): string {
+    export function getDefaultSteamInstallationDir(): string {
         switch (process.platform) {
-            case "linux": return AppConstants.STEAM_EXECUTABLE_LINUX;
-            case "win32": return AppConstants.STEAM_EXECUTABLE_WINDOWS;
+            case "linux": return AppConstants.STEAM_DEFAULT_INSTALL_DIR_LINUX;
+            case "win32": return AppConstants.STEAM_DEFAULT_INSTALL_DIR_WINDOWS;
             default: throw new Error("getSteamBinaryPath: Unknown platform");
+        }
+    }
+
+    export function getSteamBinaryPath(steamInstallationDir?: string): string {
+        if (steamInstallationDir) {
+            switch (process.platform) {
+                case "linux": return path.join(steamInstallationDir, "steam.sh");
+                case "win32": return path.join(steamInstallationDir, "steam.exe");
+                default: throw new Error("getSteamBinaryPath: Unknown platform");
+            }
+        } else {
+            switch (process.platform) {
+                case "linux": return AppConstants.STEAM_DEFAULT_EXECUTABLE_LINUX;
+                case "win32": return AppConstants.STEAM_DEFAULT_EXECUTABLE_WINDOWS;
+                default: throw new Error("getSteamBinaryPath: Unknown platform");
+            }
         }
     }
 
@@ -110,8 +126,11 @@ export namespace SteamUtils {
         return PathUtils.expandPath(path.join(rootDir, AppConstants.STEAM_COMPAT_STEAMUSER_DIR));
     }
 
-    export function getCoreSteamCompatRoot(appSettings: AppSettingsUserCfg, steamId: string): string | undefined {
-        const compatDataRoot = appSettings.steamCompatDataRoot || AppConstants.STEAM_DEFAULT_COMPAT_DATA_ROOT;
+    export function getSteamProtonPrefixRoot(appSettings: AppSettingsUserCfg, steamId: string): string | undefined {
+        const compatDataRoot = appSettings.steamCompatDataRoot || path.join(
+            appSettings.steamInstallationDir || getDefaultSteamInstallationDir(),
+            AppConstants.STEAM_COMPAT_DATA_ROOT
+        );
         
         if (!compatDataRoot) {
             return undefined;
@@ -120,8 +139,8 @@ export namespace SteamUtils {
         return PathUtils.expandPath(path.join(compatDataRoot, steamId));
     }
 
-    export function getCoreSteamCompatSteamuserDir(appSettings: AppSettingsUserCfg, steamId: string): string | undefined {
-        const rootDir = getCoreSteamCompatRoot(appSettings, steamId);
+    export function getSteamProtonPrefixSteamuserDir(appSettings: AppSettingsUserCfg, steamId: string): string | undefined {
+        const rootDir = getSteamProtonPrefixRoot(appSettings, steamId);
 
         if (!rootDir) {
             return undefined;
@@ -130,8 +149,8 @@ export namespace SteamUtils {
         return PathUtils.expandPath(path.join(rootDir, AppConstants.STEAM_COMPAT_STEAMUSER_DIR));
     }
 
-    export function loadUserShortcuts(steamUserId: string): SteamUserShortcutsDb | undefined {
-        const shortcutFilePath = getShortcutsFileForUser(steamUserId);
+    export function loadUserShortcuts(appSettings: AppSettingsUserCfg, steamUserId: string): SteamUserShortcutsDb | undefined {
+        const shortcutFilePath = getShortcutsFileForUser(appSettings, steamUserId);
 
         if (!shortcutFilePath) {
             return undefined;
@@ -144,8 +163,8 @@ export namespace SteamUtils {
         return vdf.readVdf(fs.readFileSync(shortcutFilePath)) as unknown as SteamUserShortcutsDb;
     }
 
-    export function updateUserShortcuts(steamUserId: string, config: SteamUserShortcutsDb): void {
-        const shortcutFilePath = getShortcutsFileForUser(steamUserId);
+    export function updateUserShortcuts(appSettings: AppSettingsUserCfg, steamUserId: string, config: SteamUserShortcutsDb): void {
+        const shortcutFilePath = getShortcutsFileForUser(appSettings, steamUserId);
 
         if (!shortcutFilePath) {
             return undefined;
@@ -170,18 +189,20 @@ export namespace SteamUtils {
         }
     }
 
-    export function getSteamUserdataDir(): string | undefined {
+    export function getSteamUserdataDir(appSettings: AppSettingsUserCfg): string | undefined {
+        const steamInstallationDir = appSettings.steamInstallationDir || getDefaultSteamInstallationDir();
+
         if (process.platform === "linux") {
-            return PathUtils.expandPath(path.join(AppConstants.STEAM_ROOT_LINUX, AppConstants.STEAM_USERDATA_DIR));
+            return PathUtils.expandPath(path.join(steamInstallationDir, AppConstants.STEAM_USERDATA_DIR));
         } else if (process.platform === "win32") {
-            return PathUtils.expandPath(path.join(AppConstants.STEAM_ROOT_PC, AppConstants.STEAM_USERDATA_DIR));
+            return PathUtils.expandPath(path.join(steamInstallationDir, AppConstants.STEAM_USERDATA_DIR));
         } else {
             return undefined;
         }
     }
 
-    export function getDataDirForUser(steamUserId: string): string | undefined {
-        const userdataDir = getSteamUserdataDir();
+    export function getDataDirForUser(appSettings: AppSettingsUserCfg, steamUserId: string): string | undefined {
+        const userdataDir = getSteamUserdataDir(appSettings);
 
         if (userdataDir) {
             return path.join(userdataDir, resolveSteamUserId32(steamUserId));
@@ -190,8 +211,8 @@ export namespace SteamUtils {
         return undefined;
     }
 
-    export function getConfigDirForUser(steamUserId: string): string | undefined {
-        const userdataDir = getDataDirForUser(steamUserId);
+    export function getConfigDirForUser(appSettings: AppSettingsUserCfg, steamUserId: string): string | undefined {
+        const userdataDir = getDataDirForUser(appSettings, steamUserId);
 
         if (userdataDir) {
             return path.join(userdataDir, "config");
@@ -200,8 +221,8 @@ export namespace SteamUtils {
         return undefined;
     }
 
-    export function getShortcutsFileForUser(steamUserId: string): string | undefined {
-        const userdataDir = getConfigDirForUser(steamUserId);
+    export function getShortcutsFileForUser(appSettings: AppSettingsUserCfg, steamUserId: string): string | undefined {
+        const userdataDir = getConfigDirForUser(appSettings, steamUserId);
 
         if (userdataDir) {
             return path.join(userdataDir, "shortcuts.vdf");
@@ -210,8 +231,8 @@ export namespace SteamUtils {
         return undefined;
     }
 
-    export function getActiveSteamUserIds(): string[] {
-        const userdataDir = getSteamUserdataDir();
+    export function getActiveSteamUserIds(appSettings: AppSettingsUserCfg): string[] {
+        const userdataDir = getSteamUserdataDir(appSettings);
 
         if (!userdataDir || !fs.existsSync(userdataDir)) {
             return [];

@@ -234,15 +234,19 @@
         </div>
     }
 
+    <!-- @deprecated - Only show if already being used -->
     <!-- Steam Compat Symlink Mode -->
-    @if (!baseProfileMode) {
+    @if (!baseProfileMode && initialProfile.manageSteamCompatSymlinks) {
         <div class="checkbox-field">
             <mat-checkbox name="manageSteamCompatSymlinks"
                           [attr.app-hidden]="!manageSteamCompatSymlinksSupported"
                           [disabled]="!profileForm.enabled"
                           [ngModel]="manageSteamCompatSymlinksSupported ? initialProfile.manageSteamCompatSymlinks : false">
-                Manage Steam Compat Symlinks
-                <mat-icon class="tooltip-icon" matTooltip="Automatically create symlinks that synchronize game data for your custom Steam game entry.">help</mat-icon>
+                [DEPRECATED] Manage Steam Compat Symlinks
+                <mat-icon class="tooltip-icon"
+                          matTooltip="[NOTE: Deprecated, not recommended]  Automatically create symlinks that synchronize game data for your custom Steam game entry.">
+                    help
+                </mat-icon>
             </mat-checkbox>
         </div>
     }

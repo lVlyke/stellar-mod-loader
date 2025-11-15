@@ -546,7 +546,7 @@ export class RendererEventHandler {
                         saveFolderPath: gameSaveFolderPathResult
                     }
                 },
-                steamCustomGameId: VERIFY_SUCCESS, // TODO
+                steamCustomGameId: VERIFY_SUCCESS,
                 rootPathOverride: rootPathOverrideResult,
                 modsPathOverride: modsPathOverrideResult,
                 configPathOverride: configPathOverrideResult,
@@ -559,7 +559,7 @@ export class RendererEventHandler {
                 manageExternalPlugins: VERIFY_SUCCESS,
                 manageConfigFiles: VERIFY_SUCCESS,
                 manageSaveFiles: manageSaveFilesResult,
-                manageSteamCompatSymlinks: VERIFY_SUCCESS, // TODO
+                manageSteamCompatSymlinks: VERIFY_SUCCESS,
                 modLinkMode: modLinkModeResult,
                 configLinkMode: configLinkModeResult,
                 deployed: VERIFY_SUCCESS,
@@ -629,7 +629,8 @@ export class RendererEventHandler {
             _event: Electron.IpcMainInvokeEvent,
             {}: AppMessageData<"app:getActiveSteamUserIds">
         ) => {
-            return SteamUtils.getActiveSteamUserIds();
+            const appSettings = this.appDataManager.loadSettings();
+            return SteamUtils.getActiveSteamUserIds(appSettings);
         });
 
         ipcMain.handle("profile:resolvePath", async (
@@ -1175,7 +1176,7 @@ export class RendererEventHandler {
 
             const appSettings = this.appDataManager.loadSettings();
             const gameCompatSteamuserDir = SteamUtils.getSteamCompatSteamuserDir(profile.gameInstallation);
-            const customCompatSteamuserDir = SteamUtils.getCoreSteamCompatSteamuserDir(appSettings, profile.steamCustomGameId);
+            const customCompatSteamuserDir = SteamUtils.getSteamProtonPrefixSteamuserDir(appSettings, profile.steamCustomGameId);
 
             if (!gameCompatSteamuserDir || !customCompatSteamuserDir || !fs.existsSync(gameCompatSteamuserDir) || !fs.existsSync(customCompatSteamuserDir)) {
                 return false;

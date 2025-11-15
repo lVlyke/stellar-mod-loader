@@ -264,7 +264,7 @@ export class ProfileDeploymentManager {
 
         const appSettings = this.appDataManager.loadSettings();
         const gameCompatSteamuserDir = SteamUtils.getSteamCompatSteamuserDir(profile.gameInstallation);
-        const customCompatSteamuserDir = SteamUtils.getCoreSteamCompatSteamuserDir(appSettings, profile.steamCustomGameId);
+        const customCompatSteamuserDir = SteamUtils.getSteamProtonPrefixSteamuserDir(appSettings, profile.steamCustomGameId);
 
         if (!gameCompatSteamuserDir || !customCompatSteamuserDir || !fs.existsSync(gameCompatSteamuserDir) || !fs.existsSync(customCompatSteamuserDir)) {
             return [];
@@ -274,7 +274,7 @@ export class ProfileDeploymentManager {
             return [];
         }
 
-        const customCompatRoot = SteamUtils.getCoreSteamCompatRoot(appSettings, profile.steamCustomGameId);
+        const customCompatRoot = SteamUtils.getSteamProtonPrefixRoot(appSettings, profile.steamCustomGameId);
         if (!customCompatRoot) {
             return [];
         }
@@ -484,7 +484,7 @@ export class ProfileDeploymentManager {
             await Promise.all(undeployJobs);
 
             const customSteamCompatRoot = !!profile.steamCustomGameId && !!profile.gameInstallation.steamId?.length
-                ? SteamUtils.getCoreSteamCompatRoot(this.appDataManager.loadSettings(), profile.steamCustomGameId)
+                ? SteamUtils.getSteamProtonPrefixRoot(this.appDataManager.loadSettings(), profile.steamCustomGameId)
                 : undefined;
 
             const extFilesBackupDirs = uniq([

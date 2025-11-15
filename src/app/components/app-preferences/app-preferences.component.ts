@@ -4,7 +4,7 @@ import { NgForm, FormsModule } from "@angular/forms";
 import { MatCheckbox } from "@angular/material/checkbox";
 import { MatIcon } from "@angular/material/icon";
 import { MatTooltip } from "@angular/material/tooltip";
-import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { MatFormField, MatLabel, MatSuffix } from "@angular/material/form-field";
 import { MatSelect } from "@angular/material/select";
 import { MatOption } from "@angular/material/core";
 import { MatInput } from "@angular/material/input";
@@ -30,7 +30,8 @@ import { AppStateBehaviorManager } from "../../services/app-state-behavior-manag
         MatLabel,
         MatSelect,
         MatOption,
-        MatInput
+        MatInput,
+        MatSuffix
     ],
     providers: [
         ComponentState.create(AppPreferencesComponent),

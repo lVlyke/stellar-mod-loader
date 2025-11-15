@@ -28,10 +28,8 @@ export interface AppBaseProfile {
 
 export interface AppProfile extends AppBaseProfile {
     gameInstallation: GameInstallation;
-    steamCustomGameId?: string;
     manageExternalPlugins?: boolean;
     manageSaveFiles?: boolean;
-    manageSteamCompatSymlinks?: boolean;
     modLinkMode?: boolean;
     configLinkMode?: boolean;
     externalFilesCache?: AppProfile.ExternalFiles;
@@ -40,6 +38,11 @@ export interface AppProfile extends AppBaseProfile {
     customGameActions?: GameAction[];
     activeGameAction?: GameAction;
     normalizePathCasing?: boolean;
+
+    /** @deprecated - TODO: Remove this */
+    manageSteamCompatSymlinks?: boolean;
+    /** @deprecated - TODO: Remove this */
+    steamCustomGameId?: string;
 }
 
 export namespace AppProfile {

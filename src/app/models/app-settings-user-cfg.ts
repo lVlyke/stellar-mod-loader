@@ -7,11 +7,13 @@ export interface AppSettingsUserCfg {
     modListColumns?: string[];
     verifyProfileOnStart: boolean;
     checkLatestVersionOnStart?: boolean;
-    steamCompatDataRoot?: string;
+    steamInstallationDir?: string;
     logPanelEnabled?: boolean;
     customGameDb?: GameDatabase;
     lastSteamUserId?: string;
 
     /** @deprecated */
     normalizePathCasing?: boolean;
+    /** @deprecated */
+    steamCompatDataRoot?: string;
 }

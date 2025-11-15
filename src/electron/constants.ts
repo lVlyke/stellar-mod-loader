@@ -58,11 +58,11 @@ export namespace AppConstants {
     export const PROFILE_MODS_STAGING_DIR = "_tmp";
     export const PROFILE_PATH_CASE_NORMALIZATION_TEST_FILE = ".sml_pcn_test";
     export const DEPLOY_EXT_BACKUP_DIR = ".sml.bak";
-    export const STEAM_ROOT_PC = "C:\\Program Files (x86)\\Steam"; // TODO - Look this up
-    export const STEAM_ROOT_LINUX = "~/.local/share/Steam"; // TODO - Look this up
-    export const STEAM_DEFAULT_COMPAT_DATA_ROOT = `${STEAM_ROOT_LINUX}/steamapps/compatdata`;
+    export const STEAM_DEFAULT_INSTALL_DIR_WINDOWS = "C:\\Program Files (x86)\\Steam"; // TODO - Look this up
+    export const STEAM_DEFAULT_INSTALL_DIR_LINUX = "~/.local/share/Steam"; // TODO - Look this up
+    export const STEAM_COMPAT_DATA_ROOT = "steamapps/compatdata";
     export const STEAM_COMPAT_STEAMUSER_DIR = "pfx/drive_c/users/steamuser";
     export const STEAM_USERDATA_DIR = "userdata";
-    export const STEAM_EXECUTABLE_WINDOWS = path.join(STEAM_ROOT_PC, "steam.exe");
-    export const STEAM_EXECUTABLE_LINUX = "steam";
+    export const STEAM_DEFAULT_EXECUTABLE_WINDOWS = path.join(STEAM_DEFAULT_INSTALL_DIR_WINDOWS, "steam.exe");
+    export const STEAM_DEFAULT_EXECUTABLE_LINUX = "steam";
 }

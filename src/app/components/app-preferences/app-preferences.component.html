@@ -23,9 +23,10 @@
 
         <mat-form-field appearance="fill">
             <mat-label>
-                Steam Compat Data Root
+                Steam Installation Directory
             </mat-label>
-            <input matInput type="text" name="steamCompatDataRoot" [(ngModel)]="formModel.steamCompatDataRoot">
+            <input matInput type="text" name="steamInstallationDir" [(ngModel)]="formModel.steamInstallationDir">
+            <mat-icon matSuffix matTooltip="Only required if Steam is installed to a non-standard location">help</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="fill">

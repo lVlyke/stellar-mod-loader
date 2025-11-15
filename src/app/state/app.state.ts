@@ -117,6 +117,10 @@ export class AppState {
             state.checkLatestVersionOnStart = settings.checkLatestVersionOnStart;
         }
 
+        if (settings.steamInstallationDir !== undefined) {
+            state.steamInstallationDir = settings.steamInstallationDir;
+        }
+
         if (settings.steamCompatDataRoot !== undefined) {
             state.steamCompatDataRoot = settings.steamCompatDataRoot;
         }
