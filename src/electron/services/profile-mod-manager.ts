@@ -359,6 +359,11 @@ export class ProfileModManager {
                             fileEntry.mappedFilePath = `${mappedDestPath}${fileEntry.filePath.substring(mappedSrcPath.length)}`;
                             fileEntry.mappedFilePath = fileEntry.mappedFilePath.replace(/^[/\\]+/, "");
                             fileEntry.mappedFilePath = fileEntry.mappedFilePath.replace(/^[Dd]ata[\\/]/, "");
+
+                            // If `mappedFilePath` is empty, put the file in the base mod directory
+                            if (fileEntry.mappedFilePath.length === 0) {
+                                fileEntry.mappedFilePath = path.basename(fileEntry.filePath);
+                            }
                         }
                     }
                 } else if (modSubdirRoots.length > 0) {
