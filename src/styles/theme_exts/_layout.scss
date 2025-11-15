@@ -3,6 +3,6 @@
 @mixin declare($primary, $accent, $warn, $is-dark) {
 
     [app-hidden]:not([app-hidden="false"]), .hidden {
-        display: none;
+        display: none !important;
     }
 }
