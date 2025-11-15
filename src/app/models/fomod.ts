@@ -217,7 +217,7 @@ export namespace Fomod {
         fomod: {
             Name?: [string];
             Author?: string[];
-            Version?: [string] | { _: string };
+            Version?: [string | { _: string }];
             Description?: string[];
             Website?: [string];
             Id?: [string];

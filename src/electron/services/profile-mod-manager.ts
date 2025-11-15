@@ -9,11 +9,13 @@ import type Electron from "electron";
 import * as log from "electron-log/main";
 import * as xml2js from "xml2js";
 import * as Seven from "node-7z";
-import { default as detectFileEncodingAndLanguage } from "detect-file-encoding-and-language";
 
 const path = require("path") as typeof import("path");
 const fs = require("fs-extra") as typeof import("fs-extra");
 const { dialog } = require("electron") as typeof Electron;
+const detectFileEncodingAndLanguage = /** @type {typeof import("detect-file-encoding-and-language").default} */ (
+    require("detect-file-encoding-and-language/src/index-node.js")
+);
 
 import type { ElectronApp } from "../app";
 import type { AppDataManager } from "./app-data-manager";
@@ -226,12 +228,11 @@ export class ProfileModManager {
                 try {
                     let moduleInfo: ModInstaller.ModuleInfo | undefined = undefined;
                     if (fomodModuleInfo) {
+                        const versionEl = fomodModuleInfo.fomod.Version?.[0];
                         moduleInfo = {
                             name: fomodModuleInfo.fomod.Name?.[0],
                             author: fomodModuleInfo.fomod.Author ?? [],
-                            version: Array.isArray(fomodModuleInfo.fomod.Version)
-                                ? fomodModuleInfo.fomod.Version[0]
-                                : fomodModuleInfo.fomod.Version?._,
+                            version: typeof versionEl === "string" ? versionEl : versionEl?._,
                             description: fomodModuleInfo.fomod.Description?.[0],
                             website: fomodModuleInfo.fomod.Website?.[0],
                             id: fomodModuleInfo.fomod.Id?.[0],
