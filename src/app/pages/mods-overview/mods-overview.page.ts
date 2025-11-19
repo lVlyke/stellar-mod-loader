@@ -46,6 +46,7 @@ import { AppSendElectronMsgPipe } from "../../pipes/send-electron-msg.pipe";
 import { AppIsFullProfilePipe } from "../../pipes/is-full-profile.pipe";
 import { AppProfileBackupListComponent } from "../../components/profile-backup-list";
 import { AppStateBehaviorManager } from "../../services/app-state-behavior-manager";
+import { AppExternalUrlComponent } from "../../components/external-url";
 
 @Component({
     selector: "app-mods-overview-page",
@@ -91,6 +92,7 @@ import { AppStateBehaviorManager } from "../../services/app-state-behavior-manag
         AppProfileConfigEditorComponent,
         AppProfileSaveListComponent,
         AppProfileBackupListComponent,
+        AppExternalUrlComponent,
         AppSendElectronMsgPipe,
         AppIsFullProfilePipe
     ],

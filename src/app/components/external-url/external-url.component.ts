@@ -55,5 +55,5 @@ export class AppExternalUrlComponent extends BaseComponent {
 
 export namespace AppExternalUrlComponent {
 
-    export type Variant = "default" | "stroked-button" | "icon";
+    export type Variant = "default" | "stroked-button" | "icon" | "link";
 }

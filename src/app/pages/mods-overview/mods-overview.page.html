@@ -1,6 +1,6 @@
 
 <!-- Profile Controls-->
- @if (!!activeProfile) {
+@if (!!activeProfile) {
     <div id="profile-controls">
         <mat-card id="profile-mod-list" class="control-card mat-elevation-z3">
             <div id="profile-mgmt-controls">
@@ -315,6 +315,20 @@
                     </ng-template>
                 </mat-expansion-panel>
             }
+        </div>
+    </div>
+} @else {
+    <div id="onboard-stub">
+        <div id="onboard-main">
+            <h1>Welcome to Stellar</h1>
+
+            <div>Get started by 
+            <app-external-url variant="link"
+                              color="accent"
+                              (click)="profileManager.showProfileWizard()">creating a new profile</app-external-url> or read the
+            <app-external-url variant="link"
+                              color="accent"
+                              resource="readme_online">setup guide</app-external-url>.</div>
         </div>
     </div>
 }

@@ -1,3 +1,9 @@
 :host {
     display: contents;
+
+    .variant-link {
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
 }

@@ -23,6 +23,14 @@
             <ng-container *ngTemplateOutlet="content" />
         </a>
     }
+    @case ("link") {
+        <a target="_blank"
+            class="variant-link"
+            [attr.matColor]="color ?? null"
+            [attr.href]="href ?? null">
+            <ng-container *ngTemplateOutlet="content" />
+        </a>
+    }
 }
 
 <ng-template #content>
