@@ -120,6 +120,11 @@ export namespace DialogManager {
     export const CANCEL_ACTION_ACCENT = { ...CANCEL_ACTION, accent: true };
     export const CANCEL_ACTION_WARN = { ...CANCEL_ACTION, warn: true };
 
+    export const CLOSE_ACTION = { label: "Close" };
+    export const CLOSE_ACTION_PRIMARY = { ...CLOSE_ACTION, primary: true };
+    export const CLOSE_ACTION_ACCENT = { ...CLOSE_ACTION, accent: true };
+    export const CLOSE_ACTION_WARN = { ...CLOSE_ACTION, warn: true };
+
     export const SAVE_ACTION = { label: "Save" };
     export const SAVE_ACTION_PRIMARY = { ...SAVE_ACTION, primary: true };
 
@@ -157,7 +162,11 @@ export namespace DialogManager {
         CANCEL_ACTION,
         CANCEL_ACTION_PRIMARY,
         CANCEL_ACTION_ACCENT,
-        CANCEL_ACTION_WARN
+        CANCEL_ACTION_WARN,
+        CLOSE_ACTION,
+        CLOSE_ACTION_PRIMARY,
+        CLOSE_ACTION_ACCENT,
+        CLOSE_ACTION_WARN
     ];
 
     export function positive(actions: DialogAction[]): DialogAction[] {

@@ -1,14 +1,22 @@
 <mat-card>
      <mat-card-header>
-        <mat-card-title>Update Available</mat-card-title>
+        <mat-card-title>App Update Available</mat-card-title>
     </mat-card-header>
     
     <mat-card-content>
-        A new version of {{dialogConfig.appInfo.appShortName}} ({{dialogConfig.appLatestVersion}}) is available.
+        <span>A new version of {{dialogConfig.appInfo.appShortName}} ({{dialogConfig.appLatestVersion}}) is available.</span>
 
-        <app-external-url variant="default" color="accent" resource="latest_release">
-            Download latest version
-        </app-external-url>
+        <div class="download-link">
+            <app-external-url variant="stroked-button" color="accent" resource="latest_release">
+                Download latest version
+            </app-external-url>
+        </div>
+        
+        <mat-checkbox class="update-check-prefs"
+                      [checked]="(appData$ | async)?.checkLatestVersionOnStart ?? false"
+                      (change)="updateCheckLatestVersionOnStart($event.checked)">
+            Check for app updates on startup
+        </mat-checkbox>
     </mat-card-content>
 
     <mat-card-actions>

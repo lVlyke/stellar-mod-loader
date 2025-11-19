@@ -7,10 +7,19 @@
     mat-card-content {
         display: flex;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
         font-size: 1.2rem;
         line-height: 1.5rem;
         padding: 1.5rem;
         flex-grow: 1;
+
+        .download-link {
+            margin: 1rem 0;
+        }
+
+        .update-check-prefs {
+            width: 100%;
+        }
     }
 }

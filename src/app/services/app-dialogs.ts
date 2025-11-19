@@ -60,7 +60,7 @@ export class AppDialogs {
     public showAppVersionUpdateNotice(appInfo: AppInfo, appLatestVersion: string): Observable<DialogAction> {
         return this.dialogManager.create<AppVersionUpdateNoticeComponent, AppVersionUpdateNoticeComponent.Config>(
             AppVersionUpdateNoticeComponent, {
-                actions: [DialogManager.OK_ACTION_PRIMARY],
+                actions: [DialogManager.CLOSE_ACTION_PRIMARY],
                 appInfo,
                 appLatestVersion,
                 maxWidth: "35%",
