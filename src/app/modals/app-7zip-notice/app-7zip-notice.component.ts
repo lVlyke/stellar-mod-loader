@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Output } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
+import { MatCard, MatCardActions, MatCardContent } from "@angular/material/card";
 import { ComponentState } from "@lithiumjs/angular";
 import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
@@ -11,7 +11,9 @@ import { AppExternalUrlComponent } from "../../components/external-url";
     styleUrls: ["./app-7zip-notice.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
-        MatCardModule,
+        MatCard,
+        MatCardContent,
+        MatCardActions,
 
         AppDialogActionsComponent,
         AppExternalUrlComponent

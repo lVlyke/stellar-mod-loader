@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Output } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
 import { Observable } from "rxjs";
 import { AsyncState, ComponentState } from "@lithiumjs/angular";
 import { DIALOG_CONFIG_TOKEN, DialogAction, DialogComponent, DialogConfig } from "../../services/dialog-manager.types";
@@ -14,8 +13,11 @@ import { BaseComponent } from "../../core/base-component";
     styleUrls: ["./symlink-warning-dialog.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
-        MatCardModule,
-        MatButtonModule,
+        MatCard,
+        MatCardHeader,
+        MatCardTitle,
+        MatCardContent,
+        MatCardActions,
         
         AppDialogActionsComponent
     ],

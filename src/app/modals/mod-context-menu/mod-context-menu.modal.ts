@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Inject } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
+import { MatCard, MatCardContent } from "@angular/material/card";
 import { BasePage } from "../../core/base-page";
 import { ComponentState, DeclareState } from "@lithiumjs/angular";
 import { OverlayRefSymbol, OverlayHelpersRef } from "../../services/overlay-helpers";
@@ -11,7 +11,8 @@ import { AppModActionsComponent } from "../../components/mod-actions";
     styleUrls: ["./mod-context-menu.modal.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
-        MatCardModule,
+        MatCard,
+        MatCardContent,
 
         AppModActionsComponent
     ],

@@ -2,9 +2,9 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Inject, ViewChil
 import { ComponentState } from "@lithiumjs/angular";
 import { AsyncPipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
-import { MatDividerModule } from "@angular/material/divider";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
+import { MatButton } from "@angular/material/button";
+import { MatDivider } from "@angular/material/divider";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Observable, of } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
@@ -21,11 +21,16 @@ import { DialogManager } from "../../services/dialog-manager";
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         AsyncPipe,
+        
         FormsModule,
 
-        MatCardModule,
-        MatButtonModule,
-        MatDividerModule,
+        MatCard,
+        MatCardHeader,
+        MatCardTitle,
+        MatCardContent,
+        MatCardActions,
+        MatButton,
+        MatDivider,
 
         AppGameManagerComponent
     ],

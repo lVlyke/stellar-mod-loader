@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, InjectionToken } from "@angular/core";
 import { DatePipe, KeyValuePipe } from "@angular/common";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle } from "@angular/material/card";
+import { MatButton } from "@angular/material/button";
 import { ComponentState } from "@lithiumjs/angular";
 import { BaseComponent } from "../../core/base-component";
 import { AppInfo } from "../../models/app-info";
@@ -19,8 +19,13 @@ export const APP_INFO_TOKEN = new InjectionToken<AppInfo>("APP_INFO_TOKEN");
         DatePipe,
         KeyValuePipe,
 
-        MatCardModule,
-        MatButtonModule,
+        MatCard,
+        MatCardHeader,
+        MatCardTitle,
+        MatCardContent,
+        MatCardActions,
+        MatCardSubtitle,
+        MatButton,
 
         AppExternalUrlComponent
     ],

@@ -8,9 +8,9 @@ import {
 } from "@angular/core";
 import { ComponentState } from "@lithiumjs/angular";
 import { FormsModule } from "@angular/forms";
-import { MatCardModule } from "@angular/material/card";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
+import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { MatInput } from "@angular/material/input";
 import { BaseComponent } from "../../core/base-component";
 import { DialogAction, DialogComponent, DIALOG_CONFIG_TOKEN, DialogConfig } from "../../services/dialog-manager.types";
 import { AppDialogActionsComponent } from "../../components/dialog-actions";
@@ -29,9 +29,14 @@ export namespace AppModRenameDialog {
     imports: [
         FormsModule,
 
-        MatCardModule,
-        MatFormFieldModule,
-        MatInputModule,
+        MatCard,
+        MatCardHeader,
+        MatCardTitle,
+        MatCardContent,
+        MatCardActions,
+        MatFormField,
+        MatLabel,
+        MatInput,
 
         AppDialogActionsComponent
     ],

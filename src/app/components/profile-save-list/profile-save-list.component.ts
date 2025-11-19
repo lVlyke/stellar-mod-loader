@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input } from "@angular/core";
 import { DatePipe } from "@angular/common";
-import { MatCardModule } from "@angular/material/card";
-import { MatIconModule } from "@angular/material/icon";
+import { MatCard, MatCardFooter, MatCardTitle } from "@angular/material/card";
+import { MatIcon } from "@angular/material/icon";
 import { Observable } from "rxjs";
 import { switchMap, tap } from "rxjs/operators";
 import { ComponentState, ComponentStateRef } from "@lithiumjs/angular";
@@ -21,8 +21,10 @@ import { filterDefined, filterTrue, runOnce } from "../../core/operators";
     imports: [
         DatePipe,
 
-        MatCardModule,
-        MatIconModule,
+        MatCard,
+        MatCardTitle,
+        MatCardFooter,
+        MatIcon,
 
         NgxVirtualScrollModule
     ],

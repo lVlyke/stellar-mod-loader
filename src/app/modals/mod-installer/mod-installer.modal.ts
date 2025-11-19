@@ -2,10 +2,10 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Inject, ViewChil
 import { AfterViewInit, ComponentState, DeclareState, ManagedSubject } from "@lithiumjs/angular";
 import { AsyncPipe } from "@angular/common";
 import { FormsModule, NgForm } from "@angular/forms";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
-import { MatDividerModule } from "@angular/material/divider";
-import { MatIconModule } from "@angular/material/icon";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardMdImage, MatCardSubtitle, MatCardTitle } from "@angular/material/card";
+import { MatButton } from "@angular/material/button";
+import { MatDivider } from "@angular/material/divider";
+import { MatIcon } from "@angular/material/icon";
 import { EMPTY, Observable, of } from "rxjs";
 import { filter, switchMap } from "rxjs/operators";
 import { BaseComponent } from "../../core/base-component";
@@ -23,12 +23,19 @@ import { AppModImportRequestImagePipe } from "../../pipes";
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         AsyncPipe,
+
         FormsModule,
 
-        MatCardModule,
-        MatButtonModule,
-        MatDividerModule,
-        MatIconModule,
+        MatCard,
+        MatCardHeader,
+        MatCardTitle,
+        MatCardSubtitle,
+        MatCardContent,
+        MatCardActions,
+        MatCardMdImage,
+        MatButton,
+        MatDivider,
+        MatIcon,
 
         AppModInstallerComponent,
         AppExternalUrlComponent,

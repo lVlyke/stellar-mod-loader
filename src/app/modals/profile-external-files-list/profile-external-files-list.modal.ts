@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, InjectionToken } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { MatButtonModule } from "@angular/material/button";
+import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardTitle } from "@angular/material/card";
+import { MatButton } from "@angular/material/button";
 import { ComponentState } from "@lithiumjs/angular";
 import { BaseComponent } from "../../core/base-component";
 import { OverlayHelpersRef, OverlayRefSymbol } from "../../services/overlay-helpers";
@@ -13,8 +13,12 @@ export const FILE_LIST_TOKEN = new InjectionToken<string[]>("FILE_LIST");
     styleUrls: ["./profile-external-files-list.modal.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
-        MatCardModule,
-        MatButtonModule
+        MatCard,
+        MatCardHeader,
+        MatCardTitle,
+        MatCardContent,
+        MatCardActions,
+        MatButton
     ],
     providers: [ComponentState.create(AppProfileExternalFilesListModal)]
 })
