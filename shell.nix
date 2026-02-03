@@ -3,47 +3,7 @@ let
 
   buildInputs = with pkgs; [
     # Node tooling
-    nodejs_20
-
-    # Python tooling
-    # python3
-
-    # Native build tools (used by some native Node/Electron modules)
-    pkg-config
-    openssl
-    gnumake
-    cmake
-    gcc
-    binutils
-
-    # X/GL libraries required for Electron and native modules
-    libxkbcommon
-    libGL
-    xorg.libX11
-    xorg.libxcb
-    xorg.libXcursor
-    xorg.libXi
-    xorg.libXrandr
-    xorg.libXtst
-    xorg.libXt
-    xorg.libXinerama
-    xorg.libXfixes
-    xorg.libXdamage
-    xorg.libXcomposite
-    xorg.libXScrnSaver
-    xorg.libXrender
-
-    nss
-    nspr
-    atk
-    gtk3
-    glib
-    pango
-    cairo
-    gdk-pixbuf
-    dbus
-    cups
-    alsa-lib
+    nodejs_24
 
     p7zip
     unar # For unpacking RAR and other archive formats
@@ -55,10 +15,6 @@ pkgs.mkShell {
   shellHook = ''
     echo "Node: $(node --version)"
     echo "npm:  $(npm --version)"
-    # echo "Python: $(python --version)"
-
-    # Ensure node-gyp and other native builds use the same Python
-    # export npm_config_python=$(which python)
 
     # When building native Electron modules, use Electron headers matching our electron version
     export npm_config_runtime=electron
