@@ -90,6 +90,32 @@ export class AppDataManager {
             schemaVersion: AppConstants.GAME_SCHEMA_VERSION
         }, { spaces: 4 });
     }
+    
+    public isValidGameDetails(gameDetails: object): gameDetails is GameDetails {
+        const keysToCheck: Array<keyof GameDetails> = [
+            "title",
+            "bkgColor",
+            "fgColor",
+            "installations",
+            "pluginFormats",
+            "saveFormats",
+            "requireExternalPlugins",
+            "gameBinary"
+        ];
+
+        return keysToCheck.every(curKey => curKey in gameDetails);
+    }
+
+    public getActiveProfileName(): string | undefined {
+        const appSettings = this.loadSettings();
+        if (!appSettings.activeProfile) {
+            return undefined;
+        }
+
+        return (typeof appSettings.activeProfile === "string")
+            ? appSettings.activeProfile
+            : appSettings.activeProfile.name;
+    }
 
     public getAppAboutInfo(): AppMessageData<"app:showAboutInfo"> {
         let depsLicenseText = "";

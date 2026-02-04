@@ -234,10 +234,14 @@ export class RendererEventHandler {
             
             const gamePath = pickedFile?.filePaths[0];
             if (gamePath) {
-                return [
-                    path.parse(gamePath).name,
-                    fs.readJSONSync(gamePath)
-                ];
+                const gameName = path.parse(gamePath).name;
+                const gameDetails: object = fs.readJSONSync(gamePath);
+
+                if (!this.appDataManager.isValidGameDetails(gameDetails)) {
+                    throw new Error("Invalid game format.");
+                }
+
+                return [gameName, gameDetails];
             }
 
             return undefined;

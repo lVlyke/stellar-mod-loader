@@ -22,6 +22,7 @@ import { MatActionList, MatListItem } from "@angular/material/list";
 import { MatLine } from "@angular/material/core";
 import { EMPTY, Observable, combineLatest, forkJoin, of } from "rxjs";
 import {
+    catchError,
     defaultIfEmpty,
     delay,
     distinctUntilChanged,
@@ -282,7 +283,11 @@ export class AppGameManagerComponent extends BaseComponent {
             })().pipe(
                 filterTrue(),
                 tap(() => this.addCustomGame(gameId, gameDetails))
-            ))
+            )),
+            catchError((_err) => {
+                this.appDialogs.showError("Failed to import game.");
+                return EMPTY;
+            })
         ));
     }
 
