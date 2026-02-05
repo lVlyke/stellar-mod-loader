@@ -40,27 +40,25 @@ export namespace SteamUtils {
     const APP_SHORTCUT_MIN_ID = 2000000000;
     const APP_SHORTCUT_ID_RANGE = 2000000000;
 
-    export function getDefaultSteamInstallationDir(): string {
+    export function getDefaultSteamInstallationDirs(): string[] {
         switch (process.platform) {
-            case "linux": return AppConstants.STEAM_DEFAULT_INSTALL_DIR_LINUX;
-            case "win32": return AppConstants.STEAM_DEFAULT_INSTALL_DIR_WINDOWS;
+            case "linux": return AppConstants.STEAM_DEFAULT_INSTALL_DIRS_LINUX;
+            case "win32": return AppConstants.STEAM_DEFAULT_INSTALL_DIRS_WINDOWS;
             default: throw new Error("getSteamBinaryPath: Unknown platform");
         }
     }
 
-    export function getSteamBinaryPath(steamInstallationDir?: string): string {
-        if (steamInstallationDir) {
-            switch (process.platform) {
-                case "linux": return path.join(steamInstallationDir, "steam.sh");
-                case "win32": return path.join(steamInstallationDir, "steam.exe");
-                default: throw new Error("getSteamBinaryPath: Unknown platform");
-            }
-        } else {
-            switch (process.platform) {
-                case "linux": return AppConstants.STEAM_DEFAULT_EXECUTABLE_LINUX;
-                case "win32": return AppConstants.STEAM_DEFAULT_EXECUTABLE_WINDOWS;
-                default: throw new Error("getSteamBinaryPath: Unknown platform");
-            }
+    export function findSteamInstallationDir(): string | undefined {
+        return getDefaultSteamInstallationDirs().find((defaultInstallationDir) => {
+            return fs.existsSync(defaultInstallationDir);
+        });
+    }
+
+    export function getSteamBinaryPath(steamInstallationDir: string): string {
+        switch (process.platform) {
+            case "linux": return path.join(steamInstallationDir, "steam.sh");
+            case "win32": return path.join(steamInstallationDir, "steam.exe");
+            default: throw new Error("getSteamBinaryPath: Unknown platform");
         }
     }
 
@@ -127,8 +125,14 @@ export namespace SteamUtils {
     }
 
     export function getSteamProtonPrefixRoot(appSettings: AppSettingsUserCfg, steamId: string): string | undefined {
+        const steamInstallationDir = appSettings.steamInstallationDir || findSteamInstallationDir();
+
+        if (!steamInstallationDir) {
+            return undefined;
+        }
+
         const compatDataRoot = appSettings.steamCompatDataRoot || path.join(
-            appSettings.steamInstallationDir || getDefaultSteamInstallationDir(),
+            steamInstallationDir,
             AppConstants.STEAM_COMPAT_DATA_ROOT
         );
         
@@ -190,7 +194,11 @@ export namespace SteamUtils {
     }
 
     export function getSteamUserdataDir(appSettings: AppSettingsUserCfg): string | undefined {
-        const steamInstallationDir = appSettings.steamInstallationDir || getDefaultSteamInstallationDir();
+        const steamInstallationDir = appSettings.steamInstallationDir || findSteamInstallationDir();
+
+        if (!steamInstallationDir) {
+            return undefined;
+        }
 
         if (process.platform === "linux") {
             return PathUtils.expandPath(path.join(steamInstallationDir, AppConstants.STEAM_USERDATA_DIR));

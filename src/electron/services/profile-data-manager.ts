@@ -814,14 +814,16 @@ export class ProfileDataManager {
         if (path.resolve(profile.gameInstallation.modDir) === gameRootDir) {
             modsToSearch.push(...profile.mods);
         }
-
+        
         // Find available game binaries and add them as actions
         return gameDetails?.gameBinary.slice().reverse().reduce((gameActions, gameBinary) => {
+            gameBinary = path.normalize(gameBinary);
+
             let binaryExists = !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
                 return externalFile.endsWith(gameBinary);
             });
 
-            binaryExists ||= profile.rootMods.some(([modName, modRef]) => {
+            binaryExists ||= modsToSearch.some(([modName, modRef]) => {
                 if (!modRef.enabled) {
                     return false;
                 }
@@ -1005,8 +1007,14 @@ export class ProfileDataManager {
                 gameActionCmd = template(gameAction.actionData)({ ...profile, gameDetails });
             } break;
             case "steam_app": {
+                const steamInstallationDir = appData.steamInstallationDir || SteamUtils.findSteamInstallationDir();
+
+                if (!steamInstallationDir) {
+                    throw new Error("Could not find Steam installation directory.");
+                }
+
                 // Launch the game using the given Steam App ID
-                gameActionCmd = `"${SteamUtils.getSteamBinaryPath(appData.steamInstallationDir)}" steam://launch/${gameAction.actionData}`;
+                gameActionCmd = `"${SteamUtils.getSteamBinaryPath(steamInstallationDir)}" steam://launch/${gameAction.actionData}`;
             } break;
             default: throw new Error("Unknown GameActionType.");
         }
