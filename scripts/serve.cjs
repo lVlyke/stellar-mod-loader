@@ -9,6 +9,8 @@ const BUILD_DATE_FILE = `${BUILD_DIR}/lastbuild.txt`;
 const RELEASE_MODE = process.argv.includes("--release");
 const DISABLE_SANDBOX = process.argv.includes("--no-sandbox");
 
+const IS_WSL = !!process.env["WSLENV"];
+
 function buildProject(projectName) {
     return spawn("npx", [
         "ng",
@@ -29,13 +31,13 @@ function startApp(buildTasks) {
         "electron",
         path.join(BUILD_DIR, "electron", "main.js"),
         ...DISABLE_SANDBOX ? ["--no-sandbox"] : []
-    ]);
+    ], { stdio: IS_WSL ? "inherit" : undefined });
 
-    electronProcess.stdout.on("data", (data) => {
+    electronProcess.stdout?.on("data", (data) => {
         console.log(data.toString());
     });
 
-    electronProcess.stderr.on("data", (data) => {
+    electronProcess.stderr?.on("data", (data) => {
         console.error(data.toString());
     });
 
@@ -62,17 +64,21 @@ function updateAppDeployment() {
         return setTimeout(() => updateAppDeployment(), 1000);
     }
 
-    // Copy app assets
-    execSync(
-        "node ./scripts/copy-assets.cjs",
-        { stdio: "inherit" }
-    );
+    try {
+        // Copy app assets
+        execSync(
+            "node ./scripts/copy-assets.cjs",
+            { stdio: "inherit" }
+        );
+    } catch (err) {
+        console.error("Failed to copy assets: ", err);
+    }
 
     // Update the build date file (used for hot reloading)
     fs.writeJsonSync(BUILD_DATE_FILE, { date: new Date() });
 }
 
-(function main() {
+function main() {
     const buildElectronTask = buildProject("electron");
     const buildBrowserTask = buildProject("browser");
 
@@ -122,4 +128,10 @@ function updateAppDeployment() {
     
     buildElectronTask.stderr.on("data", (data) => console.error(data.toString()));
     buildBrowserTask.stderr.on("data", (data) => console.error(data.toString()));
-})();
+}
+
+try {
+    main();
+} catch (err) {
+    console.error("Uncaught error: ", err);
+}
