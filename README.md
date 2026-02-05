@@ -575,3 +575,11 @@ If you have a suggestion for a new feature or a new game to support, feel free t
 To build and run the app for testing and development, ensure you have Node and NPM installed on your machine and run `npm install` and `npm run start`.
 
 To build a release, run `npm run app:build-release` for the current platform or `npm run app:build-release:all` for all supported platforms.
+
+## Setting up dev environment with nix
+
+Developing with a conventional node installation is fine. Optionally you can let nix handle the dev environment for you. nix allows to keep the environment reproducible (and makes developing on NixOS possible). See (discussion in PR #23)[https://github.com/lVlyke/stellar-mod-loader/pull/23]. This is only tested on Linux. To use nix dev shells you need to install and setup:
+- [The nix package manager](https://nixos.org/download/)
+- [direnv](https://direnv.net/), optimally with [a shell hook](https://direnv.net/docs/hook.html)
+- [nix-direnv](https://github.com/nix-community/nix-direnv)
+- run `direnv allow` to allowlist the shell.nix.

@@ -28,7 +28,7 @@ function startApp(buildTasks) {
     console.log("Starting app...");
 
     const electronProcess = spawn("npx", [
-        "electron",
+        process.env.ELECTRON_BINARY ?? "electron",
         path.join(BUILD_DIR, "electron", "main.js"),
         ...DISABLE_SANDBOX ? ["--no-sandbox"] : []
     ], { stdio: IS_WSL ? "inherit" : undefined });
