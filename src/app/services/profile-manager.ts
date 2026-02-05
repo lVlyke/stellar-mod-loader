@@ -267,7 +267,10 @@ export class ProfileManager implements OnDestroy {
             filter(([profile, activeGameAction]) => !!profile.defaultGameActions && (!activeGameAction || !profile.customGameActions?.find(action => {
                 return LangUtils.isEqual(activeGameAction, action);
             }))),
-            switchMap(([profile]) => this.setActiveGameAction(profile.defaultGameActions[0] ?? this.LAUNCH_GAME_ACTION))
+            switchMap(([profile]) => {
+                const bestDefaultAction = ProfileUtils.findBestDefaultGameAction(profile);
+                return this.setActiveGameAction(bestDefaultAction ?? this.LAUNCH_GAME_ACTION);
+            })
         ).subscribe();
 
         // Handle automatic mod redeployment when the active profile is deployed

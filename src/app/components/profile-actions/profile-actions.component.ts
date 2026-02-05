@@ -27,6 +27,7 @@ import { AppSendElectronMsgPipe } from "../../pipes/send-electron-msg.pipe";
 import { AppGameConfigFilesFoundPipe } from "../../pipes/game-config-files-found.pipe";
 import { GameInstallation } from "../../models/game-installation";
 import { AppGameActionDisplayNamePipe } from "../../pipes/game-action-display-name.pipe";
+import { ProfileUtils } from "../../util/profile-utils";
 
 @Component({
     selector: "app-profile-actions",
@@ -208,7 +209,6 @@ export class AppProfileActionsComponent extends BaseComponent {
     }
 
     protected isDefaultActionVisible(action: GameAction): boolean {
-        // Hide default actions with same name as custom actions
-        return !this.profile.customGameActions?.some(customAction => customAction.name === action.name);
+        return ProfileUtils.isRelevantDefaultGameAction(this.profile, action);
     }
 }
