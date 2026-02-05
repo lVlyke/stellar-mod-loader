@@ -522,11 +522,11 @@ export class ProfileDataManager {
         fs.mkdirpSync(configDir);
 
         // Restore all config files in the backup
-        fs.readdirSync(backupPath).forEach((backupConfigFile) => {
-            if (gameConfigFiles.includes(backupConfigFile)) {
+        fs.readdirSync(backupPath, { recursive: true }).forEach((backupConfigFile) => {
+            if (gameConfigFiles.includes(backupConfigFile.toString())) {
                 fs.copySync(
-                    path.join(backupPath, backupConfigFile),
-                    path.join(configDir, backupConfigFile),
+                    path.join(backupPath, backupConfigFile.toString()),
+                    path.join(configDir, backupConfigFile.toString()),
                     { overwrite: true }
                 );
             }
@@ -579,19 +579,34 @@ export class ProfileDataManager {
 
     public createProfileConfigBackup(profile: AppProfile, backupName?: string): void {
         backupName = PathUtils.asFileName(backupName || PathUtils.currentDateTimeAsFileName());
+
+        function doBackup(backupDir: string, configDir: string): void {
+            fs.mkdirpSync(backupDir);
+
+            if (fs.existsSync(configDir)) {
+                fs.readdirSync(configDir).forEach((configFileName) => {
+                    fs.copyFileSync(
+                        path.join(configDir, configFileName),
+                        path.join(backupDir, configFileName)
+                    );
+                });
+            }
+        }
+
         const backupsDir = this.getProfileConfigBackupsDir(profile);
         const backupDir = path.join(backupsDir, backupName);
         const profileConfigDir = this.getProfileConfigDir(profile);
 
-        fs.mkdirpSync(backupDir);
+        // Back up profile's config file
+        doBackup(backupDir, profileConfigDir);
 
-        if (fs.existsSync(profileConfigDir)) {
-            fs.readdirSync(profileConfigDir).forEach((configFileName) => {
-                fs.copyFileSync(
-                    path.join(profileConfigDir, configFileName),
-                    path.join(backupDir, configFileName)
-                );
-            });
+        // Back up config from base profile to separate subdirectory
+        // Note: These are strictly archival and are not applied on import of backup
+        if (profile.baseProfile) {
+            const baseBackupDir = path.join(backupDir, PathUtils.asFileName(profile.baseProfile.name));
+            const baseProfileConfigDir = this.getProfileConfigDir(profile.baseProfile);
+
+            doBackup(baseBackupDir, baseProfileConfigDir);
         }
     }
 
