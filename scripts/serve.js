@@ -26,7 +26,7 @@ function startApp(buildTask) {
     console.log("Starting Electron app");
 
     electronProcess = spawn("npx", [
-        "electron",
+        process.env.ELECTRON_BINARY ?? 'electron',
         BUILD_DIR,
         ...DISABLE_SANDBOX ? ["--no-sandbox"] : []
     ]);
