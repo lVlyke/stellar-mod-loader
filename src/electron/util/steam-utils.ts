@@ -41,11 +41,13 @@ export namespace SteamUtils {
     const APP_SHORTCUT_ID_RANGE = 2000000000;
 
     export function getDefaultSteamInstallationDirs(): string[] {
-        switch (process.platform) {
-            case "linux": return AppConstants.STEAM_DEFAULT_INSTALL_DIRS_LINUX;
-            case "win32": return AppConstants.STEAM_DEFAULT_INSTALL_DIRS_WINDOWS;
-            default: throw new Error("getSteamBinaryPath: Unknown platform");
-        }
+        return (() => {
+            switch (process.platform) {
+                case "linux": return AppConstants.STEAM_DEFAULT_INSTALL_DIRS_LINUX;
+                case "win32": return AppConstants.STEAM_DEFAULT_INSTALL_DIRS_WINDOWS;
+                default: return [];
+            }
+        })().map((defaultInstallationDir) => PathUtils.expandPath(defaultInstallationDir));
     }
 
     export function findSteamInstallationDir(): string | undefined {

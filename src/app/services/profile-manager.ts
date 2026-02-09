@@ -1073,14 +1073,16 @@ export class ProfileManager implements OnDestroy {
                     const curMod = this.findMod(activeProfile!, root, modCurName);
                     const modHasError = curMod ? this.modHasError(curMod) : false;
 
-                    return concat([
-                        ElectronUtils.invoke("profile:renameMod", { profile: activeProfile!, modCurName, modNewName }),
-                        this.store.dispatch(new ActiveProfileActions.RenameMod(root, modCurName, modNewName))
-                    ]).pipe(
-                        toArray(),
-                        filter(() => modHasError),
-                        // Re-verify profile if mod had a verification error
-                        switchMap(() => this.verifyActiveProfile({ showSuccessMessage: false }))
+                    return ElectronUtils.invoke("profile:renameMod", { profile: activeProfile!, modCurName, modNewName }).pipe(
+                        switchMap(() => this.store.dispatch(new ActiveProfileActions.RenameMod(root, modCurName, modNewName))),
+                        switchMap(() => {
+                            if (modHasError) {
+                                // Re-verify profile if mod had a verification error
+                                return this.verifyActiveProfile({ showSuccessMessage: false });
+                            } else {
+                                return of(undefined);
+                            }
+                        })
                     );
                 }
             })

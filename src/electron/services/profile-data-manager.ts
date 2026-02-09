@@ -863,7 +863,7 @@ export class ProfileDataManager {
                     gameActions.push({
                         name: `Start ${path.parse(gameBinary).name}`,
                         actionType: "script",
-                        actionData: path.join(gameRootDir, gameBinary),
+                        actionData: `"${path.join(gameRootDir, gameBinary)}"`,
                         requiresSteam: needsProton
                     });
                 }
