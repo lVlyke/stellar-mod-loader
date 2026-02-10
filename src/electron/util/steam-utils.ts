@@ -113,7 +113,13 @@ export namespace SteamUtils {
             return undefined;
         }
 
-        return path.join(steamDir, "compatdata", gameSteamId);
+        const result = path.join(steamDir, "compatdata", gameSteamId);
+
+        if (!fs.existsSync(result)) {
+            return undefined;
+        }
+
+        return result;
     }
 
     export function getSteamCompatSteamuserDir(gameInstallation: GameInstallation): string | undefined {
