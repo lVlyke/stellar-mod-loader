@@ -5,15 +5,20 @@
     
     <mat-card-content>
         <form>
+            @let hasCustomProtonPrefix = !!dialogConfig.profile.protonPrefixDir;
+            
             <mat-form-field>
                 <mat-label>Name</mat-label>
                 <input matInput
                     type="text"
                     name="name"
                     [required]="true"
-                    [readonly]="true"
-                    [disabled]="true"
                     [ngModel]="dialogConfig.gameAction.name">
+                <mat-icon matSuffix
+                          class="tooltip-icon"
+                          matTooltip="The title of the shortcut in your Steam library.">
+                    help
+                </mat-icon>
             </mat-form-field>
 
             @let userIdHelpText = "Your Steam User ID. You can find this on the Account Details page on Steam (below the account name).";
@@ -52,7 +57,7 @@
                           [ngModel]="!!dialogConfig.useGameCompatRootDefault">
                 @let gameTitle = dialogConfig.profile.gameId | appGameTitle:gameDb;
 
-                Use {{gameTitle}}'s Proton Prefix
+                Use {{ hasCustomProtonPrefix ? "this profile" : gameTitle }}'s Proton Prefix
                 <mat-icon class="tooltip-icon" matTooltip="Set STEAM_COMPAT_DATA_PATH to the game's compat data path (Proton only)">help</mat-icon>
             </mat-checkbox>
 

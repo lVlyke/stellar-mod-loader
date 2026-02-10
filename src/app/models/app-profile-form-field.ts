@@ -1,6 +1,7 @@
 import { NgForm } from "@angular/forms";
 import { AppProfile } from "./app-profile";
 import { GameDetails } from "./game-details";
+import { AppPlatform } from "./app-platform";
 
 export interface AppProfileFormField<T = AppProfile> {
     formId: keyof T;
@@ -32,6 +33,7 @@ export type AppProfileFormFieldEntry<
 > = AppProfileFormField<T> | AppProfileFormFieldGroup<T, Id>;
 
 export interface AppProfileFormFieldInput {
+    platform: AppPlatform;
     gameDetails: GameDetails;
     baseProfileMode: boolean;
     profileModel?: Partial<AppProfile.Form>;

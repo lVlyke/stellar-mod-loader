@@ -671,6 +671,13 @@ export namespace AppMessage {
         };
     }
 
+    export interface ShowGameProtonPrefixInFileExplorer extends Base {
+        id: `${ProfileMessage.Prefix}:showGameProtonPrefixInFileExplorer`;
+        data: {
+            profile: AppProfile;
+        };
+    }
+
     export interface RunGameAction extends Base {
         id: `${ProfileMessage.Prefix}:runGameAction`;
         data: {
@@ -685,6 +692,7 @@ export namespace AppMessage {
             profile: AppProfile;
             steamUserId: string;
             gameAction: GameAction;
+            shortcutName?: string;
             protonCompatDataRoot?: string;
         };
         result: string;
@@ -839,6 +847,7 @@ export namespace AppMessage {
                                | ShowProfileModOrderBackupsInFileExplorer
                                | ShowProfilePluginBackupsInFileExplorer
                                | ShowProfileConfigBackupsInFileExplorer
+                               | ShowGameProtonPrefixInFileExplorer
                                | RunGameAction
                                | AddGameActionToSteam
                                | ResolveDefaultGameActions
@@ -936,6 +945,7 @@ export namespace AppMessage {
         "profile:showProfileModOrderBackupsInFileExplorer",
         "profile:showProfilePluginBackupsInFileExplorer",
         "profile:showProfileConfigBackupsInFileExplorer",
+        "profile:showGameProtonPrefixInFileExplorer",
         "profile:runGameAction",
         "profile:addGameActionToSteam",
         "profile:resolveDefaultGameActions",

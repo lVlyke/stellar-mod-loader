@@ -244,7 +244,13 @@ export class ProfileManager implements OnDestroy {
         // Monitor mod changes for new/removed plugins and update the plugins list
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["mods", "manageExternalPlugins", "externalFilesCache"])),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, [
+                "gameInstallation",
+                "mods",
+                "rootMods",
+                "manageExternalPlugins",
+                "externalFilesCache"
+            ])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             switchMap(() => this.reconcileActivePluginList())
         ).subscribe();
@@ -252,7 +258,13 @@ export class ProfileManager implements OnDestroy {
         // Monitor root mod changes for new/removed mods and update the default actions list
         this.activeProfile$.pipe(
             filterDefined(),
-            map(profile => pick<AppProfile, keyof AppProfile>(profile, ["mods", "rootMods", "externalFilesCache"])),
+            map(profile => pick<AppProfile, keyof AppProfile>(profile, [
+                "gameInstallation",
+                "mods",
+                "rootMods",
+                "externalFilesCache",
+                "protonPrefixDir"
+            ])),
             distinctUntilChanged((a, b) => LangUtils.isEqual(a, b)),
             switchMap(() => this.getAvailableDefaultGameActions()),
             switchMap(defaultActions => this.store.dispatch(new ActiveProfileActions.UpdateDefaultGameActions(defaultActions)))
@@ -1373,23 +1385,33 @@ export class ProfileManager implements OnDestroy {
         return this.store.dispatch(new ActiveProfileActions.RemoveCustomGameAction(index));
     }
 
-    public runGameAction(gameAction?: GameAction): Observable<unknown> {
+    public runGameAction(gameAction?: GameAction, forceRun: boolean = false): Observable<unknown> {
         return runOnce(combineLatest([this.activeProfile$, this.activeGameAction$]).pipe(
             take(1),
             switchMap(([activeProfile, activeGameAction]) => {
-                const defaultAction = activeProfile!.defaultGameActions.length > 0
+                const defaultGameAction = activeProfile!.defaultGameActions.length > 0
                     ? activeProfile!.defaultGameActions[0]
                     : this.LAUNCH_GAME_ACTION;
-                const resolvedGameAction = gameAction ?? activeGameAction ?? defaultAction;
+                const resolvedGameAction = gameAction ?? activeGameAction ?? defaultGameAction;
 
-                if (resolvedGameAction.requiresSteam && resolvedGameAction.actionType !== GameActionType.STEAM_APP) {
-                    return this.dialogs.showDefault({
-                        prompt: "This action must be launched via Steam. Add it to your Steam library?",
-                        actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION],
-                        title: resolvedGameAction.name
+                if (!forceRun && resolvedGameAction.requiresSteam) {
+                    const ignoreAction: DialogAction = { label: "Ignore" };
+
+                    return this.dialogManager.createDefault({
+                        prompt: "This action must be launched via a custom Steam library shortcut. Would you like to create one now?",
+                        actions: [DialogManager.YES_ACTION_PRIMARY, DialogManager.NO_ACTION, ignoreAction],
+                        title: resolvedGameAction.name,
+                        disposeOnBackdropClick: true
                     }).pipe(
-                        filterTrue(),
-                        switchMap(() => this.addGameActionToSteamFromUser(activeProfile!, resolvedGameAction, undefined, true))
+                        switchMap((action) => {
+                            if (action === ignoreAction) {
+                                return this.runGameAction(gameAction, true);
+                            } else if (DialogManager.POSITIVE_ACTIONS.includes(action)) {
+                                return this.addGameActionToSteamFromUser(activeProfile!, resolvedGameAction, undefined, true);
+                            } else {
+                                return of(false);
+                            }
+                        })
                     );
                 } else {
                     return ElectronUtils.invoke("profile:runGameAction", {
@@ -1409,12 +1431,14 @@ export class ProfileManager implements OnDestroy {
         profile: AppProfile,
         steamUserId: string,
         gameAction: GameAction,
+        shortcutName?: string,
         protonCompatDataRoot?: string
     ): Observable<string> {
         return runOnce(ElectronUtils.invoke("profile:addGameActionToSteam", {
             profile,
             steamUserId,
             gameAction,
+            shortcutName,
             protonCompatDataRoot
         }));
     }
@@ -1433,7 +1457,7 @@ export class ProfileManager implements OnDestroy {
                 profile,
                 useGameCompatRootDefault,
                 hasBackdrop: true,
-                disposeOnBackdropClick: true,
+                disposeOnBackdropClick: false,
                 maxWidth: "35%",
                 panelClass: "mat-app-background",
                 withModalInstance: true
@@ -1442,6 +1466,7 @@ export class ProfileManager implements OnDestroy {
             filter((result) => result.action === DialogManager.ADD_ACTION_PRIMARY),
             map((result) => ({
                 steamUserId: result.modalInstance.steamUserId,
+                shortcutName: result.modalInstance.shortcutName,
                 chosenGameCompatRoot: result.modalInstance.chosenGameCompatRoot,
                 deleteAction: result.modalInstance.deleteAction
             })),
@@ -1454,6 +1479,7 @@ export class ProfileManager implements OnDestroy {
                 profile,
                 result.steamUserId,
                 gameAction,
+                result.shortcutName,
                 result.chosenGameCompatRoot 
             ).pipe(
                 catchError(() => {
@@ -1462,7 +1488,7 @@ export class ProfileManager implements OnDestroy {
                 }),
                 // Inform user they need to restart Steam
                 switchMap((steamAppId) => {
-                    const restartNotice = `Shortcut "${gameAction.name}" has been added to your Steam library. Restart Steam to view the shortcut.`;
+                    const restartNotice = `Shortcut "${result.shortcutName}" has been added to your Steam library. Restart Steam to view the shortcut.`;
                     const protonNotice = "<br><br><strong>NOTE:</strong> This program requires Proton. You may to have to enable it by right-clicking the shortcut in Steam and going to Properties > Compatibility."
                     return this.dialogs.showNotice(
                         `${restartNotice}${gameAction.requiresSteam ? protonNotice : ""}`,
@@ -1479,7 +1505,7 @@ export class ProfileManager implements OnDestroy {
                             const deleteExistingAction = result.deleteAction && gameActionIndex !== null && gameActionIndex !== undefined;
                             if (createNewAction) {
                                 const steamAction = {
-                                    name: gameAction.name,
+                                    name: result.shortcutName,
                                     actionType: GameActionType.STEAM_APP,
                                     actionData: steamAppId
                                 };
@@ -1526,6 +1552,14 @@ export class ProfileManager implements OnDestroy {
 
     public resolveGameSteamCompatRoot(profile: AppProfile): Observable<string | undefined> {
         return ElectronUtils.invoke("profile:resolveGameSteamCompatRoot", { profile: profile! });
+    }
+
+    public resolveGameProtonPrefixRoot(profile: AppProfile): Observable<string | undefined> {
+        if (profile.protonPrefixDir) {
+            return of(profile.protonPrefixDir);
+        } else {
+            return this.resolveGameSteamCompatRoot(profile);
+        }
     }
 
     public showModInFileExplorer(modName: string, modRef: ModProfileRef): Observable<unknown> {
@@ -1588,6 +1622,13 @@ export class ProfileManager implements OnDestroy {
         return runOnce(this.activeProfile$.pipe(
             take(1),
             switchMap(profile => ElectronUtils.invoke("profile:showProfileConfigBackupsInFileExplorer", { profile: profile! })
+        )));
+    }
+
+    public showGameProtonPrefixInFileExplorer(): Observable<unknown> {
+        return runOnce(this.activeProfile$.pipe(
+            take(1),
+            switchMap(profile => ElectronUtils.invoke("profile:showGameProtonPrefixInFileExplorer", { profile: profile! })
         )));
     }
     

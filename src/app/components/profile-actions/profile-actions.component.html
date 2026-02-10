@@ -166,6 +166,13 @@
                         {{ folderEntry[1] }}
                     </button>
                 }
+
+                @if (gamePrefixDir) {
+                    <button mat-list-item (click)="profileManager.showGameProtonPrefixInFileExplorer(); gameFoldersMenuRef?.close()">
+                        <mat-icon matListIcon>folder</mat-icon>
+                        Proton Prefix
+                    </button>
+                }
             </mat-action-list>
         </mat-card-content>
     </mat-card>

@@ -851,10 +851,14 @@ export class ProfileDataManager {
     
             if (binaryExists) {
                 if (profile.gameInstallation.steamId && gameBinary === gameDetails.gameBinary[0]) {
+                    // Check if we need to add environment vars for this action
+                    const needsEnvVar = !!profile.protonPrefixDir;
+
                     gameActions.push({
                         name: `Start ${path.parse(gameBinary).name}`,
                         actionType: "steam_app",
-                        actionData: profile.gameInstallation.steamId[0]
+                        actionData: profile.gameInstallation.steamId[0],
+                        requiresSteam: needsEnvVar
                     });
                 } else {
                     // Check if this binary requires Proton to run on Linux
@@ -1068,6 +1072,7 @@ export class ProfileDataManager {
         profile: AppProfile,
         steamUserId: string,
         gameAction: GameAction,
+        shortcutName?: string,
         protonCompatDataRoot?: string
     ): string {
         const appSettings = this.appDataManager.loadSettings();
@@ -1076,6 +1081,8 @@ export class ProfileDataManager {
         if (!steamUserShortcutsDb) {
             throw new Error(`Unable to find shortcuts for Steam ID: ${steamUserId}`);
         }
+
+        shortcutName ||= gameAction.name;
 
         const steamUserShortcuts = steamUserShortcutsDb["shortcuts"];
 
@@ -1114,19 +1121,42 @@ export class ProfileDataManager {
             launchOptions += " %command% ";
         }
 
-        // Compute working directory:
-        const unquotedActionData = gameAction.actionData.replace(/["']+/g, "");
-        let workingDir = path.dirname(unquotedActionData);
-    
-        if (!path.isAbsolute(workingDir)) {
-            workingDir = path.join(profile.gameInstallation.rootDir, workingDir);
+        let shortcutExe: string;
+        let workingDir: string;
+
+        switch (gameAction.actionType) {
+            case "script": {
+                // Compute working directory:
+                const unquotedActionData = gameAction.actionData.replace(/["']+/g, "");
+                workingDir = path.dirname(unquotedActionData);
+            
+                if (!path.isAbsolute(workingDir)) {
+                    workingDir = path.join(profile.gameInstallation.rootDir, workingDir);
+                }
+
+                // Compute the executable name
+                shortcutExe = path.join(workingDir, path.basename(unquotedActionData));
+            } break;
+            case "steam_app": {
+                const steamInstallationDir = appSettings.steamInstallationDir || SteamUtils.findSteamInstallationDir();
+
+                if (!steamInstallationDir) {
+                    throw new Error("Could not find Steam installation directory.");
+                }
+
+                // Launch the game using the given Steam App ID
+                workingDir = profile.gameInstallation.rootDir;
+                shortcutExe = SteamUtils.getSteamBinaryPath(steamInstallationDir);
+                launchOptions += `steam://launch/${gameAction.actionData} `;
+            } break;
+            default: throw new Error("Unknown GameActionType.");
         }
 
         // Create Steam shortcut from `gameAction`:
         steamUserShortcuts[shortcutIndex.toString()] = {
             appid: appId,
-            AppName: gameAction.name,
-            Exe: `"${path.join(workingDir, path.basename(unquotedActionData))}"`,
+            AppName: shortcutName,
+            Exe: `"${shortcutExe}"`,
             StartDir: `"${workingDir}"`,
             icon: "",
             ShortcutPath: "",

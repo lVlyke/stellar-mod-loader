@@ -532,6 +532,9 @@ export class RendererEventHandler {
                     true,
                     "junction")) ? VERIFY_SUCCESS : VERIFY_FAIL)
                 : VERIFY_SUCCESS;
+            const protonPrefixDirResult = profile.protonPrefixDir
+                    ? this.profileDataManager.verifyProfilePathExists(profile.protonPrefixDir)
+                    : VERIFY_SUCCESS;
             
             if (!profile.deployed || !profile.plugins?.length) {
                 gamePluginListPathResult.error = false;
@@ -575,7 +578,8 @@ export class RendererEventHandler {
                 rootModSections: VERIFY_SUCCESS, // TODO
                 modSections: VERIFY_SUCCESS, // TODO
                 calculateModOverwriteFiles: VERIFY_SUCCESS,
-                normalizePathCasing: VERIFY_SUCCESS
+                normalizePathCasing: VERIFY_SUCCESS,
+                protonPrefixDir: protonPrefixDirResult
             };
 
             function hasVerificationError(result: AppProfile.VerificationResult | AppProfile.CollectedVerificationResult): boolean {
@@ -1053,6 +1057,17 @@ export class RendererEventHandler {
             shell.openPath(path.resolve(backupDir));
         });
 
+        ipcMain.handle("profile:showGameProtonPrefixInFileExplorer", async (
+            _event: Electron.IpcMainInvokeEvent,
+            { profile }: AppMessageData<"profile:showGameProtonPrefixInFileExplorer">
+        ) => {
+            const prefixDir = profile.protonPrefixDir || SteamUtils.getSteamCompatRoot(profile.gameInstallation);
+
+            if (!!prefixDir) {
+                shell.openPath(path.resolve(prefixDir));
+            }
+        });
+
         ipcMain.handle("profile:runGameAction", async (
             _event: Electron.IpcMainInvokeEvent,
             { profile, gameAction }: AppMessageData<"profile:runGameAction">
@@ -1061,10 +1076,21 @@ export class RendererEventHandler {
         });
 
         ipcMain.handle("profile:addGameActionToSteam", async (
-            _event: Electron.IpcMainInvokeEvent,
-            { profile, steamUserId, gameAction, protonCompatDataRoot }: AppMessageData<"profile:addGameActionToSteam">
+            _event: Electron.IpcMainInvokeEvent, {
+                profile,
+                steamUserId,
+                gameAction,
+                shortcutName,
+                protonCompatDataRoot
+            }: AppMessageData<"profile:addGameActionToSteam">
         ) => {
-            return this.profileDataManager.addGameActionToSteam(profile, steamUserId, gameAction, protonCompatDataRoot);
+            return this.profileDataManager.addGameActionToSteam(
+                profile,
+                steamUserId,
+                gameAction,
+                shortcutName,
+                protonCompatDataRoot
+            );
         });
 
         ipcMain.handle("profile:resolveDefaultGameActions", async (

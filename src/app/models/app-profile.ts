@@ -38,6 +38,7 @@ export interface AppProfile extends AppBaseProfile {
     customGameActions?: GameAction[];
     activeGameAction?: GameAction;
     normalizePathCasing?: boolean;
+    protonPrefixDir?: string;
 
     /** @deprecated - TODO: Remove this */
     manageSteamCompatSymlinks?: boolean;

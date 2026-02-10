@@ -204,15 +204,17 @@ export class AppGameManagerComponent extends BaseComponent {
             this._isCustomGameDetails = activeGameId ? Object.keys(customGameDb).includes(activeGameId) : false;
         });
 
-        combineLatest(stateRef.getAll(
+        combineLatest([appManager.getPlatform(), ...stateRef.getAll(
             "activeGameDetails",
             "activeGameForm"
-        )).pipe(
+        )]).pipe(
             filterAllDefined(),
             map(([
+                platform,
                 gameDetails,
                 form
             ]): AppProfileFormFieldInput => ({
+                platform,
                 gameDetails,
                 form,
                 baseProfileMode: false,

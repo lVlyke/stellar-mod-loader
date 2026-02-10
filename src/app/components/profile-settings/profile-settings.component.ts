@@ -60,6 +60,7 @@ import {
 import { AppProfileFormFieldComponent } from "../profile-form-field";
 import { AppGameInstallSettingsComponent } from "../game-install-settings";
 import { GameDetails } from "../../models/game-details";
+import { AppStateBehaviorManager } from "../../services/app-state-behavior-manager";
 
 @Component({
     selector: "app-profile-settings",
@@ -189,6 +190,7 @@ export class AppProfileSettingsComponent extends BaseComponent {
         cdRef: ChangeDetectorRef,
         stateRef: ComponentStateRef<AppProfileSettingsComponent>,
         store: Store,
+        appManager: AppStateBehaviorManager,
         private readonly appDialogs: AppDialogs,
         protected readonly profileManager: ProfileManager
     ) {
@@ -358,16 +360,21 @@ export class AppProfileSettingsComponent extends BaseComponent {
         });
 
         // Generate profile field input object
-        combineLatest([this.formModel$, ...stateRef.getAll(
-            "currentGameDetails",
-            "form",
-            "baseProfileMode",
-            "modLinkModeSupported",
-            "configLinkModeSupported",
-            "remedyMode"
-        )]).pipe(
+        combineLatest([
+            this.formModel$,
+            appManager.getPlatform(),
+            ...stateRef.getAll(
+                "currentGameDetails",
+                "form",
+                "baseProfileMode",
+                "modLinkModeSupported",
+                "configLinkModeSupported",
+                "remedyMode"
+            )
+        ]).pipe(
             map(([
                 profileModel,
+                platform,
                 gameDetails,
                 form,
                 baseProfileMode,
@@ -375,6 +382,7 @@ export class AppProfileSettingsComponent extends BaseComponent {
                 configLinkModeSupported,
                 autofocusFieldId
             ]): AppProfileFormFieldInput => ({
+                platform,
                 profileModel,
                 gameDetails,
                 form,
@@ -459,28 +467,39 @@ export class AppProfileSettingsComponent extends BaseComponent {
                 }
             }),
             switchMap((formModel) => this.profileManager.resolveProfileFromForm(formModel as AppProfile.Form, this.baseProfileMode)),
-            switchMap((formModel) => this.checkUpdatedProfilePathOverrides(formModel)),
-            switchMap((formModel) => (() => {
+            switchMap((profile) => this.performPreSubmitActions(profile)),
+            switchMap((profile) => (() => {
                 // Add/update profile data on submit
                 if (this.createMode) {
-                    return this.profileManager.addProfile(formModel);
-                } else if (!LangUtils.isEqual(this.initialProfile, formModel)) {
-                    return this.profileManager.updateActiveProfile(formModel);
+                    return this.profileManager.addProfile(profile);
+                } else if (!LangUtils.isEqual(this.initialProfile, profile)) {
+                    return this.profileManager.updateActiveProfile(profile);
                 } else {
                     // Skip updates if no changes were made
-                    return of(formModel);
+                    return of(profile);
                 }
             })().pipe(
-                switchMap(() => this.checkCreateDefaultConfigFiles(formModel)),
+                switchMap(() => this.performPostSubmitActions(profile)),
                 finalize(() => {
                     if (wasDeployed) {
                         this.profileManager.updateActiveModDeployment(true);
                     }
                     
-                    this.onFormSubmit$.next(formModel)
+                    this.onFormSubmit$.next(profile)
                 })
             )
         )));
+    }
+
+    private performPreSubmitActions(profile: AppProfile): Observable<AppProfile> {
+        return this.checkUpdatedProfilePathOverrides(profile);
+    }
+
+    private performPostSubmitActions(profile: AppProfile): Observable<AppProfile> {
+        return this.checkCreateDefaultConfigFiles(profile).pipe(
+            switchMap((profile) => this.checkProtonPrefixUpdated(profile)),
+            defaultIfEmpty(profile)
+        );
     }
 
     private checkCreateDefaultConfigFiles(profile: AppProfile): Observable<AppProfile> {
@@ -508,6 +527,19 @@ export class AppProfileSettingsComponent extends BaseComponent {
                         );
                     }));
                 }),
+                map(() => profile),
+                defaultIfEmpty(profile)
+            );
+        } else {
+            return of(profile);
+        }
+    }
+
+    private checkProtonPrefixUpdated(profile: AppProfile): Observable<AppProfile> {
+        if (!this.createMode && this.initialProfile.protonPrefixDir !== profile.protonPrefixDir) {
+            return this.appDialogs.showNotice(
+                "You have changed the active Proton prefix for this profile. Please note that you will have to manually update any existing custom Steam library shortcuts to use the new prefix. All new custom shortcuts will use the updated prefix."
+            ).pipe(
                 map(() => profile),
                 defaultIfEmpty(profile)
             );

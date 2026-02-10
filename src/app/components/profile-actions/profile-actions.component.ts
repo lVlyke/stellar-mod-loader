@@ -6,8 +6,8 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { MatIcon } from "@angular/material/icon";
 import { MatCard, MatCardContent } from "@angular/material/card";
 import { MatActionList, MatListItem } from "@angular/material/list";
-import { Observable, combineLatest } from "rxjs";
-import { switchMap } from "rxjs/operators";
+import { Observable, combineLatest, of } from "rxjs";
+import { catchError, switchMap } from "rxjs/operators";
 import { AsyncState, ComponentState, ComponentStateRef, DeclareState } from "@lithiumjs/angular";
 import { Store } from "@ngxs/store";
 import { AppState } from "../../state";
@@ -113,6 +113,9 @@ export class AppProfileActionsComponent extends BaseComponent {
     protected gameConfigFiles?: string[];
 
     @DeclareState()
+    protected gamePrefixDir?: string;
+
+    @DeclareState()
     protected gameConfigFileMenuRef?: OverlayHelpersRef;
 
     @DeclareState()
@@ -137,6 +140,11 @@ export class AppProfileActionsComponent extends BaseComponent {
         this.gameDb$ = store.select(AppState.getGameDb);
         this.isProfileDeployed$ = store.select(ActiveProfileState.isDeployed);
         this.isDeployInProgress$ = store.select(AppState.isDeployInProgress);
+
+        stateRef.get("profile").pipe(
+            switchMap((profile) => profileManager.resolveGameProtonPrefixRoot(profile)),
+            catchError(() => of(undefined))
+        ).subscribe((gamePrefixDir) => this.gamePrefixDir = gamePrefixDir);
 
         combineLatest(stateRef.getAll("profile", "gameDb")).subscribe(([profile, gameDb]) => {
             this.gameDetails = (profile ? gameDb[profile.gameId] : undefined) ?? gameDb[GameId.UNKNOWN];

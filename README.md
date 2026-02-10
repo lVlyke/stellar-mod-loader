@@ -57,6 +57,7 @@ To install Stellar, simply download the latest release from the [releases page](
 >   * [**Manage config files**](#manage-configini-files)
 >   * [**Manage save files**](#manage-save-files)
 >   * [**Mod path case normalization (Linux)**](#normalize-mod-file-paths)
+>   * [**Custom Proton prefixes (Linux)**](#proton-prefix-directory)
 >   * [**Archive invalidation**](#archive-invalidation)
 >   * [**Base profile**](#base-profile)
 >   * [**Profile path overrides**](#profile-path-overrides)
@@ -151,6 +152,10 @@ If the **Manage Save Files** option is enabled, any created save games while thi
 Some mods may use different casing for their files/folders (i.e. `Interface` vs `interface`) and this can cause issues on case-sensitive file systems (often used on Linux). When this setting is enabled, Stellar will automatically convert all activated mod files and folders to the correct case to avoid this issue.
 
 It is recommended to enable this setting when using a case-sensitive file system.
+
+### Proton prefix directory
+
+If you want to use a custom prefix you can specify it here. This directory will be used as the `STEAM_COMPAT_DATA_PATH` environment variable when launching the game.
 
 ### Archive invalidation
 
@@ -497,7 +502,7 @@ After creating an action you can select it or other actions by clicking the drop
 
 ### Add actions to your Steam library
 
-You can add custom actions directly to your Steam library. Click the dropdown arrow to the right of the launch action button and click the gear icon next to a custom action. Click the **Create Steam shortcut** button at the top right of the settings window to create a Steam library shortcut.
+You can add custom actions directly to your Steam library. Click the dropdown arrow to the right of the launch action button and click the gear icon next to a custom action. Click the **Create Steam shortcut** button at the top right of the action settings window to create a Steam library shortcut.
 
 > [!NOTE]
 > When creating a Steam shortcut on Linux for a script extender or other game tool, make sure the option to use the game's Proton prefix is enabled. You may need to enable Proton for the shortcut in Steam under the shortcut's Compatibility settings.

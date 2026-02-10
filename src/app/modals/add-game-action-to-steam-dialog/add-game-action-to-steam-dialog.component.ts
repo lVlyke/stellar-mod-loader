@@ -29,7 +29,7 @@ import { GameAction } from "../../models/game-action";
 import { AppState } from "../../state";
 import { ProfileManager } from "../../services/profile-manager";
 import { GameDatabase } from "../../models/game-database";
-import { AppStateBehaviorManager } from "src/app/services/app-state-behavior-manager";
+import { AppStateBehaviorManager } from "../../services/app-state-behavior-manager";
 
 export namespace AppAddGameActionToSteamDialog {
 
@@ -115,9 +115,13 @@ export class AppAddGameActionToSteamDialog extends BaseComponent implements Dial
             this.activeSteamUserIds = activeSteamUserIds;
         });
 
-        profileManager.resolveGameSteamCompatRoot(dialogConfig.profile).subscribe((compatRoot) => {
+        profileManager.resolveGameProtonPrefixRoot(dialogConfig.profile).subscribe((compatRoot) => {
             this.gameCompatRoot = compatRoot;
         });
+    }
+
+    public get shortcutName(): string {
+        return this.form.value["name"];
     }
 
     public get useGameCompatRoot(): boolean {

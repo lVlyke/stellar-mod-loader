@@ -1,7 +1,7 @@
 import { ComponentType } from "@angular/cdk/overlay";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { finalize, map, tap } from "rxjs/operators";
+import { delay, finalize, map, takeUntil, tap } from "rxjs/operators";
 import { AppDefaultDialogComponent } from "../modals/default-dialog-modal/default-dialog-modal.component";
 import { DIALOG_CONFIG_TOKEN, DialogAction, DialogComponent, DialogConfig } from "./dialog-manager.types";
 import { OverlayHelpers } from "./overlay-helpers";
@@ -48,6 +48,9 @@ export class DialogManager {
         ]);
         
         return runOnce(overlayRef.component.instance.actionSelected$.pipe(
+            // Stop waiting for an action to be selected if the dialog was closed externally
+            takeUntil(overlayRef.onClose$.pipe(delay(0))),
+            // Pass action along with modal instance if required
             map(action => config?.withModalInstance
                 ? {
                     action,

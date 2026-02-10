@@ -14,6 +14,7 @@ function PROFILE_OVERRIDE_FIELDS({}: AppProfileFormFieldInput): Readonly<AppProf
 }
 
 function STANDARD_FIELDS({
+    platform,
     profileModel
 }: AppProfileFormFieldInput): Readonly<AppProfileFormFieldEntry[]> {
     let steamId: string | undefined;
@@ -21,16 +22,29 @@ function STANDARD_FIELDS({
         steamId = profileModel.gameInstallation.steamId[0];
     }
 
-    // @deprecated - Only show if `manageSteamCompatSymlinks` is true
-    return (!!steamId && !!profileModel?.manageSteamCompatSymlinks) ? [
-        {
+    const result: AppProfileFormFieldEntry[] = [];
+
+    if (platform === "linux") {
+        result.push({
+            formId: "protonPrefixDir",
+            title: "Proton Prefix Directory",
+            path: true,
+            required: false,
+            hint: "You can specify a custom Proton prefix directory to use instead of the game's default."
+        });
+    }
+
+    if (!!steamId && !!profileModel?.manageSteamCompatSymlinks) {
+        result.push({
             formId: "steamCustomGameId",
             title: "[DEPRECATED] Custom Steam Game ID",
             path: false,
             required: true,
             hint: "[NOTE: Deprecated, not recommended] The ID of a custom Steam game entry (i.e. for script extenders)."
-        }
-    ] : [];
+        });
+    }
+
+    return result;
 }
 
 @Pipe({ name: "appProfileFields" })

@@ -62,7 +62,8 @@ export class AppProfileVerificationResultsModal extends BaseComponent {
         rootModSections: "Invalid root mod section",
         modSections: "Invalid mod section",
         calculateModOverwriteFiles: "Invalid mod overwrite settings",
-        normalizePathCasing: "Invalid mod path case normalization settings"
+        normalizePathCasing: "Invalid mod path case normalization settings",
+        protonPrefixDir: "Invalid Proton prefix directory"
     };
 
     private static readonly VERIFICATION_ERROR_DESCS: Record<string, string> = {
