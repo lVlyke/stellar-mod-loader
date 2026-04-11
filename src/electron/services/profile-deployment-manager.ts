@@ -131,11 +131,14 @@ export class ProfileDeploymentManager {
     }
 
     public async writePluginList(profile: AppProfile): Promise<string> {
-        const pluginListPath = profile.gameInstallation.pluginListPath
+        let pluginListPath = profile.gameInstallation.pluginListPath
             ? path.resolve(PathUtils.expandPath(profile.gameInstallation.pluginListPath))
             : undefined;
 
         if (pluginListPath) {
+            // Use existing plugin file casing if present
+            pluginListPath = PathUtils.existsIgnoreCase(pluginListPath) ?? pluginListPath;
+
             const pluginListDir = path.dirname(pluginListPath);
             fs.mkdirpSync(pluginListDir);
             

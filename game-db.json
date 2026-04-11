@@ -775,7 +775,7 @@
                 "steamId": ["1716740"],
                 "rootDir": "%PROGRAMFILES%\\Steam\\steamapps\\common\\Starfield",
                 "modDir": "Data",
-                "pluginListPath": "%LOCALAPPDATA%\\Starfield\\plugins.txt",
+                "pluginListPath": "%LOCALAPPDATA%\\Starfield\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Starfield",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Starfield\\Saves"
             },
@@ -783,14 +783,14 @@
                 "steamId": ["1716740"],
                 "rootDir": "%PROGRAMFILES(X86)%\\Steam\\steamapps\\common\\Starfield",
                 "modDir": "Data",
-                "pluginListPath": "%LOCALAPPDATA%\\Starfield\\plugins.txt",
+                "pluginListPath": "%LOCALAPPDATA%\\Starfield\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Starfield",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Starfield\\Saves"
             },
             {
                 "rootDir": "C:\\XboxGames\\Starfield\\Content",
                 "modDir": "Data",
-                "pluginListPath": "%LOCALAPPDATA%\\Starfield\\plugins.txt",
+                "pluginListPath": "%LOCALAPPDATA%\\Starfield\\Plugins.txt",
                 "configFilePath": "%USERPROFILE%\\Documents\\My Games\\Starfield",
                 "saveFolderPath": "%USERPROFILE%\\Documents\\My Games\\Starfield\\Saves"
             },
@@ -798,7 +798,7 @@
                 "steamId": ["1716740"],
                 "rootDir": "~/.local/share/Steam/steamapps/common/Starfield",
                 "modDir": "Data",
-                "pluginListPath": "$/pfx/drive_c/users/steamuser/AppData/Local/Starfield/plugins.txt",
+                "pluginListPath": "$/pfx/drive_c/users/steamuser/AppData/Local/Starfield/Plugins.txt",
                 "configFilePath": "$/pfx/drive_c/users/steamuser/Documents/My Games/Starfield",
                 "saveFolderPath": "$/pfx/drive_c/users/steamuser/Documents/My Games/Starfield/Saves"
             }

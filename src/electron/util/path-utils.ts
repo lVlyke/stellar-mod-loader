@@ -195,4 +195,31 @@ export namespace PathUtils {
 
         return "";
     }
+
+    export function existsIgnoreCase(_path: string): string | undefined {
+        if (fs.existsSync(_path)) {
+            return _path;
+        }
+        
+        let dirName: string | undefined = path.dirname(_path);
+
+        // Resolve existing casing of dirName
+        if (dirName && dirName !== _path) {
+            dirName = existsIgnoreCase(dirName);
+        }
+
+        // Ensure dirName exists
+        if (!dirName || !fs.existsSync(dirName)) {
+            return undefined;
+        }
+
+        // Get all files in dirName
+        const dirFiles = fs.readdirSync(dirName);
+        const pathLower = _path.toLowerCase();
+
+        // Find any files that match _path regardless of casing
+        const existingFile = dirFiles.find((dirFile) => path.join(dirName, dirFile).toLowerCase() === pathLower);
+
+        return existingFile ? path.join(dirName, existingFile) : undefined;
+    }
 }
