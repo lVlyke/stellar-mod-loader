@@ -23,7 +23,7 @@ export class ProfileDataManager {
 
     constructor(
         private readonly app: ElectronApp
-    ) {}
+    ) { }
 
     private get appDataManager(): AppDataManager {
         return this.app.appDataManager;
@@ -190,8 +190,7 @@ export class ProfileDataManager {
         }
 
         // BC: <0.11.0
-        if ("gameRootDir" in profile)
-        {
+        if ("gameRootDir" in profile) {
             profile.gameInstallation = {};
 
             if ("gameRootDir" in profile) {
@@ -241,7 +240,9 @@ export class ProfileDataManager {
 
         // BC: <0.14.0
         {
-            if (this.appDataManager.loadSettings()?.normalizePathCasing) {
+            if ("gameInstallation" in profile
+                && profile.normalizePathCasing === undefined
+                && this.appDataManager.loadSettings()?.normalizePathCasing) {
                 profile.normalizePathCasing = true;
             }
         }
@@ -328,7 +329,7 @@ export class ProfileDataManager {
     ): string | undefined {
         const profileConfigDir = this.getProfileConfigDir(profile);
         let profileConfigFilePath = path.join(profileConfigDir, fileName);
-        
+
         if (!fs.existsSync(profileConfigFilePath)) {
             // Attempt to load default config values if profile file doesn't exist yet
             if (loadDefaults) {
@@ -346,7 +347,7 @@ export class ProfileDataManager {
 
     public readProfileSaveFiles(profile: AppProfile): AppProfile.Save[] {
         const profileSaveDir = this.getProfileSaveDir(profile);
-        
+
         if (!fs.existsSync(profileSaveDir)) {
             return [];
         }
@@ -362,21 +363,21 @@ export class ProfileDataManager {
                 name: path.parse(saveFileName).name,
                 date: fs.statSync(path.join(profileSaveDir, saveFileName)).mtime
             }));
-        
+
         return orderBy(saveFiles, ["date"], ["desc"]);
     }
 
     public updateProfileConfigFile(profile: AppProfile, fileName: string, data?: string): void {
         const profileConfigDir = this.getProfileConfigDir(profile);
         const profileConfigFilePath = path.join(profileConfigDir, fileName);
-        
+
         fs.mkdirpSync(profileConfigDir);
         fs.writeFileSync(profileConfigFilePath, data ?? "", "utf8");
     }
 
     public deleteProfileSaveFile(profile: AppProfile, save: AppProfile.Save): boolean {
         const profileSaveDir = this.getProfileSaveDir(profile);
-        
+
         if (!fs.existsSync(profileSaveDir)) {
             return false;
         }
@@ -501,7 +502,7 @@ export class ProfileDataManager {
         restoredPlugins.push(...profile.plugins.filter((existingPlugin) => !restoredPlugins.some((restoredPlugin) => {
             return existingPlugin.plugin === restoredPlugin.plugin && existingPlugin.modId === restoredPlugin.modId;
         })));
-        
+
         // Return the updated profile
         return Object.assign(profile, { plugins: restoredPlugins });
     }
@@ -531,7 +532,7 @@ export class ProfileDataManager {
                 );
             }
         });
-        
+
         // Return the profile
         return profile;
     }
@@ -721,7 +722,7 @@ export class ProfileDataManager {
             if (!profileModFiles) {
                 throw new Error("Unable to read deployment metadata.");
             }
-            
+
             // Filter deployed files
             modDirFiles = modDirFiles.filter(file => !profileModFiles.includes(file.toLowerCase()));
         }
@@ -829,7 +830,7 @@ export class ProfileDataManager {
         if (path.resolve(profile.gameInstallation.modDir) === gameRootDir) {
             modsToSearch.push(...profile.mods);
         }
-        
+
         // Find available game binaries and add them as actions
         return gameDetails?.gameBinary.slice().reverse().reduce((gameActions, gameBinary) => {
             gameBinary = path.normalize(gameBinary);
@@ -848,7 +849,7 @@ export class ProfileDataManager {
                     return modFile.endsWith(gameBinary);
                 })
             });
-    
+
             if (binaryExists) {
                 if (profile.gameInstallation.steamId && gameBinary === gameDetails.gameBinary[0]) {
                     // Check if we need to add environment vars for this action
@@ -968,7 +969,7 @@ export class ProfileDataManager {
             fs.writeFileSync(configFilePath, configFileData, { encoding: "utf-8" });
         }
     }
-    
+
     public findPluginFiles(profile: AppProfile): GamePluginProfileRef[] {
         const gameDb = this.appDataManager.loadGameDatabase();
         const gameDetails = gameDb[profile.gameId];
@@ -982,7 +983,7 @@ export class ProfileDataManager {
                 if (gameDetails.pluginDataRoot) {
                     pluginDirPath = path.join(pluginDirPath, gameDetails.pluginDataRoot);
                 }
-                
+
                 if (fs.existsSync(pluginDirPath)) {
                     const pluginFiles = fs.readdirSync(pluginDirPath, { encoding: "utf-8", recursive: false });
                     const modPlugins = pluginFiles
@@ -1037,7 +1038,7 @@ export class ProfileDataManager {
             } break;
             default: throw new Error("Unknown GameActionType.");
         }
-        
+
         // Apply environment variables:
         let envDict: Record<string, string | undefined> = { ...process.env };
         if (gameAction.environment) {
@@ -1050,14 +1051,14 @@ export class ProfileDataManager {
         }
 
         log.info("Running game action: ", gameActionCmd);
-        
+
         // Run the action
         try {
             exec(gameActionCmd, {
                 cwd: profile.gameInstallation.rootDir,
                 env: envDict
             });
-        } catch(error) {
+        } catch (error) {
             log.error(error);
             return false;
         }
@@ -1106,7 +1107,7 @@ export class ProfileDataManager {
         if (protonCompatDataRoot !== undefined) {
             launchOptions += PathUtils.serializeEnvironmentVariables([
                 ["STEAM_COMPAT_DATA_PATH", protonCompatDataRoot],
-            ], "linux"); 
+            ], "linux");
         }
 
         if (gameAction.environment) {
@@ -1129,7 +1130,7 @@ export class ProfileDataManager {
                 // Compute working directory:
                 const unquotedActionData = gameAction.actionData.replace(/["']+/g, "");
                 workingDir = path.dirname(unquotedActionData);
-            
+
                 if (!path.isAbsolute(workingDir)) {
                     workingDir = path.join(profile.gameInstallation.rootDir, workingDir);
                 }
@@ -1180,7 +1181,7 @@ export class ProfileDataManager {
         return SteamUtils.resolveGameId64(appId.toString());
     }
 
-    /** 
+    /**
      * @description Determines whether or not **any** profile is deployed in the `gameModDir` of `profile`.
      */
     public isSimilarProfileDeployed(profile: AppProfile): boolean {
@@ -1188,7 +1189,7 @@ export class ProfileDataManager {
         return fs.existsSync(metaFilePath);
     }
 
-    /** 
+    /**
      * @description Determines whether or the specific profile is deployed in the `gameModDir` of `profile`.
      */
     public isProfileDeployed(profile: AppProfile): boolean {
