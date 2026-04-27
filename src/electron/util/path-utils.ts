@@ -222,4 +222,30 @@ export namespace PathUtils {
 
         return existingFile ? path.join(dirName, existingFile) : undefined;
     }
+
+    export function normalizeModDirPath(dirPath: string): string {
+        return dirPath
+            .split(path.sep)
+            .map((pathPart) => {
+                const normalizedPart = pathPart.toLowerCase();
+                return normalizedPart.length > 0
+                    ? normalizedPart.charAt(0).toUpperCase() + normalizedPart.slice(1)
+                    : normalizedPart;
+            })
+            .join(path.sep);
+    }
+
+    export function normalizeDeployedModFilePath(filePath: string, gamePluginFormats: string[]): string {
+        if (!filePath.includes(path.sep)) {
+            return filePath;
+        }
+
+        const normalizedDirPath = normalizeModDirPath(path.dirname(filePath));
+
+        if (gamePluginFormats.some((pluginFormat) => filePath.endsWith(pluginFormat))) {
+            return path.join(normalizedDirPath, path.basename(filePath));
+        }
+
+        return path.join(normalizedDirPath, path.basename(filePath).toLowerCase());
+    }
 }
