@@ -28,7 +28,7 @@ export class ProfileModManager {
 
     constructor(
         private readonly app: ElectronApp
-    ) {}
+    ) { }
 
     private get appDataManager(): AppDataManager {
         return this.app.appDataManager;
@@ -38,11 +38,21 @@ export class ProfileModManager {
         return this.app.profileDataManager;
     }
 
+    private normalizeOverwriteFilePath(
+        filePath: string,
+        normalizePathCasing: boolean,
+        gamePluginFormats: string[]
+    ): string {
+        return normalizePathCasing
+            ? PathUtils.normalizeDeployedModFilePath(filePath, gamePluginFormats)
+            : filePath;
+    }
+
     public async beginModAdd(profile: AppProfile, root: boolean, modPath?: string): Promise<ModImportRequest | undefined> {
         if (!modPath) {
             const pickedFile = (await dialog.showOpenDialog({
                 filters: [
-                    { 
+                    {
                         name: "Mod", extensions: [
                             "zip",
                             "rar",
@@ -52,10 +62,10 @@ export class ProfileModManager {
                     }
                 ]
             }));
-            
+
             modPath = pickedFile?.filePaths[0];
         }
-        
+
         const filePath = modPath ?? "";
         if (!!filePath) {
             if (fs.lstatSync(filePath).isDirectory()) {
@@ -114,7 +124,7 @@ export class ProfileModManager {
             const pickedModFolder = await dialog.showOpenDialog({
                 properties: ["openDirectory"]
             });
-            
+
             modPath = pickedModFolder?.filePaths[0];
         }
 
@@ -145,7 +155,7 @@ export class ProfileModManager {
         const gameDetails = gameDb[profile.gameId];
         const gamePluginFormats = gameDetails?.pluginFormats ?? [];
         let foundModSubdirRoot = "";
-        
+
         if (!root && profile.gameInstallation) {
             const modDirRelName = path.relative(profile.gameInstallation.rootDir, profile.gameInstallation.modDir);
             // If mod dir is child of root dir, determine if mod is packaged relative to root dir
@@ -177,7 +187,7 @@ export class ProfileModManager {
         const fomodModuleConfigFile = modPreparedFilePaths.find(({ filePath }) => filePath.toLowerCase().endsWith(`fomod${path.sep}moduleconfig.xml`));
         if (!!fomodModuleInfoFile || !!fomodModuleConfigFile) {
             do {
-                
+
                 const xmlParser = new xml2js.Parser({
                     mergeAttrs: true,
                     trim: true,
@@ -189,7 +199,7 @@ export class ProfileModManager {
                 // Parse info.xml (optional)
                 if (fomodModuleInfoFile) {
                     try {
-                        const fullInfoFilePath =  path.join(modImportPath, fomodModuleInfoFile.filePath);
+                        const fullInfoFilePath = path.join(modImportPath, fomodModuleInfoFile.filePath);
                         const fileInfo = await detectFileEncodingAndLanguage(fullInfoFilePath);
                         const fileEncoding = (fileInfo.encoding?.toLowerCase() ?? "utf-8") as BufferEncoding;
                         const moduleInfoXml = fs.readFileSync(
@@ -205,7 +215,7 @@ export class ProfileModManager {
                 // Parse ModuleConfig.xml (optional)
                 if (fomodModuleConfigFile) {
                     try {
-                        const fullConfigFilePath =  path.join(modImportPath, fomodModuleConfigFile.filePath);
+                        const fullConfigFilePath = path.join(modImportPath, fomodModuleConfigFile.filePath);
                         const fileInfo = await detectFileEncodingAndLanguage(fullConfigFilePath);
                         const fileEncoding = (fileInfo.encoding?.toLowerCase() ?? "utf-8") as BufferEncoding;
                         const moduleConfigXml = fs.readFileSync(
@@ -251,13 +261,13 @@ export class ProfileModManager {
                             moduleImage: fomodModuleConfig.config.moduleImage?.[0]
                         };
                     }
-                    
+
                     installer = {
                         info: moduleInfo,
                         config: moduleConfig,
                         zeroConfig: !moduleConfig?.installSteps
                     };
-                }  catch (err) {
+                } catch (err) {
                     log.error(`${modName} - Failed to parse FOMOD data: `, err);
                     break;
                 }
@@ -272,7 +282,7 @@ export class ProfileModManager {
                         foundModSubdirRoot = "";
                     }
                 }
-            } while(false);
+            } while (false);
         }
 
         return {
@@ -308,7 +318,7 @@ export class ProfileModManager {
         }: ModImportRequest
     ): Promise<ModImportResult | undefined> {
         try {
-            // If the import status is anything except `PENDING`, an error occurred. 
+            // If the import status is anything except `PENDING`, an error occurred.
             if (importStatus !== "PENDING") {
                 return undefined;
             }
@@ -341,7 +351,7 @@ export class ProfileModManager {
                                 if (!pathMapSrcNorm.startsWith(modSubdirRoot.toLowerCase())) {
                                     pathMapSrcNorm = path.join(modSubdirRoot, pathMapSrcNorm).toLowerCase();
                                 }
-        
+
                                 return filEntryMatchesPath(pathMapSrcNorm);
                             });
                         } else {
@@ -414,9 +424,9 @@ export class ProfileModManager {
                                 break;
                             }
                         }
-                        
+
                         const destFilePath = path.join(modProfilePath, modFilePrefix ?? "", rootFilePath);
-                        
+
                         // Copy all enabled files to the final mod folder
                         if (externalImport) {
                             // Copy files from external imports
@@ -475,7 +485,7 @@ export class ProfileModManager {
 
         function recordResult(
             results: AppProfile.VerificationResultRecord<string>,
-            modName: string, 
+            modName: string,
             result: AppProfile.VerificationResult
         ) {
             const existingResult = (results[modName] ?? {
@@ -484,11 +494,11 @@ export class ProfileModManager {
             }) as AppProfile.VerificationResult;
             existingResult.error ||= result.error;
             existingResult.found &&= result.found;
-            
+
             if (result.error && result.reason) {
                 existingResult.reason = existingResult.reason ? `${existingResult.reason}; ${result.reason}` : result.reason;
             }
-            
+
             results[modName] = existingResult;
         }
 
@@ -497,7 +507,7 @@ export class ProfileModManager {
             const modExists = fs.existsSync(path.join(mod.baseProfile
                 ? this.profileDataManager.getProfileModsDir(profile.baseProfile!)
                 : modsDir,
-            modName));
+                modName));
 
             recordResult(result, modName, {
                 error: !modExists,
@@ -506,7 +516,7 @@ export class ProfileModManager {
             });
 
             // Check if profile has any mods that conflict with the base profile
-            const modConflictsWithBase = !mod.baseProfile && !!baseProfileModList.find(([baseModName]) => baseModName === modName); 
+            const modConflictsWithBase = !mod.baseProfile && !!baseProfileModList.find(([baseModName]) => baseModName === modName);
 
             recordResult(result, modName, {
                 error: modConflictsWithBase,
@@ -542,8 +552,10 @@ export class ProfileModManager {
         root: boolean,
         task: (modOverwriteFiles: ModOverwriteFilesEntry[], modName: string, modRef: ModProfileRef, completed: boolean) => Promise<unknown>
     ): Promise<void> {
-        const fileCache: ModOverwriteFilesEntry[] = [];
+        const fileCache: Array<ModOverwriteFilesEntry & { normalizedFiles: string[] }> = [];
         const modsList = root ? profile.rootMods : profile.mods;
+        const gamePluginFormats = this.appDataManager.getGameDetails(profile.gameId)?.pluginFormats ?? [];
+        const normalizePathCasing = "normalizePathCasing" in profile && !!profile.normalizePathCasing;
 
         // Add external files to cache
         if ("externalFilesCache" in profile) {
@@ -562,7 +574,12 @@ export class ProfileModManager {
                 }
             }
 
-            fileCache.push({ files: externalFiles });
+            fileCache.push({
+                files: externalFiles,
+                normalizedFiles: externalFiles.map((filePath) => {
+                    return this.normalizeOverwriteFilePath(filePath, normalizePathCasing, gamePluginFormats);
+                })
+            });
         }
 
         for (let modIndex = 0; modIndex < modsList.length; ++modIndex) {
@@ -582,16 +599,16 @@ export class ProfileModManager {
 
                 const modOverwriteFiles: ModOverwriteFilesEntry[] = [];
                 await AsyncUtils.batchTaskAsync(modDirFiles, 100, async (modFile) => {
-                    // TODO - Normalize path case if enabled
-                    const overwrittenFiles = fileCache.filter(fileEntry => fileEntry.files.includes(modFile));
-                    
+                    const normalizedModFile = this.normalizeOverwriteFilePath(modFile, normalizePathCasing, gamePluginFormats);
+                    const overwrittenFiles = fileCache.filter((fileEntry) => fileEntry.normalizedFiles.includes(normalizedModFile));
+
                     // Record any overwritten files
                     if (overwrittenFiles.length > 0) {
                         for (const overwrittenFile of overwrittenFiles) {
                             const overwriteEntry = modOverwriteFiles.find((fileEntry) => {
                                 return fileEntry.modName === overwrittenFile.modName;
                             });
-                            
+
                             if (!!overwriteEntry) {
                                 overwriteEntry.files.push(modFile);
                             } else {
@@ -602,7 +619,13 @@ export class ProfileModManager {
                 });
 
                 // Add files to cache
-                fileCache.push({ modName, files: modDirFiles });
+                fileCache.push({
+                    modName,
+                    files: modDirFiles,
+                    normalizedFiles: modDirFiles.map((filePath) => {
+                        return this.normalizeOverwriteFilePath(filePath, normalizePathCasing, gamePluginFormats);
+                    })
+                });
 
                 // Notify of new overwrite files
                 await task(modOverwriteFiles, modName, modRef, modIndex === modsList.length - 1);
