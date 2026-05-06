@@ -66,13 +66,7 @@ export class ProfileDeploymentManager {
 
                     // If file path normalization is enabled, apply to all files inside Data subdirectories (i.e. textures/, meshes/)
                     if (profile.normalizePathCasing && modFile.includes(path.sep)) {
-                        // Convert file paths to lowercase
-                        // If this file is a plugin, preserve the plugin name's casing
-                        if (gamePluginFormats.some(pluginFormat => modFile.endsWith(pluginFormat))) {
-                            modFile = path.join(path.dirname(modFile).toLowerCase(), path.basename(modFile));
-                        } else {
-                            modFile = modFile.toLowerCase();
-                        }
+                        modFile = PathUtils.normalizeDeployedModFilePath(modFile, gamePluginFormats);
 
                         // Apply existing capitalization rules of mod data subdirectories to ensure only one folder is created
                         let modFileBase = path.dirname(modFile);
