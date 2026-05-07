@@ -11,5 +11,12 @@
             border-style: solid;
             border-color: var(--mat-form-field-filled-active-indicator-color);
         }
+
+        .files-label {
+
+            .prefix-path {
+                background: var(--mat-form-field-filled-container-color);
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { cloneDeep, merge, toMerged } from "es-toolkit";
+import { cloneDeep, merge, mergeWith } from "es-toolkit";
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild } from "@angular/core";
 import { AsyncPipe } from "@angular/common";
 import { AbstractControl, NgForm, ValidationErrors, FormsModule } from "@angular/forms";
@@ -324,7 +324,14 @@ export class AppProfileSettingsComponent extends BaseComponent {
                 map(() => form.control.getRawValue()),
                 startWith(form.control.getRawValue())
             )),
-            map(formValue => toMerged(this.initialProfile, formValue)),
+            map(formValue => mergeWith(cloneDeep(this.initialProfile), formValue, (initialValue, updatedValue) => {
+                // Use arrays updated from the form
+                if (Array.isArray(initialValue) && Array.isArray(updatedValue)) {
+                    return updatedValue;
+                }
+
+                return undefined;
+            })),
             distinctUntilChanged((x, y) => LangUtils.isEqual(x, y))
         ).subscribe(formModel => this.formModel$.next(formModel));
 

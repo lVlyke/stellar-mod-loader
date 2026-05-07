@@ -89,8 +89,8 @@
                 @for (gameInstallation of foundGameInstallations; track gameInstallation.rootDir) {
                     <mat-option [value]="gameInstallation">
                         {{ gameInstallation.rootDir }}
-                        @if (!!gameInstallation.steamId) {
-                            &nbsp;[Steam ID: {{ gameInstallation.steamId[0] }}]
+                        @if (!!gameInstallation.steamId?.length) {
+                            &nbsp;[Steam ID: {{ gameInstallation.steamId![0] }}]
                         }
                     </mat-option>
                 }

@@ -490,7 +490,7 @@ export class RendererEventHandler {
             const gameConfigFilePathResult = "gameInstallation" in profile && profile.gameInstallation.configFilePath
                 ? this.profileDataManager.verifyProfilePathExists(profile.gameInstallation.configFilePath)
                 : VERIFY_SUCCESS;
-            const gameSaveFolderPathResult = "gameInstallation" in profile && profile.gameInstallation.saveFolderPath
+            const gameSaveFolderPathResult = profile.manageSaveFiles && "gameInstallation" in profile && profile.gameInstallation.saveFolderPath
                 ? this.profileDataManager.verifyProfilePathExists(profile.gameInstallation.saveFolderPath)
                 : VERIFY_SUCCESS;
             const rootPathOverrideResult = profile.rootPathOverride

@@ -27,7 +27,12 @@
         <div class="editor-pane">
             @if (showInstallFolderPicker && gameModSubdirs.length > 0) {
                 <div>
-                    <mat-label class="files-label">Installation Directory</mat-label>
+                    <mat-label class="files-label">
+                        Installation Directory:
+                        <span class="prefix-path">
+                            {{ importRequest.modFilePrefix || "Game Root" }}
+                        </span>
+                    </mat-label>
 
                     <div class="mod-file-tree-container">
                         <mat-radio-group name="installationDir"
@@ -48,7 +53,9 @@
                                         <button type="button" mat-icon-button disabled></button>
                                     }
         
-                                    <mat-radio-button [value]="node.fullPath" />
+                                    <mat-radio-button #pathRadio
+                                                      [value]="node.fullPath"
+                                                      (click)="pathRadio.checked ? setModFilePrefix() : null" />
         
                                     <span class="mod-path-part">
                                         {{ node.pathPart }}

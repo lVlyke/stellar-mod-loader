@@ -63,6 +63,11 @@
         .files-label {
             display: block;
             margin-bottom: 0.5rem;
+
+            .prefix-path {
+                padding: 0.25rem 0.333rem;
+                border-radius: 0.5rem;
+            }
         }
     }
 }

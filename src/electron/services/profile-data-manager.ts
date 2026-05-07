@@ -290,6 +290,16 @@ export class ProfileDataManager {
         // Make sure the profile and mods directory exists
         fs.mkdirpSync(this.getProfileModsDir(profile));
 
+        // Make sure config dir exists if managing save files
+        if (profile.manageConfigFiles) {
+            fs.mkdirpSync(this.getProfileConfigDir(profile));
+        }
+
+        // Make sure save dir exists if managing save files
+        if (profile.manageSaveFiles) {
+            fs.mkdirpSync(this.getProfileSaveDir(profile));
+        }
+
         // If the profile root has been overridden, create a symlink to the profile at the default path
         if (defaultProfileDir !== profileDir) {
             if (!fs.existsSync(defaultProfileDir)) {
@@ -356,9 +366,19 @@ export class ProfileDataManager {
         const gameDetails = gameDb[profile.gameId];
         const gameSaveFormats = gameDetails?.saveFormats ?? [];
         const saveFiles = fs.readdirSync(profileSaveDir)
-            .filter(saveFileName => gameSaveFormats.some((saveFormat) => {
-                return saveFileName.toLowerCase().endsWith(`.${saveFormat.toLowerCase()}`);
-            }))
+            .filter((saveEntry) => {
+                const saveEntryPath = path.join(profileSaveDir, saveEntry);
+
+                // If entry is a directory, scan its contents
+                const saveFileNames = fs.statSync(saveEntryPath).isDirectory()
+                    ? fs.readdirSync(saveEntryPath)
+                    : [saveEntryPath];
+
+                // Find any files that match the save format of this game
+                return gameSaveFormats.some((saveFormat) => {
+                    return saveFileNames.some(saveFileName => saveFileName.toLowerCase().endsWith(`.${saveFormat.toLowerCase()}`));
+                });
+            })
             .map((saveFileName) => ({
                 name: path.parse(saveFileName).name,
                 date: fs.statSync(path.join(profileSaveDir, saveFileName)).mtime
@@ -834,8 +854,18 @@ export class ProfileDataManager {
         // Find available game binaries and add them as actions
         return gameDetails?.gameBinary.slice().reverse().reduce((gameActions, gameBinary) => {
             gameBinary = path.normalize(gameBinary);
+            let binaryExists = false;
 
-            let binaryExists = !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
+            const gameBinaryPath = path.isAbsolute(gameBinary)
+                ? gameBinary
+                : path.join(gameRootDir, gameBinary);
+            
+            // Check if binary exists directly
+            if (fs.existsSync(gameBinaryPath)) {
+                binaryExists = true;
+            }
+
+            binaryExists ||= !!profile.externalFilesCache?.gameDirFiles?.some((externalFile) => {
                 return externalFile.endsWith(gameBinary);
             });
 

@@ -14,7 +14,7 @@
                     [disabled]="disabled || !custom"
                     [ngModel]="!!value.steamId?.length ? value.steamId![0] : ''"
                     [ngModelOptions]="{ standalone: true }"
-                    (ngModelChange)="value.steamId = [$event]; valueChange$.emit(value)">
+                    (ngModelChange)="value.steamId = ($event ? [$event] : []); valueChange$.emit(value)">
         </mat-form-field>
     } @else {
         <app-select-edit label="Steam IDs"
